@@ -91,9 +91,9 @@ function tabColor(color) {
     var c = document.createElement("canvas");
     c.width = 128;
     c.height = 128;
-    var zne = c.getContext("2d");
-    zne.fillStyle = color;
-    zne.fillRect(0, 0, 128, 128);
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 128, 128);
     var b = document.querySelector("link[rel=icon]") || createElement("link");
     b.href = c.toDataURL();
     b.rel = "icon";
