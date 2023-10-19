@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Firefox Attach",
+            "type": "firefox",
+            "request": "launch",
+            "url": "https://localhost:50184/path",
+            "pathMappings": [
+                {
+                    "url": "https://localhost:50184",
+                    "path": "${workspaceFolder}/wwwroot"
+                }
+            ],
+            "presentation": { // hide from debug launch configs
+                "hidden": true,
+            }
+        },
+        {
+            "name": ".NET Core Launch (web)", // built-in .NET task
+            // "preLaunchTask": "build",
+            // "serverReadyAction": {
+            //     "action": "openExternally",
+            //     "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            // }, // comment out or remove these lines,
+            "presentation": { // hide from debug launch configs
+                "hidden": true,
+            }
+        },
+    ],
+    "compounds": [
+        {
+            "name": "Build and Launch",
+            "configurations": [
+                ".NET Core Launch (web)",
+                "Firefox Attach",
+            ],
+            "stopAll": true,
+            "preLaunchTask": "build",
+        }
+    ]
+}
