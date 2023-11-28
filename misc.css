@@ -1,0 +1,8 @@
+/* "Show/Hide" labels on summary elements  */
+details[open] summary::before {
+    content: "Hide ";
+}
+
+details:not([open]) summary::before {
+    content: "Show ";
+}
