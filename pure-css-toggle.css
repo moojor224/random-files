@@ -1,0 +1,66 @@
+input[type=checkbox].slider {
+    --scale: 2.5;
+    --duration: 0.25s;
+
+    --outerline: #000;
+    --outerline-off: var(--outerline);
+
+    --innerline: #000;
+    --innerline-off: var(--innerline);
+
+    --inner-shade-on: #0f0;
+    --outer-shade-on: #fff;
+
+    --inner-shade-off: #f00;
+    --outer-shade-off: #fff;
+
+    margin: 0px;
+    position: relative;
+    border-color: white;
+    border-width: 0px !important;
+    appearance: none;
+    width: calc(24px * var(--scale));
+    height: calc(14px * var(--scale));
+}
+
+input[type=checkbox].slider::before,
+input[type=checkbox].slider::after {
+    display: block;
+    position: absolute;
+    border: calc(1px * var(--scale)) solid var(--outerline);
+    content: ' ';
+    box-sizing: border-box;
+}
+
+input[type=checkbox].slider::before {
+    height: calc(14px * var(--scale));
+    width: calc(24px * var(--scale));
+    border-radius: calc(7px * var(--scale));
+    transition-property: background-color;
+    transition-duration: var(--duration);
+}
+
+input[type=checkbox].slider::after {
+    border-radius: calc(5px * var(--scale));
+    width: calc(10px * var(--scale));
+    height: calc(10px * var(--scale));
+    top: calc(2px * var(--scale));
+    left: calc(2px * var(--scale));
+    border: calc(1px * var(--scale)) solid var(--innerline);
+    background-color: var(--inner-shade-off);
+    transition-property: left, background-color;
+    transition-duration: var(--duration);
+}
+
+input[type=checkbox].slider::before {
+    background-color: var(--outer-shade-off);
+}
+
+input[type=checkbox].slider:checked::before {
+    background-color: var(--outer-shade-on);
+}
+
+        input[type=checkbox].slider:checked::after {
+            left: calc(12px * var(--scale));
+            background-color: var(--inner-shade-on);
+        }
