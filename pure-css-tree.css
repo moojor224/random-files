@@ -8,7 +8,7 @@
 }
 
 .tree {
-    margin: 0 0 1em;
+    margin: 0 0 12px;
     text-align: center;
 }
 
@@ -23,12 +23,13 @@
 
 .tree li {
     display: table-cell;
-    padding: .5em 0;
+    padding: 6px 0;
     vertical-align: top;
 }
 
 /* _________ */
 .tree li:before {
+    /* horizontal lines */
     outline: solid 1px #666;
     content: "";
     left: 0;
@@ -47,8 +48,9 @@
 
 .tree code,
 .tree span {
-    border: solid .1em #666;
-    border-radius: .2em;
+    /* node borders */
+    border: solid 1px #666;
+    border-radius: 4px;
     display: inline-block;
     margin: 0 .2em .5em;
     padding: .2em .5em;
@@ -56,28 +58,29 @@
 }
 
 /* If the tree represents DOM structure */
-.tree code {
+/* .tree code {
     font-family: monaco, Consolas, 'Lucida Console', monospace;
-}
+} */
 
 /* | */
 .tree ul:before,
 .tree code:before,
 .tree span:before {
+    /* vertical lines */
     outline: solid 1px #666;
     content: "";
-    height: .5em;
+    height: 6px;
     left: 50%;
     position: absolute;
 }
 
 .tree ul:before {
-    top: -.5em;
+    top: -6px;
 }
 
 .tree code:before,
 .tree span:before {
-    top: -.55em;
+    top: -6.5px;
 }
 
 /* The root node doesn't connect upwards */
