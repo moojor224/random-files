@@ -79,7 +79,15 @@ function makeTree(resource, amount) {
                         if (arr[r][0].tier == t) {
                             arr = [
                                 ...arr.slice(0, r),
-                                [`<h2>tier ${t} items</h2>`],
+                                (ar => {
+                                    let arr2 = ar;
+                                    if (maxTier == t) {
+                                        arr2.push("amount", "buildings needed");
+                                    } else {
+                                        arr2.push(...new Array(3 - arr2.length).fill(""));
+                                    }
+                                    return arr2;
+                                })([`<h2>tier ${t} items</h2>`]),
                                 ...arr.slice(r)
                             ];
                             break;
@@ -92,7 +100,8 @@ function makeTree(resource, amount) {
                         let rate = Math.round(r[1] / r[0].rate[1] * 1000) / 1000;
                         return [...r, `${rate}x ${r[0].rate[0]}`];
                     }
-                    return r;
+
+                    return [...r, ...new Array(3 - r.length).fill("")];
                 });
             })(Array.from(totals).sort(function (a, b) {
                 return a[0].tier < b[0].tier ? 1 : a[0].tier > b[0].tier ? -1 : 0
