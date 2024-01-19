@@ -60,7 +60,7 @@ input[type=checkbox].slider:checked::before {
     background-color: var(--outer-shade-on);
 }
 
-        input[type=checkbox].slider:checked::after {
-            left: calc(12px * var(--scale));
-            background-color: var(--inner-shade-on);
-        }
+input[type=checkbox].slider:checked::after {
+    left: calc(12px * var(--scale));
+    background-color: var(--inner-shade-on);
+}

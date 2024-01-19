@@ -8,13 +8,13 @@ var JSZipUtils = {};
 function createStandardXHR() {
     try {
         return new window.XMLHttpRequest();
-    } catch( e ) {}
+    } catch (e) { }
 }
 
 function createActiveXHR() {
     try {
         return new window.ActiveXObject("Microsoft.XMLHTTP");
-    } catch( e ) {}
+    } catch (e) { }
 }
 
 // Create the request object
@@ -25,9 +25,9 @@ var createXHR = (typeof window !== "undefined" && window.ActiveXObject) ?
      * Additionally XMLHttpRequest can be disabled in IE7/IE8 so
      * we need a fallback.
      */
-    function() {
-    return createStandardXHR() || createActiveXHR();
-} :
+    function () {
+        return createStandardXHR() || createActiveXHR();
+    } :
     // For all other browsers, use the standard XMLHttpRequest object
     createStandardXHR;
 
@@ -84,15 +84,15 @@ JSZipUtils.getBinaryContent = function (path, options) {
             method: "GET",
             responseType: "arraybuffer",
             overrideMimeType: "text/plain; charset=x-user-defined",
-            onload: function(data){
+            onload: function (data) {
                 try {
                     resolve(data.response || data.responseText);
-                } catch(err) {
+                } catch (err) {
                     reject(new Error(err));
                 }
             },
-            onprogress: function(e) {
-                if(!options.progress) {return;}
+            onprogress: function (e) {
+                if (!options.progress) { return; }
                 options.progress({
                     path: path,
                     originalEvent: e,

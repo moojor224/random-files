@@ -6,7 +6,7 @@ function emojiWidth(...emojis) {
         return [e, width];
     });
     console.log(map);
-    let size = Array.from(map).sort(function(a, b) {
+    let size = Array.from(map).sort(function (a, b) {
         return a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : 0;
     })[0][0];
     console.log(size);

@@ -2,10 +2,10 @@ function waitForKeyElements(query, callback, stopAfterFound, element) {
     currentlyWorking = true;
     var o, r;
 
-    (o = (void(0) === element) ? $(query) : $(element).contents().find(query)) && o.length > 0 ? (r = !0, o.each(function() {
-            var e = $(this);
-            e.data("alreadyFound") || false || (callback(e) ? r = false : e.data("alreadyFound", true))
-        })) :
+    (o = (void (0) === element) ? $(query) : $(element).contents().find(query)) && o.length > 0 ? (r = !0, o.each(function () {
+        var e = $(this);
+        e.data("alreadyFound") || false || (callback(e) ? r = false : e.data("alreadyFound", true))
+    })) :
         r = false;
     var l = waitForKeyElements.controlObj || {},
         i = query.replace(/[^\w]/g, "_"),
@@ -15,7 +15,7 @@ function waitForKeyElements(query, callback, stopAfterFound, element) {
         delete l[i]
     ) : c || (
         c = setInterval(
-            function() {
+            function () {
                 waitForKeyElements(query, callback, stopAfterFound, element);
             },
             1000
@@ -26,7 +26,7 @@ function waitForKeyElements(query, callback, stopAfterFound, element) {
 } //wait for key elements
 
 function createElement(tag = "span", data = {}) {
-    tag = typeof(tag) === "string" ? document.createElement(tag) : tag;
+    tag = typeof (tag) === "string" ? document.createElement(tag) : tag;
     Object.keys(data).forEach(e => {
         if (typeof data[e] === "object") {
             createElement(tag[e] || (tag[e] = {}), data[e]);
@@ -37,7 +37,7 @@ function createElement(tag = "span", data = {}) {
     return tag;
 }
 
-window.Element.prototype.add = function() {
+window.Element.prototype.add = function () {
     Array.from(arguments).forEach(elem => {
         this.append(elem);
     })
@@ -66,7 +66,7 @@ function checkForScriptUpdate() {
     GM_xmlhttpRequest({
         method: "GET",
         url: updateURL,
-        onload: function(response) {
+        onload: function (response) {
             var script = response.responseText.split('@version')[1].split('\r')[0].trim();
             if (script !== GM_info.script.version) {
                 window.open(updateURL, '_blank');
