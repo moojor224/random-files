@@ -1,5 +1,3 @@
-import { log } from "./report.js";
-
 /**
  * 
  * @param {String} query css selector to wait for
@@ -62,23 +60,36 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
 // createElement(target, source1); createElement(target, source2);
 // although this may work most of the time, it may not always work
 export function createElement(tag = "span", data = {}) {
-    tag = typeof tag === "string" ? document.createElement(tag) : tag;
-    Object.keys(data).forEach((e) => {
-        if (typeof data[e] === "object") {
+    if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) { // if tag is a string and string includes non alphanumeric characters, parse as emmet string
+        let div = createElement("div"); // create temporary parent node
+        if (expandAbbreviation && typeof expandAbbreviation == "function") { // if expandAbbreviation is defined
+            div.innerHTML = expandAbbreviation(tag); // expand abbreviation
+        } else if (emmet && emmet.expandAbbreviation && typeof emmet.expandAbbreviation == "function") { // if emmet.expandAbbreviation is defined
+            div.innerHTML = emmet.expandAbbreviation(tag); // expand abbreviation
+        }
+        let arr = Array.from(div.children);
+        return arr.length == 1 ? arr[0] : arr; // if only 1 top-level element was generated, return it, else return whole array
+    }
+    tag = typeof tag === "string" ? document.createElement(tag) : tag; // convert string to HTMLElement
+    Object.keys(data).forEach((e) => { // loop through object properties
+        if (typeof data[e] === "object") { // if value is object, recurse
             createElement(tag[e] || (tag[e] = {}), data[e]);
         } else {
-            if (tag.constructor?.name?.includes("Element")) {
-                try {
-                    tag.setAttribute(e, data[e]);
-                } catch (err) { }
+            if (tag instanceof window.Element) { // if tag is an html element
+                if (e.substring(0, 2) == "on" && typeof data[e] == "function") { // if property is an event listener
+                    tag.addEventListener(e.substring(2), data[e]); // add event listener
+                } else {
+                    tag[e] = data[e]; // else, set property
+                }
+            } else {
+                tag[e] = data[e]; // else, set property
             }
-            tag[e] = data[e];
         }
     });
-    return tag;
+    return tag; // return result
 }
 
-/*
+/**
  * @external Element
  */
 /**
@@ -95,21 +106,31 @@ export function createElement(tag = "span", data = {}) {
  *          createElement("td", {innerHTML: "col 3"})
  *      )
  * );
+ * //result:
+ * /*
+ * <table>
+ *     <tr>
+ *         <td>col 1</td>
+ *         <td>col 2</td>
+ *         <td>col 3</td>
+ *     </tr>
+ * </table
  */
 function add(...args) {
-    args.forEach((elem) => {
+    args.forEach(elem => {
         this.append(elem);
     });
     return this;
 };
 
+window.Element.prototype.add = add;
+// loop through all HTML...Element prototypes and add the add function
 Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
     if (window[e].prototype.add !== add) {
         window[e].prototype.add = add
     }
 });
 
-window.Element.prototype.add = add;
 // window.HTMLSelectElement.prototype.add = add;
 
 /**
@@ -124,8 +145,8 @@ window.Element.prototype.add = add;
  * @param {String} text error message
  */
 window.Element.prototype.error = function (text = "!") {
-    this.querySelector("error")?.remove();
-    this.add(createElement("error", { innerHTML: text }));
+    this.querySelector("error")?.remove(); // remove error element if it exists
+    this.add(createElement("error", { innerHTML: text })); // add error element
 }
 
 /**
@@ -140,8 +161,8 @@ window.Element.prototype.clearError = function () {
  * @param {String} text warning message
  */
 window.Element.prototype.warn = function (text = "!") {
-    this.querySelector("warn")?.remove();
-    this.add(createElement("warn", { innerHTML: text }));
+    this.querySelector("warn")?.remove(); // remove warn element if it exists
+    this.add(createElement("warn", { innerHTML: text })); // add warn element
 }
 
 /**
@@ -155,7 +176,17 @@ window.Element.prototype.clear = function () {
     // while(this.firstChild){
     //     this.firstChild.remove();
     // }
-    this.innerHTML = "";
+    let arr = flattenChildNodes(this);
+    if (arr.includes(this)) {
+        arr.splice(arr.indexOf(this), 1);
+    }
+    while (arr.length > 0) { // remove individual elements in order to purge event listeners
+        let el = arr.pop();
+        if (el.remove) {
+            el.remove();
+        }
+    }
+    this.innerHTML = ""; // clear out any remaining nodes that didn't get removed, like text nodes
 }
 
 /**
@@ -163,20 +194,20 @@ window.Element.prototype.clear = function () {
  * @param {string} color color of the square
  */
 export function tabColor(color) {
-    function isValidCSSColor(color2) {
-        if (["unset", "initial", "inherit"].includes(color2)) {
+    function isValidCSSColor(color2) { // checks if string is valid css color
+        if (["unset", "initial", "inherit"].includes(color2)) { // valid css colors that should return false
             return false;
         }
-        const s = new Option().style;
-        s.color = color2;
-        return s.color !== "";
+        const s = document.createElement("div").style; // get style property of temp element
+        s.color = color2; // set color property
+        return s.color !== ""; // check if color property is still there
     }
-    if (!isValidCSSColor(color)) {
+    if (!isValidCSSColor(color)) { // check if provided color is valid
         return;
     }
-    var c = document.createElement("canvas");
-    c.width = 128;
-    c.height = 128;
+    var c = document.createElement("canvas"); // create dummy canvas
+    c.width = 1; // set favicon dimensions
+    c.height = 1; // 1x1 is fine since it's a solid color
     var ctx = c.getContext("2d");
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, 128, 128);
@@ -366,7 +397,7 @@ export function captureConsole() {
             console.everything.push({
                 type: "log",
                 datetime: Date().toLocaleString(),
-                value: Array.from(...args),
+                value: Array.from(...args)
             });
             console.defaultLog.apply(console, args);
         };
@@ -375,7 +406,7 @@ export function captureConsole() {
             console.everything.push({
                 type: "error",
                 datetime: Date().toLocaleString(),
-                value: Array.from(...args),
+                value: Array.from(...args)
             });
             console.defaultError.apply(console, args);
         };
@@ -384,7 +415,7 @@ export function captureConsole() {
             console.everything.push({
                 type: "warn",
                 datetime: Date().toLocaleString(),
-                value: Array.from(...args),
+                value: Array.from(...args)
             });
             console.defaultWarn.apply(console, args);
         };
@@ -393,7 +424,7 @@ export function captureConsole() {
             console.everything.push({
                 type: "debug",
                 datetime: Date().toLocaleString(),
-                value: Array.from(...args),
+                value: Array.from(...args)
             });
             console.defaultDebug.apply(console, args);
         };
@@ -401,7 +432,7 @@ export function captureConsole() {
 }
 
 /**
- * takes in an object and returns an array of all it's children, recursive
+ * takes in an object and returns a flattened array of all it's children
  * @param {object} arr object to flatten
  * @returns {object[]} array of all children
  */
@@ -524,7 +555,7 @@ export function listAllColorsOnPage() {
         color = hexToRgb(color);
         let obj = {
             value: color,
-            varName: c,
+            varName: c
         };
         colorProps.forEach(e => {
             obj[e] = els.filter(r => r[1][e] === color);
@@ -645,82 +676,119 @@ function convertBase(str, fromBase, toBase) {
     return out;
 }
 
-class Settings {
+export class Settings extends EventTarget {
     config = {
-        name: "settings",
+        name: "settings"
     };
     sections = [];
-
+    /**
+     * creates a new Settings object
+     * @param {Object} config config options
+     * @param {Section[]} sections array of sections to add to the settings
+     */
     constructor(config = {}, sections) {
-        extend(this.config, config);
-        if (!Array.isArray(sections)) {
+        super(); // initialize EventTarget object
+        extend(this.config, config); // apply config to this
+        if (!Array.isArray(sections)) { // turn sections into array if it isn't already
             sections = [sections];
         }
-        this.sections = sections.filter(e => e instanceof Section);
+        this.sections = sections.filter(e => e instanceof Section); // filter all non-Section elements out of sections array
         sections.forEach(section => {
-            section.settings_obj = this;
+            section.settings_obj = this; // set parent object of each section
         });
     }
 
+    /**
+     * renders the settings object as html
+     * @returns {HTMLDivElement}
+     */
     render() {
-        let div = createElement("div", {
+        let div = createElement("div", { // main settings div
             classList: "settings"
         }).add(
             createElement("h2", { innerHTML: this.config.name })
         );
-        div.add(...this.sections.map(s => s.render()));
+        div.add(...this.sections.map(s => s.render())); // render all subsections and add them to the settings div
         return div;
     }
 
-    getSection(name) {
-        return this.sections.filter(e => e.config.name == name)[0];
+    /**
+     * 
+     * @param {String} name
+     * @returns {Section}
+     */
+    getSection(name) { // returns the section object with the given id
+        return this.sections.find(e => e.config.id == name);
     }
 
+    /**
+     * converts the settings object to a stringified JSON object cabable of being imported through the Settings.loadJson() method
+     * @returns {String}
+     */
     export() {
         return JSON.stringify(this, function (key, value) {
-            if (key.includes("_obj")) {
+            if (key.includes("_obj")) { // exclude parent objects to avoid recursion
                 return undefined;
             }
             return value;
         });
     }
 
-    #listeners = [];
-    dispatchEvent(type, config) {
-        if (!config.target) {
-            config.target = this;
-        }
-        this.#listeners.forEach(l => {
-            if (l.type == type) {
-                l.callback(config);
-            }
-        });
+    /**
+     * dispatches an event on the Settings object
+     * @param {String} type event type
+     * @param {Object} config event options/data
+     */
+    dispatchEvent(event) {
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
+        originalDispatch.apply(this, [event]) // call original dispatchEvent function
     }
 
+    /**
+     * listens for an event\
+     * wrapper function for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
     on(type, callback) {
-        console.log("on", this.#listeners);
-        this.#listeners.push({ type, callback });
+        // console.log("on", this.#listeners);
+        this.addEventListener(type, callback);
     }
 
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper function for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
     off(type, callback) {
-        console.log("off", this.#listeners);
-        this.#listeners = this.#listeners.filter(l => l !== ({ type, callback }));
+        // console.log("off", this.#listeners);
+        this.removeEventListener(type, callback);
     }
 
+    /**
+     * converts stringified json data into a settings object\
+     * json data can be generated from the export method
+     * @static
+     * @param {String} jsontext stringified json data
+     * @returns {Settings}
+     */
     static loadJson(jsontext) {
         try {
             let json = JSON.parse(jsontext);
-            let validate = Joi.object({
+            let validate = Joi.object({ // validate object to make sure it's in the correct format
                 config: Joi.object({
                     name: Joi.string().required()
                 }).required(),
                 sections: Joi.array().items(Joi.object({
                     config: Joi.object({
-                        name: Joi.string().required()
+                        name: Joi.string().required(),
+                        id: Joi.string().required()
                     }),
                     options: Joi.array().items(Joi.object({
                         config: Joi.object({
                             name: Joi.string().required(),
+                            id: Joi.string().required(),
                             type: Joi.string().required(),
                             value: Joi.any(),
                             values: Joi.array()
@@ -728,86 +796,138 @@ class Settings {
                     })).required()
                 })).required()
             }).validate(json);
-            if (validate.error) {
+            if (validate.error) { // object isn't in the correct format
                 console.error("invalid json data");
-                console.error(validate.error);
+                throw new Error(validate.error);
             }
-            return new Settings(json.config, json.sections.map(sec => {
+            return new Settings(json.config, json.sections.map(sec => { // parse object into settings, sections, and options
                 return new Section(sec.config, sec.options.map(opt => {
                     return new Option(opt.config);
                 }));
             }));
         } catch (err) {
             console.error(err);
+            return err;
         }
+    }
+
+    replaceWith(settings) { // replaces this settings object with another one by overriding sections array and config
+        // because this object can be imported by other modules, it can't be assigned to a new Settings object
+        if (!settings instanceof Settings) { // only override if provided object is a Setting object
+            return;
+        }
+        this.config = settings.config; // override config
+        this.sections = settings.sections; // override sections
     }
 }
 
-class Section {
+class Section extends EventTarget {
+    /**
+     * @type {Settings}
+     */
+    settings_obj = null;
     config = {
-        name: "section",
+        name: "section"
     }
     options = [];
 
+    /**
+     * makes a new Section object
+     * @param {Object} config config options
+     * @param {Options[]} options array of Options to add to the section
+     */
     constructor(config, options) {
-        extend(this.config, config);
-        if (!Array.isArray(options)) {
+        super(); // initialize EventTarget
+        extend(this.config, config); // apply config to this
+        if (!Array.isArray(options)) { // turn options into array if it isn't one already
             options = [options];
         }
-        this.options = options.filter(e => e instanceof Option);
+        this.options = options.filter(e => e instanceof Option); // remove all non-Option items from array
         options.forEach(option => {
-            option.section_obj = this;
+            option.section_obj = this; // set parent object for each option
         });
     }
 
-    getOption(name) {
-        return this.options.filter(e => e.config.name == name)[0];
+    /**
+     * 
+     * @param {String} name
+     * @returns {Option}
+     */
+    getOption(name) { // returns the section object with the given id
+        return this.options.find(e => e.config.id == name);
     }
 
+    /**
+     * renders the section object as HTML
+     * @returns {HTMLElement}
+     */
     render() {
         let section = createElement("section").add(
-            createElement("h2", { innerHTML: this.config.name })
+            createElement("h2", { innerHTML: this.config.name }) // section title
         );
-        section.add(...this.options.map(o => o.render()));
+        section.add(...this.options.map(o => o.render())); // render all options in this section
         return section;
     }
 
-    #listeners = [];
-    dispatchEvent(type, config) {
-        if (!config.target) {
-            config.target = this;
-        }
-        this.#listeners.forEach(l => {
-            console.log(l);
-            if (l.type == type) {
-                l.callback(config);
-            }
-        });
-        this.settings_obj.dispatchEvent(type, config);
+    /**
+     * dispatches an event on the Section object
+     * @param {String} type event type
+     * @param {Object} config event options/data
+     */
+    dispatchEvent(event) {
+        this.settings_obj.dispatchEvent(event); // bubble event to parent element
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
+        originalDispatch.apply(this, [event]); // call original dispatchEvent function
     }
 
+    /**
+     * listens for an event\
+     * wrapper for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
     on(type, callback) {
-        console.log("on", this.#listeners);
-        this.#listeners.push({ type, callback });
+        // console.log("on", this.#listeners);
+        this.addEventListener(type, callback);
     }
 
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
     off(type, callback) {
-        console.log("off", this.#listeners);
-        this.#listeners = this.#listeners.filter(l => l !== ({ type, callback }));
+        // console.log("off", this.#listeners);
+        this.removeEventListener(type, callback);
     }
 }
 
-class Option {
+class Option extends EventTarget {
+    /**
+     * @type {HTMLElement}
+     */
+    input = null;
+
+    /**
+     * @type {Section}
+     */
+    section_obj = null;
     config = {
         name: "option",
         type: "toggle",
-        value: false,
+        value: false
     }
 
+    /**
+     * creates a new Option object
+     * @param {Object} config Option options
+     */
     constructor(config) {
-        extend(this.config, config);
-        if (config.value == undefined) {
-            delete this.config.value;
+        super(); // initialize EventTarget object
+        extend(this.config, config); // apply config to this
+        if (config.value == undefined && config.values) { // if value is not specified, set value to first value in values
+            this.config.value = config.values[0];
         }
     }
 
@@ -816,26 +936,50 @@ class Option {
     }
 
     set value(val) {
-        this.config.value = val;
+        // show("#loadingModal"); // show the loading modal
+        fetch("/Reports/Report/SaveSettings", { // fetch request to server to save user settings
+            method: "POST",
+            body: this.section_obj.settings_obj.export(),
+            headers: {
+                "X-CSRF-TOKEN": Cookies.get("CSRF-TOKEN") // auth token
+            }
+        }).then(e => {
+            e.text().then(t => {
+                if (!t.includes("error")) { // settings could not save
+                    this.config.value = val; // revert option change
+                } else {
+                    this.input.value = this.config.value; // save option change in option object
+                }
+                // hide("#loadingModal"); // hide the loading modal
+            });
+        });
     }
 
+    /**
+     * renders the option object as HTML
+     * @returns {HTMLLabelElement}
+     */
     render() {
         let label = createElement("label");
         let span = createElement("span", {
             innerHTML: this.config.name
         });
         let input = this.createInput();
-        label.add(span, input);
-        return label
+        label.add(span, input); // clicking a label will activate the first <input> inside it, so the 'for' attribute isn't required
+        return label;
     }
 
+    /**
+     * creates the input method specified by the option config
+     * @returns {HTMLSelectElement|HTMLInputElement}
+     */
     createInput() {
-        let input;
-        let option = this;
-        if (this.config.type == "toggle") {
+        let input; // initialize variable
+        let option = this; // save reference to this
+        if (this.config.type == "toggle") { // standard on/off toggle
             input = createElement("input", {
                 type: "checkbox",
-                classList: "slider"
+                classList: "slider" // pure css toggle switch
             });
         } else if (this.config.type == "dropdown") {
             input = createElement("select");
@@ -850,43 +994,55 @@ class Option {
             input.add(...values.map(v => createElement("option", {
                 innerHTML: v
             })));
-            if (!values.includes(this.config.value) && this.config.value != undefined) { // if specified value is not in values list, add to select element
-                input.add(createElement("option", {
-                    innerHTML: this.config.value
+            // if specified value is not in the list of predefined values, add it as a placeholder
+            if (this.config.value && !this.config.values.includes(this.config.value)) {
+                input.insertAdjacentElement("afterBegin", createElement("option", { // insert option element at beginning of select list
+                    innerHTML: this.config.value,
+                    value: this.config.value,
+                    hidden: true, // visually hide placeholder from dropdown
+                    disabled: true // prevent user from selecting it
                 }));
             }
-            if (this.config.value != undefined) { // if specified value is not undefined, select it
-                input.value = this.config.value
-            }
+            input.value = this.config.value || this.config.values[0];
         }
-        input.addEventListener("input", function () {
+        input.addEventListener("input", function () { // when setting is changed, dispatch change event on the potions object
             option.value = input.value;
-            option.dispatchEvent("change", { target: this });
+            option.dispatchEvent(new Event("change")); // forward event from html element to option object
         });
         return input;
     }
 
-    #listeners = [];
-    dispatchEvent(type, config) {
-        if (!config.target) {
-            config.target = this;
-        }
-        this.#listeners.forEach(l => {
-            if (l.type == type) {
-                l.callback(config);
-            }
-        });
-        this.section_obj.dispatchEvent(type, config);
+    /**
+     * dispatches an event on the Option object
+     * @param {String} type event type
+     * @param {Object} config event options/data
+     */
+    dispatchEvent(event) {
+        this.section_obj.dispatchEvent(event); // bubble event to parent section
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // save copy of original dispatchEvent function
+        originalDispatch.apply(this, [event]); // call original dispatchEvent function
     }
 
+    /**
+     * listens for an event\
+     * wrapper function for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
     on(type, callback) {
-        console.log("on", this.#listeners);
-        this.#listeners.push({ type, callback });
+        // console.log("option on", this.#listeners);
+        this.addEventListener(type, callback);
     }
 
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper function for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
     off(type, callback) {
-        console.log("off", this.#listeners);
-        this.#listeners = this.#listeners.filter(l => l !== ({ type, callback }));
+        // console.log("option off", this.#listeners);
+        this.removeEventListener(type, callback);
     }
 }
 
@@ -894,30 +1050,48 @@ export let settings = new Settings({
     name: "Settings"
 }, [
     new Section({
-        name: "Billing Report"
+        name: "Billing Report",
+        id: "Sites_PlayerSummariesListNew"
     }, [
         new Option({
-            name: "Composite Graphs",
+            name: "Graph Type",
+            id: "graph_type",
+            type: "dropdown",
+            values: ["bar", "line"]
+        }),
+        new Option({
+            name: "Show Composite Graph",
+            id: "composite_graph",
             type: "toggle",
-            value: false,
+            value: false
+        }),
+        new Option({
+            name: "Show Individual Graphs",
+            id: "individual_graph",
+            type: "toggle",
+            value: false
         })
     ]),
     new Section({
-        name: "Online Game Report"
+        name: "Online Game Report",
+        id: "SereneOnlineGameReport"
     }, [
         new Option({
-            name: "Graph type",
+            name: "Graph Type",
+            id: "graph_type",
             type: "dropdown",
             values: ["bar", "line"]
         })
     ]),
     new Section({
-        name: "Recent Player Count"
+        name: "Recent Player Count",
+        id: "SereneRecentPlayerCount"
     }, [
         new Option({
-            name: "Graph type",
+            name: "Graph Type",
+            id: "graph_type",
             type: "dropdown",
-            values: ["bar", "line"],
+            values: ["bar", "line"]
         })
     ])
 ]);
@@ -926,7 +1100,7 @@ export let settings = new Settings({
  * generates a string template function or smth idk
  * @param {String[]} strings plain-text strings
  * @param  {...String} keys keys to interpolate
- * @returns {String}
+ * @returns {Function}
  * 
  * @example
  * const template = makeTemplate`I'm ${"name"}. I'm almost ${"age"} years old.`;
@@ -942,4 +1116,14 @@ export function makeTemplate(strings, ...keys) {
         });
         return result.join("");
     };
+}
+
+/**
+ * uses JSON.stringify and JSON.parse to copy an object and return the copy\
+ * WARNING: do not use on objects that contain recursive references, or an error will be thrown
+ * @param {Object} obj object to copy
+ * @returns {Object}
+ */
+export function copyObject(obj) {
+    return JSON.parse(JSON.stringify(obj));
 }
