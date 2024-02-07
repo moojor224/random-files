@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --scale0: #161b22;
+            --scale1: #0e4429;
+            --scale2: #006d32;
+            --scale3: #26a641;
+            --scale4: #39d353;
+        }
+
+        body {
+            background-color: var(--bg);
+        }
+
+        .git-graph {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            align-content: flex-start;
+            justify-content: flex-start;
+            height: calc(77px + 28px);
+            /* outline: 2px solid red; */
+            margin-left: 100px;
+        }
+
+        .git-graph .node {
+            height: 11px;
+            width: 11px;
+            margin: 2px;
+            background-color: var(--scale0);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .node[data-hover]::after {
+            content: attr(data-hover);
+            display: none;
+            position: absolute;
+            top: 0px;
+            left: 50%;
+            color: white;
+            background-color: gray;
+            padding: 5px;
+            border-radius: 50px;
+            z-index: 1;
+            transform: translateY(-100%) translateX(-50%);
+        }
+
+        .node[data-hover]:hover::after {
+            display: block;
+        }
+
+        [data-day="sunday"]:not([data-day="sunday"]~[data-day="sunday"])::before,
+        [data-day="monday"]:not([data-day="monday"]~[data-day="monday"])::before,
+        [data-day="tuesday"]:not([data-day="tuesday"]~[data-day="tuesday"])::before,
+        [data-day="wednesday"]:not([data-day="wednesday"]~[data-day="wednesday"])::before,
+        [data-day="thursday"]:not([data-day="thursday"]~[data-day="thursday"])::before,
+        [data-day="friday"]:not([data-day="friday"]~[data-day="friday"])::before,
+        [data-day="saturday"]:not([data-day="saturday"]~[data-day="saturday"]) {
+            position: relative;
+        }
+
+        [data-day="sunday"]:not([data-day="sunday"]~[data-day="sunday"])::before,
+        /* [data-day="monday"]:not([data-day="monday"]~[data-day="monday"])::before, */
+        /* [data-day="tuesday"]:not([data-day="tuesday"]~[data-day="tuesday"])::before, */
+        [data-day="wednesday"]:not([data-day="wednesday"]~[data-day="wednesday"])::before,
+        /* [data-day="thursday"]:not([data-day="thursday"]~[data-day="thursday"])::before, */
+        /* [data-day="friday"]:not([data-day="friday"]~[data-day="friday"])::before, */
+        [data-day="saturday"]:not([data-day="saturday"]~[data-day="saturday"])::before {
+            content: attr(data-day);
+            color: white;
+            z-index: 1;
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            transform: translateY(-50%) translateY(-5px);
+        }
+    </style>
+    <script src="./js/git commits.js"></script>
+    <script type="module">
+        import { createElement, map } from "./jstools.js";
+        import dayjs from "./js/dayjs/index.js";
+        // import localeData from "./js/dayjs/plugin/localeData/index.js";
+        // import localizedFormat from "./js/dayjs/plugin/localizedFormat/index.js";
+        // import isoWeek from "./js/dayjs/plugin/isoWeek/index.js";
+        // import arraySupport from "./js/dayjs/plugin/arraySupport/index.js";
+        import badMutable from "./js/dayjs/plugin/badMutable/index.js";
+
+        // dayjs.extend(localeData);
+        // dayjs.extend(localizedFormat);
+        // dayjs.extend(isoWeek);
+        // dayjs.extend(arraySupport);
+        dayjs.extend(badMutable);
+
+        let weekdays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+        let startDate = dayjs().subtract(1, "year").endOf("month").add(1, "day").startOf("day").startOf("week").subtract(1, "day");
+        let date = startDate.clone();
+
+        let arr = [];
+        let max = 400, i = 0;
+        while (date.isBefore(dayjs().startOf("day")) && i < max) {
+            arr.push(date.add(1, "day").clone());
+            i++;
+        }
+        console.log(arr);
+
+        let gitGraph = document.querySelector("div.git-graph");
+        for (let i = 0; i < arr.length; i++) {
+            gitGraph.add(createElement("div", {
+                classList: "node",
+                dataset: {
+                    hover: arr[i].format("YYYY/MM/DD"),
+                    day: weekdays[arr[i].day()],
+                }
+            }));
+        }
+        let commits = getCommits().map(e => dayjs(e).startOf("day").toISOString());
+        console.log(commits);
+        let m = new Map();
+        commits.forEach(e => m.set(e, (m.get(e) || 0) + 1));
+        commits = Array.from(m)
+        console.log(commits);
+        let values = Array.from(new Set(commits.map(e => e[1]))).sort();
+        console.log(values);
+    </script>
+</head>
+
+<body>
+    <div class="git-graph">
+    </div>
+</body>
+
+</html>
