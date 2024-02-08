@@ -334,7 +334,7 @@ export function rgbGradient(
  * @param {Number} outmax output range upper bound
  * @returns {Number}
  */
-function map(x, inmin, inmax, outmin, outmax) {
+export function map(x, inmin, inmax, outmin, outmax) {
     return (x - inmin) * (outmax - outmin) / (inmax - inmin) + outmin;
 }
 
