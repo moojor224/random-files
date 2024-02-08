@@ -58,30 +58,30 @@
             display: block;
         }
 
-        [data-day="sunday"]:not([data-day="sunday"]~[data-day="sunday"])::before,
-        [data-day="monday"]:not([data-day="monday"]~[data-day="monday"])::before,
-        [data-day="tuesday"]:not([data-day="tuesday"]~[data-day="tuesday"])::before,
-        [data-day="wednesday"]:not([data-day="wednesday"]~[data-day="wednesday"])::before,
-        [data-day="thursday"]:not([data-day="thursday"]~[data-day="thursday"])::before,
-        [data-day="friday"]:not([data-day="friday"]~[data-day="friday"])::before,
-        [data-day="saturday"]:not([data-day="saturday"]~[data-day="saturday"]) {
+        [data-day="Sunday"]:not([data-day="Sunday"]~[data-day="Sunday"])::before,
+        [data-day="Monday"]:not([data-day="Monday"]~[data-day="Monday"])::before,
+        [data-day="Tuesday"]:not([data-day="Tuesday"]~[data-day="Tuesday"])::before,
+        [data-day="Wednesday"]:not([data-day="Wednesday"]~[data-day="Wednesday"])::before,
+        [data-day="Thursday"]:not([data-day="Thursday"]~[data-day="Thursday"])::before,
+        [data-day="Friday"]:not([data-day="Friday"]~[data-day="Friday"])::before,
+        [data-day="Saturday"]:not([data-day="Saturday"]~[data-day="Saturday"]) {
             position: relative;
         }
 
-        [data-day="sunday"]:not([data-day="sunday"]~[data-day="sunday"])::before,
-        /* [data-day="monday"]:not([data-day="monday"]~[data-day="monday"])::before, */
-        /* [data-day="tuesday"]:not([data-day="tuesday"]~[data-day="tuesday"])::before, */
-        [data-day="wednesday"]:not([data-day="wednesday"]~[data-day="wednesday"])::before,
-        /* [data-day="thursday"]:not([data-day="thursday"]~[data-day="thursday"])::before, */
-        /* [data-day="friday"]:not([data-day="friday"]~[data-day="friday"])::before, */
-        [data-day="saturday"]:not([data-day="saturday"]~[data-day="saturday"])::before {
+        /* [data-day="Sunday"]:not([data-day="Sunday"]~[data-day="Sunday"])::before, */
+        [data-day="Monday"]:not([data-day="Monday"]~[data-day="Monday"])::before,
+        /* [data-day="Tuesday"]:not([data-day="Tuesday"]~[data-day="Tuesday"])::before, */
+        [data-day="Wednesday"]:not([data-day="Wednesday"]~[data-day="Wednesday"])::before,
+        /* [data-day="Thursday"]:not([data-day="Thursday"]~[data-day="Thursday"])::before, */
+        /* [data-day="Saturday"]:not([data-day="Saturday"]~[data-day="Saturday"])::before,  */
+        [data-day="Friday"]:not([data-day="Friday"]~[data-day="Friday"])::before {
             content: attr(data-day);
             color: white;
             z-index: 1;
             position: absolute;
             top: 50%;
             right: 100%;
-            transform: translateY(-50%) translateY(-5px);
+            transform: translateY(-50%) translateY(-3px);
         }
     </style>
     <script src="./js/git commits.js"></script>
@@ -100,7 +100,6 @@
         // dayjs.extend(arraySupport);
         dayjs.extend(badMutable);
 
-        let weekdays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
         let startDate = dayjs().subtract(1, "year").endOf("month").add(1, "day").startOf("day").startOf("week").subtract(1, "day");
         let date = startDate.clone();
 
@@ -118,7 +117,8 @@
                 classList: "node",
                 dataset: {
                     hover: arr[i].format("YYYY/MM/DD"),
-                    day: weekdays[arr[i].day()],
+                    day: arr[i].format("dddd"),
+                    month: arr[i].format("MMMM")
                 }
             }));
         }
