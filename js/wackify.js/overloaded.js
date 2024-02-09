@@ -2,7 +2,6 @@ function getPath(o) {
     const path = [];
     while (o) {
         path.push(o);
-        // if (typeof o == "object") path.push(o.constructor);
         o = Object.getPrototypeOf(o);
     }
     return path.reverse();
@@ -56,27 +55,11 @@ class Overload extends Function {
     }
 
     call(...args) {
-        // console.group("finding suitable overload for: ", args);
         function hasRest(c) {
             return c.types[c.types.length - 1] instanceof Rest;
         }
         function compareType(x, y, o) {
             let ancestor = getCommonAncestor(x, y);
-            // debugger;
-
-            // console.log((
-            //     x instanceof y && (
-            //         o.options.allowObject && y == Object ||
-            //         !o.options.allowObject && y != Object
-            //     ) && (
-            //         typeof x == "function" && y == Function ||
-            //         typeof x != "function" && y != Function
-            //     )
-            // ),
-            //     // (typeof x == y.constructor.name.toLowerCase()),
-            //     (typeof x == y.name.toLowerCase()),
-            //     (o.options.allowObject && ancestor == Object.getPrototypeOf({})),
-            //     (!o.options.allowObject && ancestor != Object.getPrototypeOf({}) && ancestor));
             return !!(
                 (
                     x instanceof y && (
@@ -87,15 +70,13 @@ class Overload extends Function {
                         typeof x != "function" && y != Function
                     )
                 ) ||
-                // (typeof x == y.constructor.name.toLowerCase()) ||
                 (typeof x == y.name.toLowerCase()) ||
                 (o.options.allowObject && ancestor == Object.getPrototypeOf({})) ||
                 (!o.options.allowObject && ancestor != Object.getPrototypeOf({}) && ancestor)
-            )
+            );
         }
         let candidates = this.overloads.filter(o => {
             if (args.length == o.types.length && !hasRest(o)) { // types list is defined length
-                // debugger
                 let arr = o.types.map((t, n) => compareType(args[n], t, o));
                 return !(arr.includes(false));
             } else if (hasRest(o)) {
@@ -107,7 +88,6 @@ class Overload extends Function {
                 if (unrestMatch.includes(false)) {
                     return false;
                 }
-                // console.log(args.map(e => compareType(e, rest.type, o)));
                 return !(args.map(e => compareType(e, rest.type, o)).includes(false));
             }
 
@@ -116,8 +96,7 @@ class Overload extends Function {
         if (funcToCall = candidates.find(e => !hasRest(e))) { }
         else if (funcToCall = candidates.find(hasRest)) { }
         else { funcToCall = { callback: this.defaultCallback }; }
-
-        console.groupEnd();
+        
         return funcToCall.callback(...args);
     }
 }
