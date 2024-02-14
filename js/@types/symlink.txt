@@ -1,0 +1,1 @@
+mklink /J @types C:\Development\Stealthx\Websites\MCP\MCP\MCP\MCP.Web\wwwroot\Scripts\Reports\@types

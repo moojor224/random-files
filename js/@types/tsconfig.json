@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "typeRoots": [
+            "./"
+        ],
+        "allowJs": true,
+        "outDir": "./out",
+        "noEmit": true,
+        "rootDir": "../",
+        "types": [
+            "jstools",
+            "chartjs"
+        ],
+        "baseUrl": "../"
+    },
+    "include": [
+        "./**/*"
+    ]
+}
