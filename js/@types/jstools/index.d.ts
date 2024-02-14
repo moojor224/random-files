@@ -16,7 +16,7 @@ interface Window {
      * @param tagName tag name of the element
      * @param options properties to set
      */
-    createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, options?: CreateElementOptions): HTMLElementTagNameMap[K];
+    createElement<Tag extends keyof HTMLElementTagNameMap>(tagName: Tag, options?: CreateElementOptions): HTMLElementTagNameMap[Tag];
 }
 
 interface HTMLElementTagNameMap {
