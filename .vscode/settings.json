@@ -1,4 +1,4 @@
 {
-    "window.title": "random-files",
+    "window.title": "${rootName}",
     "liveServer.settings.port": 5502
 }
