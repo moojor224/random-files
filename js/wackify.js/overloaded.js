@@ -71,7 +71,7 @@ class Overload extends Function {
                     )
                 ) ||
                 (typeof x == y.name.toLowerCase()) ||
-                (o.options.allowObject && ancestor == Object.getPrototypeOf({})) ||
+                (o.options.allowObject && ancestor === Object.getPrototypeOf({})) ||
                 (!o.options.allowObject && ancestor != Object.getPrototypeOf({}) && ancestor)
             );
         }
