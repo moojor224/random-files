@@ -6,7 +6,7 @@
         "allowJs": true,
         "outDir": "./out",
         "noEmit": true,
-        "rootDir": "../",
+        "rootDir": "../../../",
         "types": [
             "jstools",
             "chartjs",
