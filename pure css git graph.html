@@ -7,16 +7,24 @@
     <title>Document</title>
     <style>
         :root {
+            --percent: 00%;
             --bg: #0d1117;
-            --scale0: #161b22;
-            --scale1: #0e4429;
-            --scale2: #006d32;
-            --scale3: #26a641;
-            --scale4: #39d353;
+            --scaleudf: #161b22;
+            --scale0: #ff0000;
+            --set1: color-mix(in srgb,
+                    var(--scale0),
+                    var(--scale2) calc(var(--percent) * 2));
+            --scale2: #ffff00;
+            --set2: color-mix(in srgb,
+                    var(--scale2),
+                    var(--scale4) calc((var(--percent) - 50%) * 2));
+            --scale4: #00ff00;
+            --nodebg: var(--set2, var(--set1, #fff));
         }
 
         body {
             background-color: var(--bg);
+            font-family: sans-serif;
         }
 
         .git-graph {
@@ -35,7 +43,7 @@
             height: 11px;
             width: 11px;
             margin: 2px;
-            background-color: var(--scale0);
+            background-color: var(--nodebg);
             border-radius: 2px;
             position: relative;
         }
@@ -54,8 +62,19 @@
             transform: translateY(-100%) translateX(-50%);
         }
 
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 100;
+            }
+        }
+
         .node[data-hover]:hover::after {
             display: block;
+            animation: forwards fade-in 0.25s;
         }
 
         [data-day="Sunday"]:not([data-day="Sunday"]~[data-day="Sunday"])::before,
@@ -82,6 +101,32 @@
             top: 50%;
             right: 100%;
             transform: translateY(-50%) translateY(-3px);
+        }
+
+        .gradient>div {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+        }
+
+        .gradient>div:nth-child(1) {
+            background-color: var(--scale0)
+        }
+
+        .gradient>div:nth-child(2) {
+            background-color: var(--scale1)
+        }
+
+        .gradient>div:nth-child(3) {
+            background-color: var(--scale2)
+        }
+
+        .gradient>div:nth-child(4) {
+            background-color: var(--scale3)
+        }
+
+        .gradient>div:nth-child(5) {
+            background-color: var(--scale4)
         }
     </style>
     <script src="./js/git commits.js"></script>
@@ -134,6 +179,9 @@
 </head>
 
 <body>
+    <div class="gradient">
+        <div></div><div></div><div></div><div></div><div></div>
+    </div>
     <div class="git-graph">
     </div>
 </body>
