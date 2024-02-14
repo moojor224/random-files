@@ -9,11 +9,25 @@
         "rootDir": "../",
         "types": [
             "jstools",
-            "chartjs"
+            "chartjs",
+            "chromajs"
         ],
         "baseUrl": "../"
     },
     "include": [
-        "../**/*"
+        "../../**/*"
+    ],
+    "exclude": [
+        "../../AdminLTE/**/*",
+        "../../datepicker/**/*",
+        "../../daterangepicker/**/*",
+        "../../fullcalendar/**/*",
+        "../../jquery/**/*",
+        "../../jvectormap/**/*",
+        "../../knob/**/*",
+        "../../site/**/*",
+        "../../sparkline/**/*",
+        "../../vegas/**/*",
+        "../../_references.js",
     ]
 }
