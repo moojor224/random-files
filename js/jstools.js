@@ -1,25 +1,28 @@
+
+
+
 /**
- * 
+ * accepts a css selector and a callback function\
+ * waits for an element that matches the css selector to load, then calls the callback
  * @param {String} query css selector to wait for
  * @param {Function} callback callback function to run when the element is found
  * @param {Boolean} stopAfterFound whether to stop looking after the element is found
  * @param {Element} [element=document] parent element to look within -  defaults to document
  */
 export function waitForKeyElements(query, callback, stopAfterFound, element) {
-    currentlyWorking = true;
-    var o, r;
+    let o, r;
 
     (o = void 0 === element ? $(query) : $(element).contents().find(query)) &&
         o.length > 0
         ? ((r = !0),
             o.each(function () {
-                var e = $(this);
+                let e = $(this);
                 e.data("alreadyFound") ||
                     false ||
                     (callback(e) ? (r = false) : e.data("alreadyFound", true));
             }))
         : (r = false);
-    var l = waitForKeyElements.controlObj || {},
+    let l = waitForKeyElements.controlObj || {},
         i = query.replace(/[^\w]/g, "_"),
         c = l[i];
     r && stopAfterFound && c
@@ -32,9 +35,7 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
     waitForKeyElements.controlObj = l;
 } //wait for key elements
 
-
-
-/**
+/*
  * takes in a string and object, and returns an HTMLElement with tag "tag" and properties defined by data\
  * OR\
  * takes in an object and merges the properties from data into it
@@ -54,40 +55,47 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
  *      }
  * });// <div style="color: red; font-size: 20px; padding: 3px;" data-title="title">Text Here</div>
  */
-
 // an unintended benefit of this function is that it can also function similar to jQuery's extend function
 // jQuery.extend(target, source1, source2)
 // createElement(target, source1); createElement(target, source2);
-// although this may work most of the time, it may not always work
-export function createElement(tag = "span", data = {}) {
-    if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) { // if tag is a string and string includes non alphanumeric characters, parse as emmet string
-        let div = createElement("div"); // create temporary parent node
-        if (expandAbbreviation && typeof expandAbbreviation == "function") { // if expandAbbreviation is defined
-            div.innerHTML = expandAbbreviation(tag); // expand abbreviation
-        } else if (emmet && emmet.expandAbbreviation && typeof emmet.expandAbbreviation == "function") { // if emmet.expandAbbreviation is defined
-            div.innerHTML = emmet.expandAbbreviation(tag); // expand abbreviation
+// however, there may be some cases where it won't work
+
+let createElement = window.createElement;
+if (createElement === undefined) { // this is done to allow typescript type definitions in index.d.ts to work
+    createElement = function (tag = "span", data = {}) {
+        if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) { // if tag is a string and string includes non alphanumeric characters, parse as emmet string
+            let div = createElement("div"); // create temporary parent node
+            if (expandAbbreviation && typeof expandAbbreviation == "function") { // if expandAbbreviation is defined
+                div.innerHTML = expandAbbreviation(tag); // expand abbreviation
+            } else if (emmet && emmet.expandAbbreviation && typeof emmet.expandAbbreviation == "function") { // if emmet.expandAbbreviation is defined
+                div.innerHTML = emmet.expandAbbreviation(tag); // expand abbreviation
+            }
+            /**
+             * @type {HTMLElement[]}
+             */
+            let arr = Array.from(div.children);
+            return arr.length == 1 ? arr[0] : arr; // if only 1 top-level element was generated, return it, else return whole array
         }
-        let arr = Array.from(div.children);
-        return arr.length == 1 ? arr[0] : arr; // if only 1 top-level element was generated, return it, else return whole array
-    }
-    tag = typeof tag === "string" ? document.createElement(tag) : tag; // convert string to HTMLElement
-    Object.keys(data).forEach((e) => { // loop through object properties
-        if (typeof data[e] === "object") { // if value is object, recurse
-            createElement(tag[e] || (tag[e] = {}), data[e]);
-        } else {
-            if (tag instanceof window.Element) { // if tag is an html element
-                if (e.substring(0, 2) == "on" && typeof data[e] == "function") { // if property is an event listener
-                    tag.addEventListener(e.substring(2), data[e]); // add event listener
+        tag = typeof tag === "string" ? document.createElement(tag) : tag; // convert string to HTMLElement
+        Object.keys(data).forEach((e) => { // loop through object properties
+            if (typeof data[e] === "object") { // if value is object, recurse
+                createElement(tag[e] || (tag[e] = {}), data[e]);
+            } else {
+                if (tag instanceof window.Element) { // if tag is an html element
+                    if (e.substring(0, 2) == "on" && typeof data[e] == "function") { // if property is an event listener
+                        tag.addEventListener(e.substring(2), data[e]); // add event listener
+                    } else {
+                        tag[e] = data[e]; // else, set property
+                    }
                 } else {
                     tag[e] = data[e]; // else, set property
                 }
-            } else {
-                tag[e] = data[e]; // else, set property
             }
-        }
-    });
-    return tag; // return result
+        });
+        return tag; // return result
+    }
 }
+export { createElement };
 
 /**
  * @external Element
@@ -123,7 +131,8 @@ function add(...args) {
     return this;
 };
 
-window.Element.prototype.add = add;
+window.HTMLElement.prototype.add = add;
+
 // loop through all HTML...Element prototypes and add the add function
 Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
     if (window[e].prototype.add !== add) {
@@ -132,13 +141,6 @@ Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWit
 });
 
 // window.HTMLSelectElement.prototype.add = add;
-
-/**
- * Description of the function
- * @name Element.prototype.error
- * @kind function
- * @param {String} text error message
- */
 
 /**
  * appends an &lt;error> element to {this}
@@ -157,12 +159,67 @@ window.Element.prototype.clearError = function () {
 }
 
 /**
+ * hides the given elements
+ * @param  {...(String|Element)} selectors list of css selectors or elements
+ */
+export function hide(...selectors) {
+    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).classList.add("hidden");
+}
+
+/**
+ * shows the given elements
+ * @param  {...(String|Element)} selectors list of css selectors or elements
+ */
+export function show(...selectors) {
+    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).classList.remove("hidden");
+}
+
+/**
+ * clears the given elements
+ * @param  {...(String|Element)} selectors list of css selectors or elements
+ */
+export function clear(...selectors) {
+    for (let s of selectors) {
+        s = typeof s == "string" ? document.querySelector(s) : s;
+        let arr = flattenChildNodes(s);
+        if (arr.includes(s)) {
+            arr.splice(arr.indexOf(s), 1);
+        }
+        while (arr.length > 0) { // remove individual elements in order to purge event listeners
+            let el = arr.pop();
+            if (el.remove) {
+                el.remove();
+            }
+        }
+        s.innerHTML = ""; // clear out any remaining nodes that didn't get removed, like text nodes
+    }
+}
+
+/**
+ * disables the given elements
+ * @param {String} message message to show
+ * @param  {...(String|Element)} selectors list of css selectors or elements
+ */
+export function disable(message, ...selectors) {
+    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).setAttribute("disabled", message);
+}
+
+/**
+ * reenables the given elements
+ * @param  {...(String|Element)} selectors list of css selectors or elements
+ */
+export function enable(...selectors) {
+    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).removeAttribute("disabled");
+}
+
+/**
  * appends a &lt;warning> element to {this}
  * @param {String} text warning message
  */
 window.Element.prototype.warn = function (text = "!") {
     this.querySelector("warn")?.remove(); // remove warn element if it exists
-    this.add(createElement("warn", { innerHTML: text })); // add warn element
+    let warn = createElement("warn", { innerHTML: text });
+    this.add(warn); // add warn element
 }
 
 /**
@@ -205,13 +262,13 @@ export function tabColor(color) {
     if (!isValidCSSColor(color)) { // check if provided color is valid
         return;
     }
-    var c = document.createElement("canvas"); // create dummy canvas
+    let c = document.createElement("canvas"); // create dummy canvas
     c.width = 1; // set favicon dimensions
     c.height = 1; // 1x1 is fine since it's a solid color
-    var ctx = c.getContext("2d");
+    let ctx = c.getContext("2d");
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, 128, 128);
-    var link = document.querySelector("link[rel=icon]") || document.createElement("link");
+    let link = document.querySelector("link[rel=icon]") || document.createElement("link");
     link.href = c.toDataURL();
     link.rel = "icon";
     document.head.append(link);
@@ -267,7 +324,7 @@ export function parseCookies(cookies = document.cookie) {
  * @returns {function} the sort function
  * @example 
  * ```javascript
- * var People = [
+ * let People = [
  *     {Name: "Name", Surname: "Surname"},
  *     {Name:"AAA", Surname:"ZZZ"},
  *     {Name: "Name", Surname: "AAA"}
@@ -278,13 +335,13 @@ export function parseCookies(cookies = document.cookie) {
  * ```
  */
 export function dynamicSort(prop) {
-    var sortOrder = 1;
+    let sortOrder = 1;
     if (typeof prop === "string" && prop[0] === "-") {
         sortOrder = -1;
         prop = prop.substring(1);
     }
     return function (a, b) {
-        var result = a[prop] < b[prop] ? -1 : a[prop] > b[prop] ? 1 : 0;
+        let result = a[prop] < b[prop] ? -1 : a[prop] > b[prop] ? 1 : 0;
         return result * sortOrder;
     };
 }
@@ -292,35 +349,33 @@ export function dynamicSort(prop) {
 /**
  * returns css rgb string based off of a percent value of a gradient
  * @param {number} p number in range from 0-100
- * @param {Array} colors array of rgb colors
+ * @param {Object[]} colors array of rgb colors
  * @returns {string}
  */
 export function rgbGradient(
     p,
     colors = [
-        { r: 255, g: 0, b: 0 }, // low (0%)
-        { r: 255, g: 127, b: 0 },
-        { r: 255, g: 255, b: 0 },
-        { r: 0, g: 255, b: 0 },
-        { r: 0, g: 0, b: 255 },
-        { r: 255, g: 0, b: 255 }, // high(100%);
+        { r: 0xff, g: 0, b: 0 }, // 0% red
+        { r: 0xff, g: 0x7f, b: 0 }, // 20% orange
+        { r: 0xff, g: 0xff, b: 0 }, // 40% yellow
+        { r: 0, g: 0xff, b: 0 }, // 60% green
+        { r: 0, g: 0, b: 0xff }, // 80% blue
+        { r: 0xff, g: 0, b: 0xff }, // 100% purple
     ]
 ) {
     p = typeof p === "string" ? parseInt(p) : p;
-    var numChunks = colors.length - 1;
-    var chunkSize = 100 / numChunks;
-    for (var i = 1; i <= numChunks; i++) {
+    let numChunks = colors.length - 1;
+    let chunkSize = 100 / numChunks;
+    for (let i = 1; i <= numChunks; i++) {
         if (p <= chunkSize * i) {
-            var percent = ((p + (1 - i) * chunkSize) * numChunks) / 100;
+            let percent = ((p + (1 - i) * chunkSize) * numChunks) / 100;
+            let color1 = colors[i], color2 = colors[i - 1];
+            let result = [];
 
-            var c1 = colors[i],
-                c2 = colors[i - 1];
-
-            var a = [];
             Object.keys(colors[0]).forEach((e) => {
-                a.push(Math.floor((c1[e] * percent + c2[e] * (1 - percent)) * 100) / 100);
+                result.push(Math.floor((color1[e] * percent + color2[e] * (1 - percent)) * 100) / 100);
             });
-            return "rgb(" + a.join(",") + ")";
+            return "rgb(" + result.join(",") + ")";
         }
     }
 }
@@ -332,10 +387,11 @@ export function rgbGradient(
  * @param {Number} inmax input range upper bound
  * @param {Number} outmin output range lower bound
  * @param {Number} outmax output range upper bound
+ * @param {Boolean} cmp whether to clamp the input value to the input range
  * @returns {Number}
  */
-export function map(x, inmin, inmax, outmin, outmax) {
-    return (x - inmin) * (outmax - outmin) / (inmax - inmin) + outmin;
+function map(x, inmin, inmax, outmin, outmax, cmp = false) {
+    return ((cmp ? clamp(x, inmin, inmax) : x) - inmin) * (outmax - outmin) / (inmax - inmin) + outmin;
 }
 
 /**
@@ -345,12 +401,12 @@ export function map(x, inmin, inmax, outmin, outmax) {
  * @returns {String[]} array of colors generated
  */
 export function gradient(count, colors = [
-    { r: 255, g: 0, b: 0 }, // low (0%)
-    { r: 255, g: 127, b: 0 },
-    { r: 255, g: 255, b: 0 },
-    { r: 0, g: 255, b: 0 },
-    { r: 0, g: 0, b: 255 },
-    { r: 255, g: 0, b: 255 }, // high(100%);
+    { r: 0xff, g: 0, b: 0 }, // 0% red
+    { r: 0xff, g: 0x7f, b: 0 }, // 20% orange
+    { r: 0xff, g: 0xff, b: 0 }, // 40% yellow
+    { r: 0, g: 0xff, b: 0 }, // 60% green
+    { r: 0, g: 0, b: 0xff }, // 80% blue
+    { r: 0xff, g: 0, b: 0xff }, // 100% purple
 ]) {
     if (count == 1) {
         let { r, g, b } = colors[0];
@@ -523,7 +579,7 @@ export function listAllColorsOnPage() {
         return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
     }
 
-    var colorProps = ["backgroundColor", "color"];
+    let colorProps = ["backgroundColor", "color"];
 
     function displayResults(array) {
         array.forEach(e => {
@@ -547,9 +603,9 @@ export function listAllColorsOnPage() {
         });
     }
 
-    var arr = [...new Array(106).fill(0).map((e, n) => "--color" + (n + 1)), ...new Array(10).fill(1).map((e, n) => "--transparent" + (n + 1))];
-    var root = getComputedStyle(document.querySelector(":root"));
-    var els = flattenChildren(document.body).map(e => [e, getComputedStyle(e)]);
+    let arr = [...new Array(106).fill(0).map((e, n) => "--color" + (n + 1)), ...new Array(10).fill(1).map((e, n) => "--transparent" + (n + 1))];
+    let root = getComputedStyle(document.querySelector(":root"));
+    let els = flattenChildren(document.body).map(e => [e, getComputedStyle(e)]);
     arr = arr.map(c => {
         let color = root.getPropertyValue(c);
         color = hexToRgb(color);
@@ -726,12 +782,17 @@ export class Settings extends EventTarget {
      * @returns {String}
      */
     export() {
-        return JSON.stringify(this, function (key, value) {
+        let data = JSON.parse(JSON.stringify(this, function (key, value) {
             if (key.includes("_obj")) { // exclude parent objects to avoid recursion
                 return undefined;
             }
             return value;
+        }));
+        data.sections.forEach(sec => {
+            sec.options.forEach(e => delete e.input)
         });
+        console.log(data);
+        return JSON.stringify(data);
     }
 
     /**
@@ -774,6 +835,9 @@ export class Settings extends EventTarget {
      * @returns {Settings}
      */
     static loadJson(jsontext) {
+        if (jsontext.length == 0) {
+            return null;
+        }
         try {
             let json = JSON.parse(jsontext);
             let validate = Joi.object({ // validate object to make sure it's in the correct format
@@ -811,9 +875,11 @@ export class Settings extends EventTarget {
         }
     }
 
-    replaceWith(settings) { // replaces this settings object with another one by overriding sections array and config
-        // because this object can be imported by other modules, it can't be assigned to a new Settings object
-        if (!settings instanceof Settings) { // only override if provided object is a Setting object
+    replaceWith(settings) {
+        // replaces this settings object with another one by overriding sections array and config.
+        // because this object was exported, it can't be assigned in other modules,
+        // so a custom function had to be made
+        if (!(settings instanceof Settings)) { // only override if provided object is a Setting object
             return;
         }
         this.config = settings.config; // override config
@@ -936,7 +1002,9 @@ class Option extends EventTarget {
     }
 
     set value(val) {
-        // show("#loadingModal"); // show the loading modal
+        console.log("set value to", val);
+        show("#loadingModal"); // show the loading modal
+        let option = this;
         fetch("/Reports/Report/SaveSettings", { // fetch request to server to save user settings
             method: "POST",
             body: this.section_obj.settings_obj.export(),
@@ -950,7 +1018,8 @@ class Option extends EventTarget {
                 } else {
                     this.input.value = this.config.value; // save option change in option object
                 }
-                // hide("#loadingModal"); // hide the loading modal
+                option.dispatchEvent(new Event("change")); // forward event from html element to option object
+                hide("#loadingModal"); // hide the loading modal
             });
         });
     }
@@ -1007,7 +1076,6 @@ class Option extends EventTarget {
         }
         input.addEventListener("input", function () { // when setting is changed, dispatch change event on the potions object
             option.value = input.value;
-            option.dispatchEvent(new Event("change")); // forward event from html element to option object
         });
         return input;
     }
@@ -1091,7 +1159,9 @@ export let settings = new Settings({
             name: "Graph Type",
             id: "graph_type",
             type: "dropdown",
-            values: ["bar", "line"]
+            values: ["bar", "line",
+                "cal"
+            ]
         })
     ])
 ]);
@@ -1108,7 +1178,7 @@ export let settings = new Settings({
  */
 export function makeTemplate(strings, ...keys) {
     return function (...values) {
-        const dict = values[values.length - 1] || {};
+        const dict = values[values.length - 1] || {}; // get dict from args
         const result = [strings[0]];
         keys.forEach((key, i) => {
             const value = Number.isInteger(key) ? values[key] : dict[key];
@@ -1123,7 +1193,57 @@ export function makeTemplate(strings, ...keys) {
  * WARNING: do not use on objects that contain recursive references, or an error will be thrown
  * @param {Object} obj object to copy
  * @returns {Object}
+ * @example
+ * let obj1 = {
+ *     a: 1,
+ *     b: 2,
+ *     c: 3
+ * }
+ * let obj2 = copyObject(obj1) // {a: 1, b: 2, c: 3}
+ * obj1.a = 4;
+ * // obj1 == {a: 4, b: 2, c: 3}
+ * // obj2 == {a: 1, b: 2, c: 3}
  */
 export function copyObject(obj) {
+    return clone(obj);
     return JSON.parse(JSON.stringify(obj));
+}
+
+function clone(obj) {
+    let result = obj;
+    var type = {}.toString.call(obj).slice(8, -1);
+    if (type == 'Set') {
+        return new Set([...obj].map(value => clone(value)));
+    }
+    if (type == 'Map') {
+        return new Map([...obj].map(kv => [clone(kv[0]), clone(kv[1])]));
+    }
+    if (type == 'Date') {
+        return new Date(obj.getTime());
+    }
+    if (type == 'RegExp') {
+        return RegExp(obj.source, getRegExpFlags(obj));
+    }
+    if (type == 'Array' || type == 'Object') {
+        result = Array.isArray(obj) ? [] : {};
+        for (var key in obj) {
+            result[key] = clone(obj[key]);
+        }
+    }
+    // primitives and non-supported objects (e.g. functions) land here
+    return result;
+}
+
+function getRegExpFlags(regExp) {
+    if (typeof regExp.source.flags == 'string') {
+        return regExp.source.flags;
+    } else {
+        var flags = [];
+        regExp.global && flags.push('g');
+        regExp.ignoreCase && flags.push('i');
+        regExp.multiline && flags.push('m');
+        regExp.sticky && flags.push('y');
+        regExp.unicode && flags.push('u');
+        return flags.join('');
+    }
 }
