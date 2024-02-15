@@ -1,13 +1,15 @@
+// @ts-ignore
+type Dayjs = import("dayjs").Dayjs; // use this format to prevent index.d.ts from breaking
+
+// @ts-ignore
 interface HTMLElement {
     add: (...arg0: HTMLElement[]) => this
 }
 
-// @ts-ignore
 type Without<T, K> = {
     [L in Exclude<keyof T, K>]: T[L];
 }
 
-// @ts-ignore
 type CreateElementOptions = {} & Element;
 
 type SettingsConfig = {
@@ -21,13 +23,15 @@ type SectionConfig = {
 
 type OptionConfig = {
     name?: String;
+    value: String;
+    values: String[];
     id: String;
     type: keyof OptionTypes;
 }
 
 type OptionTypes = {
-    dropdown: HTMLSelectElement;
-    slider: HTMLInputElement;
+    "dropdown": HTMLSelectElement;
+    "slider": HTMLInputElement;
 }
 
 
@@ -54,9 +58,28 @@ declare class Section {
 }
 
 declare class Options {
-    constructor(config: OptionConfig);
+    input: HTMLElement;
+    section_obj: Section;
     config: OptionConfig;
-    render(): OptionTypes[typeof this.config.type];
+    constructor(config: OptionConfig);
+    get value(): String;
+    set value(val: String);
+    render(): HTMLLabelElement;
+    createInput(): OptionTypes[keyof OptionTypes];
+    dispatchEvent(event: Event): Boolean;
+    on(type: string, callback: Function): void;
+    off(type: string, callback: Function): void;
+}
+
+declare class Tab extends EventTarget {
+    tab: HTMLTabElement;
+    tabHead: HTMLDivElement;
+    tabBody: HTMLDivElement;
+    index: Number;
+    constructor(title: String, active: Boolean);
+    close(): void;
+    on(type: String, callback: Function): void;
+    off(type: String, callback: Function): void;
 }
 
 interface Window {
@@ -66,13 +89,23 @@ interface Window {
      * @param options properties to set
      */
     createElement<Tag extends keyof HTMLElementTagNameMap>(tagName: Tag, options?: CreateElementOptions): HTMLElementTagNameMap[Tag];
-    Settings(): Settings;
+    Settings: Settings;
     Section: Section;
-    Options(): Options;
+    Options: Options;
+    Tab: Tab;
 }
+
+interface Element {
+    add(...args: Element[]): this;
+}
+
+type HTMLTabElement = HTMLDivElement;
+type HTMLWarnElement = HTMLDivElement;
+type HTMLErrorElement = HTMLDivElement;
 
 
 interface HTMLElementTagNameMap {
-    "warn": HTMLDivElement
-    "error": HTMLDivElement
+    "warn": HTMLWarnElement
+    "error": HTMLErrorElement
+    "tab": HTMLTabElement
 }

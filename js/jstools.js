@@ -95,9 +95,6 @@ if (createElement === undefined) { // this is done to allow typescript type defi
 export { createElement };
 
 /**
- * @external Element
- */
-/**
  * appends any number of objects to an HTMLElement
  * @param  {...Element} args an array of objects to be added to the parent element
  * @returns {this}
@@ -127,8 +124,9 @@ function add(...args) {
     });
     return this;
 };
-
-window.HTMLElement.prototype.add = add;
+if (window.Element.prototype.add === undefined) {
+    window.Element.prototype.add = add;
+}
 
 // loop through all HTML...Element prototypes and add the add function
 Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
@@ -1098,16 +1096,6 @@ if (Option === undefined) {
     }
 }
 
-let o = Option({
-    name: "Graph Type",
-    id: "graph_type",
-    type: "slider",
-    values: ["bar", "line",
-        "cal"
-    ]
-});
-let r = o.render();
-
 export { Settings, Section, Option };
 
 
@@ -1221,4 +1209,23 @@ function getRegExpFlags(regExp) {
         regExp.unicode && flags.push('u');
         return flags.join('');
     }
+}
+
+/**
+ * parses a stack trace string into an array of objects
+ * @param {String} trace stack trace
+ * @returns {Object[]}
+ */
+export function parseTrace(trace) {
+    let paths = trace.trim().split("\n").map(p => {
+        const a = p.split("@");
+        const locs = a.pop().split(":");
+        return {
+            func: a.join("@"),
+            char: locs.pop(),
+            line: locs.pop(),
+            location: locs.join(":"),
+        }
+    });
+    return paths;
 }
