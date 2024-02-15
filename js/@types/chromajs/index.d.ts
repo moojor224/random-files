@@ -3,18 +3,18 @@
  */
 declare namespace chroma {
     interface ColorSpaces {
-        rgb: [number, number, number];
-        rgba: [number, number, number, number];
-        hsl: [number, number, number];
-        hsv: [number, number, number];
-        hsi: [number, number, number];
-        lab: [number, number, number];
-        oklab: [number, number, number];
-        lch: [number, number, number];
-        oklch: [number, number, number];
-        hcl: [number, number, number];
-        cmyk: [number, number, number, number];
-        gl: [number, number, number, number];
+        rgb: [Number, Number, Number];
+        rgba: [Number, Number, Number, Number];
+        hsl: [Number, Number, Number];
+        hsv: [Number, Number, Number];
+        hsi: [Number, Number, Number];
+        lab: [Number, Number, Number];
+        oklab: [Number, Number, Number];
+        lch: [Number, Number, Number];
+        oklch: [Number, Number, Number];
+        hcl: [Number, Number, Number];
+        cmyk: [Number, Number, Number, Number];
+        gl: [Number, Number, Number, Number];
     }
 
     type InterpolationMode = "rgb" | "hsl" | "hsv" | "hsi" | "lab" | "oklab" | "lch" | "oklch" | "hcl" | "lrgb";
@@ -27,7 +27,7 @@ declare namespace chroma {
          * @param color The string to convert to a color.
          * @return the color object.
          */
-        (color: string | number | Color): Color;
+        (color: String | Number | Color): Color;
 
         /**
          * Create a color in the specified color space using a, b and c as values.
@@ -35,9 +35,9 @@ declare namespace chroma {
          * @param colorSpace The color space to use. Defaults to "rgb".
          * @return the color object.
          */
-        (a: number, b: number, c: number, colorSpace?: keyof ColorSpaces): Color;
+        (a: Number, b: Number, c: Number, colorSpace?: keyof ColorSpaces): Color;
 
-        (a: number, b: number, c: number, d: number, colorSpace?: keyof ColorSpaces): Color;
+        (a: Number, b: Number, c: Number, d: Number, colorSpace?: keyof ColorSpaces): Color;
 
         /**
          * Create a color in the specified color space using values.
@@ -46,7 +46,7 @@ declare namespace chroma {
          * @param colorSpace The color space to use. Defaults to "rgb".
          * @return the color object.
          */
-        (values: number[], colorSpace?: keyof ColorSpaces): Color;
+        (values: Number[], colorSpace?: keyof ColorSpaces): Color;
 
         /**
          * Create a color from a hex or string representation (as supported in CSS).
@@ -56,33 +56,33 @@ declare namespace chroma {
          * @param color The string to convert to a color.
          * @return the color object.
          */
-        hex(color: string): Color;
+        hex(color: String): Color;
 
-        valid(color: any, mode?: string): boolean;
+        valid(color: any, mode?: String): Boolean;
 
-        hsl(h: number, s: number, l: number, alpha?: number): Color;
+        hsl(h: Number, s: Number, l: Number, alpha?: Number): Color;
 
-        hsv(h: number, s: number, v: number, alpha?: number): Color;
+        hsv(h: Number, s: Number, v: Number, alpha?: Number): Color;
 
-        lab(lightness: number, a: number, b: number, alpha?: number): Color;
+        lab(lightness: Number, a: Number, b: Number, alpha?: Number): Color;
 
-        oklab(lightness: number, a: number, b: number, alpha?: number): Color;
+        oklab(lightness: Number, a: Number, b: Number, alpha?: Number): Color;
 
-        lch(l: number, c: number, h: number, alpha?: number): Color;
+        lch(l: Number, c: Number, h: Number, alpha?: Number): Color;
 
-        oklch(l: number, c: number, h: number, alpha?: number): Color;
+        oklch(l: Number, c: Number, h: Number, alpha?: Number): Color;
 
         /**
          * Same meaning as lch(), but in different order.
          */
-        hcl(h: number, c: number, l: number, alpha?: number): Color;
+        hcl(h: Number, c: Number, l: Number, alpha?: Number): Color;
 
-        rgb(r: number, g: number, b: number, alpha?: number): Color;
+        rgb(r: Number, g: Number, b: Number, alpha?: Number): Color;
 
         /**
          * GL is a variant of RGB(A), with the only difference that the components are normalized to the range of 0..1.
          */
-        gl(red: number, green: number, blue: number, alpha?: number): Color;
+        gl(red: Number, green: Number, blue: Number, alpha?: Number): Color;
 
         /**
          * Returns a color from the color temperature scale.
@@ -90,7 +90,7 @@ declare namespace chroma {
          * Based on Neil Bartlett's implementation.
          * https://github.com/neilbartlett/color-temperature
          */
-        temperature(t: number): Color;
+        temperature(t: Number): Color;
 
         /**
          * Mixes two colors. The mix ratio is a value between 0 and 1.
@@ -98,25 +98,25 @@ declare namespace chroma {
          * @example chroma.mix('red', 'blue', 0.25) // => #bf0040
          * @example chroma.mix('red', 'blue', 0.5, 'hsl') // => #ff00ff
          */
-        mix(color1: string | Color, color2: string | Color, f?: number, colorSpace?: InterpolationMode): Color;
+        mix(color1: String | Color, color2: String | Color, f?: Number, colorSpace?: InterpolationMode): Color;
 
         /**
          * Alias for {@see mix}.
          */
-        interpolate(color1: string | Color, color2: string | Color, f?: number, colorSpace?: InterpolationMode): Color;
+        interpolate(color1: String | Color, color2: String | Color, f?: Number, colorSpace?: InterpolationMode): Color;
 
         /**
          * Similar to {@link mix}, but accepts more than two colors. Simple averaging of R,G,B components and the alpha
          * channel.
          */
-        average(colors: Array<string | Color>, colorSpace?: InterpolationMode, weights?: number[]): Color;
+        average(colors: Array<String | Color>, colorSpace?: InterpolationMode, weights?: Number[]): Color;
 
         /**
          * Blends two colors using RGB channel-wise blend functions.
          */
         blend(
-            color1: string | Color,
-            color2: string | Color,
+            color1: String | Color,
+            color2: String | Color,
             blendMode: "multiply" | "darken" | "lighten" | "screen" | "overlay" | "burn" | "dodge",
         ): Color;
 
@@ -130,13 +130,13 @@ declare namespace chroma {
          * A minimum contrast of 4.5:1 is recommended {@link https://www.w3.org/TR/WCAG20-TECHS/G18.html}
          * to ensure that text is still readable against a background color.
          */
-        contrast(color1: string | Color, color2: string | Color): number;
+        contrast(color1: String | Color, color2: String | Color): Number;
 
         /**
          * Computes the eucledian distance between two colors in a given color space (default is 'lab').
          * {@link https://en.wikipedia.org/wiki/Euclidean_distance#Three_dimensions}
          */
-        distance(color1: string | Color, color2: string | Color, colorSpace?: keyof ColorSpaces): number;
+        distance(color1: String | Color, color2: String | Color, colorSpace?: keyof ColorSpaces): Number;
 
         /**
          * Computes color difference {@link https://en.wikipedia.org/wiki/Color_difference#CMC_l:c_.281984.29} as
@@ -145,49 +145,49 @@ declare namespace chroma {
          * {@link https://web.archive.org/web/20160306044036/http://www.brucelindbloom.com/javascript/ColorDiff.js}
          * The parameters L (default 1) and C (default 1) are weighting factors for lightness and chromacity.
          */
-        deltaE(color1: string | Color, color2: string | Color, L?: number, C?: number): number;
+        deltaE(color1: String | Color, color2: String | Color, L?: Number, C?: Number): Number;
 
         /**
          * chroma.brewer is an map of ColorBrewer scales that are included in chroma.js for convenience.
          * chroma.scale uses the colors to construct.
          */
         brewer: {
-            OrRd: string[];
-            PuBu: string[];
-            BuPu: string[];
-            Oranges: string[];
-            BuGn: string[];
-            YlOrBr: string[];
-            YlGn: string[];
-            Reds: string[];
-            RdPu: string[];
-            Greens: string[];
-            YlGnBu: string[];
-            Purples: string[];
-            GnBu: string[];
-            Greys: string[];
-            YlOrRd: string[];
-            PuRd: string[];
-            Blues: string[];
-            PuBuGn: string[];
-            Viridis: string[];
-            Spectral: string[];
-            RdYlGn: string[];
-            RdBu: string[];
-            PiYG: string[];
-            PRGn: string[];
-            RdYlBu: string[];
-            BrBG: string[];
-            RdGy: string[];
-            PuOr: string[];
-            Set2: string[];
-            Accent: string[];
-            Set1: string[];
-            Set3: string[];
-            Dark2: string[];
-            Paired: string[];
-            Pastel2: string[];
-            Pastel1: string[];
+            OrRd: String[];
+            PuBu: String[];
+            BuPu: String[];
+            Oranges: String[];
+            BuGn: String[];
+            YlOrBr: String[];
+            YlGn: String[];
+            Reds: String[];
+            RdPu: String[];
+            Greens: String[];
+            YlGnBu: String[];
+            Purples: String[];
+            GnBu: String[];
+            Greys: String[];
+            YlOrRd: String[];
+            PuRd: String[];
+            Blues: String[];
+            PuBuGn: String[];
+            Viridis: String[];
+            Spectral: String[];
+            RdYlGn: String[];
+            RdBu: String[];
+            PiYG: String[];
+            PRGn: String[];
+            RdYlBu: String[];
+            BrBG: String[];
+            RdGy: String[];
+            PuOr: String[];
+            Set2: String[];
+            Accent: String[];
+            Set1: String[];
+            Set3: String[];
+            Dark2: String[];
+            Paired: String[];
+            Pastel2: String[];
+            Pastel1: String[];
         };
 
         /**
@@ -201,7 +201,7 @@ declare namespace chroma {
          *  [k-means clustering algorithm]{@link https://en.wikipedia.org/wiki/K-means_clustering} to find (roughly) n
          *  groups of "similar" values. Note that this k-means implementation does not guarantee to find exactly n groups.
          */
-        limits(data: number[], mode: "e" | "q" | "l" | "k", c: number): number[];
+        limits(data: Number[], mode: "e" | "q" | "l" | "k", c: Number): Number[];
 
         /**
          * Returns a function that
@@ -209,41 +209,41 @@ declare namespace chroma {
          * colors in Lab space. The input range of the function is [0..1].
          * You can convert it to a scale instance by calling <code>chroma.bezier(...).scale()</code>
          */
-        bezier(colors: string[]): { (t: number): Color; scale(): Scale };
+        bezier(colors: String[]): { (t: Number): Color; scale(): Scale };
 
-        scale(name: string | Color): Scale;
+        scale(name: String | Color): Scale;
 
-        scale(colors?: Array<string | Color>): Scale;
+        scale(colors?: Array<String | Color>): Scale;
 
         cubehelix(): Cubehelix;
 
-        cmyk(c: number, m: number, y: number, k: number): Color;
+        cmyk(c: Number, m: Number, y: Number, k: Number): Color;
 
-        css(col: string): Color;
+        css(col: String): Color;
     }
 
     interface Color {
         /**
          * Get and set the color opacity.
          */
-        alpha(a: number): Color;
-        alpha(): number;
+        alpha(a: Number): Color;
+        alpha(): Number;
 
-        darken(f?: number): Color;
+        darken(f?: Number): Color;
 
-        mix(targetColor: string | Color, f?: number, colorSpace?: keyof ColorSpaces): Color;
+        mix(targetColor: String | Color, f?: Number, colorSpace?: keyof ColorSpaces): Color;
 
-        brighten(f?: number): Color;
+        brighten(f?: Number): Color;
 
         /**
          * Changes the saturation of a color by manipulating the Lch chromacity.
          */
-        saturate(s?: number): Color;
+        saturate(s?: Number): Color;
 
         /**
          * Similar to saturate, but the opposite direction.
          */
-        desaturate(s?: number): Color;
+        desaturate(s?: Number): Color;
 
         /**
          * Changes a single channel and returns the result a new chroma object.
@@ -254,26 +254,26 @@ declare namespace chroma {
          * // double Lch saturation
          * chroma('darkseagreen').set('lch.c', '*2')
          */
-        set(modechan: string, v: number | string): Color;
+        set(modechan: String, v: Number | String): Color;
 
         /**
          * Returns a single channel value.
          * Also @see set
          */
-        get(modechan: string): number;
+        get(modechan: String): Number;
 
         /**
          * Relative brightness, according to the
          * [WCAG]{@link http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef} definition. Normalized to
          * 0 for darkest black and 1 for lightest white.
          */
-        luminance(): number;
+        luminance(): Number;
 
         /**
          * Set luminance of color. The source color will be interpolated with black or white until the correct luminance is found.
          * The color space used defaults to RGB.
          */
-        luminance(l: number, colorSpace?: InterpolationMode): Color;
+        luminance(l: Number, colorSpace?: InterpolationMode): Color;
 
         /**
          * Get color as hexadecimal string.
@@ -287,24 +287,24 @@ declare namespace chroma {
          * chroma('orange').alpha(0.5).hex() === '#ffa50080'
          * chroma('orange').alpha(0.5).hex('rgb') === '#ffa500'
          */
-        hex(mode?: "auto" | "rgb" | "rgba"): string;
+        hex(mode?: "auto" | "rgb" | "rgba"): String;
 
         /**
          * Returns the named color. Falls back to hexadecimal RGB string, if the color isn't present.
          */
-        name(): string;
+        name(): String;
 
         /**
          * Returns a RGB() or HSL() string representation that can be used as CSS-color definition.
          * mode defaults to <code>'rgb'</code>
          */
-        css(mode?: "hsl"): string;
+        css(mode?: "hsl"): String;
 
         /**
          * Estimate the temperature in Kelvin of any given color, though this makes the only sense for colors from the
          * [temperature gradient]{@link ChromaStatic.temperature} above.
          */
-        temperature(): number;
+        temperature(): Number;
 
         /**
          * Returns the numeric representation of the hexadecimal RGB color.
@@ -315,7 +315,7 @@ declare namespace chroma {
          * chroma('#00ff00').num() === 65280
          * chroma('#ff0000').num() === 16711680
          */
-        num(): number;
+        num(): Number;
 
         /**
          * Returns an array with the red, green, and blue component, each as
@@ -328,7 +328,7 @@ declare namespace chroma {
          * chroma('orange').darken().rgb() === [198,118,0]
          * chroma('orange').darken().rgb(false) === [198.05,118.11,0]
          */
-        rgb: (round?: boolean) => ColorSpaces["rgb"];
+        rgb: (round?: Boolean) => ColorSpaces["rgb"];
 
         /**
          * Just like color.rgb but adds the alpha channel to the returned array.
@@ -337,7 +337,7 @@ declare namespace chroma {
          * chroma('orange').rgba() === [255,165,0,1]
          * chroma('hsla(20, 100%, 40%, 0.5)').rgba() === [204,68,0,0.5]
          */
-        rgba: (round?: boolean) => ColorSpaces["rgba"];
+        rgba: (round?: Boolean) => ColorSpaces["rgba"];
 
         /**
          * Returns an array with the `hue`, `saturation`, and `lightness`
@@ -446,7 +446,7 @@ declare namespace chroma {
          * @example
          * chroma.hcl(50, 40, 20).clipped() === true
          */
-        clipped: () => boolean;
+        clipped: () => Boolean;
 
         /**
          * The unclipped RGB components.
@@ -458,69 +458,69 @@ declare namespace chroma {
     }
 
     interface Scale<OutType = Color> {
-        (c: string[]): Scale;
+        (c: String[]): Scale;
 
-        (value: number | null | undefined): OutType;
+        (value: Number | null | undefined): OutType;
 
-        domain(d?: number[], n?: number, mode?: string): this;
+        domain(d?: Number[], n?: Number, mode?: String): this;
 
         mode(mode: InterpolationMode): this;
 
-        gamma(g: number): this;
+        gamma(g: Number): this;
 
-        cache(use: boolean): boolean;
+        cache(use: Boolean): Boolean;
 
-        correctLightness(enable?: boolean): this;
+        correctLightness(enable?: Boolean): this;
 
-        padding(p: number | number[]): this;
+        padding(p: Number | Number[]): this;
 
         /**
          * You can call scale.colors(n) to quickly grab `c` equi-distant colors from a color scale. If called with no
          * arguments, scale.colors returns the original array of colors used to create the scale.
          */
         colors(
-            c: number | undefined,
+            c: Number | undefined,
             format: undefined | null | "alpha" | "darken" | "brighten" | "saturate" | "desaturate",
         ): Color[];
-        colors(c: number | undefined, format: "luminance" | "temperature"): number[];
-        colors<K extends keyof ColorSpaces>(c: number | undefined, format: K): Array<ColorSpaces[K]>;
-        colors(c: number | undefined, format?: "hex" | "name"): string[];
+        colors(c: Number | undefined, format: "luminance" | "temperature"): Number[];
+        colors<K extends keyof ColorSpaces>(c: Number | undefined, format: K): Array<ColorSpaces[K]>;
+        colors(c: Number | undefined, format?: "hex" | "name"): String[];
 
         /**
          * If you want the scale function to return a distinct set of colors instead of a continuous gradient, you can
          * use scale.classes. If you pass a number the scale will broken into equi-distant classes.
          * You can also define custom class breaks by passing them as array
          */
-        classes(c: number | number[]): this;
+        classes(c: Number | Number[]): this;
 
         /**
          * Set out format for scale() call. Passing null will result in a scale which outputs colors.
          */
         out(format: null): Scale;
         out<K extends keyof ColorSpaces>(format: K): Scale<ColorSpaces[K]>;
-        out(format: "hex"): Scale<string>;
+        out(format: "hex"): Scale<String>;
     }
 
     interface Cubehelix {
         /**
          * Set start color for hue rotation, default=300
          */
-        start(s: number): Cubehelix;
+        start(s: Number): Cubehelix;
 
         /**
          * number (and direction) of hue rotations (e.g. 1=360°, 1.5=`540°``), default=-1.5
          */
-        rotations(r: number): Cubehelix;
+        rotations(r: Number): Cubehelix;
 
         /**
          * gamma factor can be used to emphasise low or high intensity values, default=1
          */
-        gamma(g: number): Cubehelix;
+        gamma(g: Number): Cubehelix;
 
         /**
          * lightness range: default: [0,1] (black -> white)
          */
-        lightness(l: number[]): Cubehelix;
+        lightness(l: Number[]): Cubehelix;
 
         /**
          * You can call cubehelix.scale() to use the cube-helix through the chroma.scale interface.
