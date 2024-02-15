@@ -10,7 +10,8 @@
         "types": [
             "jstools",
             "chartjs",
-            "chromajs"
+            "chromajs",
+            "dayjs"
         ],
         "baseUrl": "../"
     },
