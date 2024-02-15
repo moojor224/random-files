@@ -96,7 +96,7 @@ class Overload extends Function {
         if (funcToCall = candidates.find(e => !hasRest(e))) { }
         else if (funcToCall = candidates.find(hasRest)) { }
         else { funcToCall = { callback: this.defaultCallback }; }
-        
+
         return funcToCall.callback(...args);
     }
 }
@@ -163,3 +163,102 @@ loaded({ a: 1, b: 2 });
 loaded("hello world");
 loaded(console.log);
 console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.random() * 10)))); // array of 20 random numbers
+
+
+(function () { // faked "overloading" using valueOf
+    class StringBuilder {
+        data = "";
+        constructor() {
+            console.log("constructor");
+        }
+        valueOf() {
+            console.log("valueOf sb");
+            StringBuilder.current = this;
+        }
+        toString() {
+            console.log("toString");
+            return this.data;
+        }
+    }
+
+    class Point {
+        static operands = [];
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+        valueOf() {
+            Point.operands.push(this);
+            return 3;
+        }
+        set _(value) {
+            var ops = Point.operands;
+            var operator;
+            if (ops.length === 2 && value === 0) { // 3 - 3
+                operator = this.setSubtract;
+            } else if (ops.length === 2 && value === 1) { // 3 / 3
+                operator = this.setDivide;
+            } else if (ops.length >= 2 && (value === 3 * ops.length)) { // 3 + 3
+                operator = this.setAdd;
+            } else if (ops.length >= 2 && (value === Math.pow(3, ops.length))) { // 3 * 3
+                operator = this.setMultiply;
+            } else {
+                throw new Error("Unsupported operation (code " + value + ")");
+            }
+            Point.operands = []; // reset
+            return operator.apply(this, ops);
+        }
+        get _() {
+            return this.toString();
+        }
+        setSubtract(l, r) {
+            this.x = l.x - r.x;
+            this.y = l.y - r.y;
+            return this;
+        }
+        setDivide(l, r) {
+            this.x = l.x / r.x;
+            this.y = l.y / r.y;
+            return this;
+        }
+        setAdd(first) {
+            this.x = first.x;
+            this.y = first.y;
+            [].slice.call(arguments, 1).forEach(function (op) {
+                this.x += op.x;
+                this.y += op.y;
+            }, this);
+            return this;
+        }
+        setMultiply(first) {
+            this.x = first.x;
+            this.y = first.y;
+            [].slice.call(arguments, 1).forEach(function (op) {
+                this.x *= op.x;
+                this.y *= op.y;
+            }, this);
+            return this;
+        }
+        toString() {
+            return "Point(" + this.x + ", " + this.y + ")";
+        }
+        equals(other) {
+            return this.x === other.x && this.y === other.y;
+        }
+    }
+
+    function add(value) { // function parameters
+        return {
+            valueOf: _ => { // function body
+                StringBuilder.current.data += value
+            }
+        }
+    }
+    let sb = new StringBuilder();
+    sb << add("abc") << add("def") << add("ghi") << add("jkl") << add("mno") << add("pqr");
+    sb.toString(); // abcdefghijklmnopqr
+
+    let p = new Point();
+    p._ = new Point(1, 2) + new Point(3, 4) + new Point(5, 6);
+    console.log(p.toString()); // Point(9, 12)
+})();
