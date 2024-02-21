@@ -57,7 +57,7 @@ let svgToTinyDataUri = (function () {
         violet: /#ee82ee(ff)?(?!\w)/gi,
         wheat: /#f5deb3(ff)?(?!\w)/gi,
         white: /#ffffff(ff)?(?!\w)|#fff(f)?(?!\w)/gi,
-    };;
+    };
     let REGEX = {
         whitespace: /\s+/g,
         urlHexPairs: /%[\dA-F]{2}/g,
