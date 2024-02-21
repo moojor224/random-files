@@ -1,3 +1,5 @@
+export const devMode = true;
+
 /**
  * accepts a css selector and a callback function\
  * waits for an element that matches the css selector to load, then calls the callback
@@ -108,15 +110,14 @@ export { createElement };
  *          createElement("td", {innerHTML: "col 3"})
  *      )
  * );
- * //result:
- * /*
+ * // results in:
  * <table>
  *     <tr>
  *         <td>col 1</td>
  *         <td>col 2</td>
  *         <td>col 3</td>
  *     </tr>
- * </table
+ * </table>
  */
 function add(...args) {
     args.forEach(elem => {
@@ -142,23 +143,106 @@ Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWit
  * @param {String} text error message
  */
 window.Element.prototype.error = function (text = "!") {
-    this.querySelector("error")?.remove(); // remove error element if it exists
+    this.clearError(); // remove error element if it exists
     this.add(createElement("error", { innerHTML: text })); // add error element
 }
 
 /**
  * clears the error message from {this}
+ * @returns {Boolean} whether an element was cleared or not
  */
 window.Element.prototype.clearError = function () {
-    this.querySelector("error")?.remove();
+    // this.querySelector("error")?.remove();
+    for (let e of this.childNodes) { // loop through child nodes
+        if (e.tagName.toLowerCase() == "error") { // if element is an error element
+            e.remove(); // remove
+            return true; // success
+        }
+    }
+    return false; // fail
 }
+
+/**
+ * adds a warning message to the specified elements
+ * @param {String} str message to display
+ * @param  {...any} selectors elements to add warning message to
+ */
+export function warn(str, ...selectors) {
+    clearWarn(...selectors);
+    let w = createElement("warn", {
+        innerHTML: str
+    });
+    selectors.forEach(s => {
+        let el = s;
+        if (typeof s === "string") {
+            el = document.querySelector(s);
+        }
+        el.append(w.cloneNode(true));
+    });
+}
+
+/**
+ * removes the warning message from the given elements
+ * @param  {...any} selectors elements to remove the warning message from
+ */
+export function clearWarn(...selectors) {
+    selectors.forEach(s => {
+        let el = s;
+        if (typeof s === "string") {
+            el = document.querySelector(s);
+        }
+        for (let e of el.children) {
+            if (e.tagName.toLowerCase() == "warn") { // only remove warning messages that are children of this element
+                e.remove();
+            }
+        }
+    });
+}
+
+/**
+ * adds an error message to the specified elements
+ * @param {String} str message to display
+ * @param  {...any} selectors elements to add error message to
+ */
+export function error(str, ...selectors) {
+    clearWarn(...selectors);
+    let w = createElement("error", {
+        innerHTML: str
+    });
+    selectors.forEach(s => {
+        let el = s;
+        if (typeof s === "string") {
+            el = document.querySelector(s);
+        }
+        el.append(w.cloneNode(true));
+    });
+}
+
+/**
+ * removes the error message from the given elements
+ * @param  {...any} selectors elements to remove the error message from
+ */
+export function clearError(...selectors) {
+    selectors.forEach(s => {
+        let el = s;
+        if (typeof s === "string") {
+            el = document.querySelector(s);
+        }
+        for (let e of el.children) {
+            if (e.tagName.toLowerCase() == "error") { // only remove error messages that are children of this element
+                e.remove();
+            }
+        }
+    });
+}
+
 
 /**
  * hides the given elements
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function hide(...selectors) {
-    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).classList.add("hidden");
+    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).classList.add("hidden"); // loop through given elements/selectors and add the hidden class
 }
 
 /**
@@ -166,7 +250,7 @@ export function hide(...selectors) {
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function show(...selectors) {
-    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).classList.remove("hidden");
+    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).classList.remove("hidden"); // loop through given elements/selectors and remove the hidden class
 }
 
 /**
@@ -175,18 +259,18 @@ export function show(...selectors) {
  */
 export function clear(...selectors) {
     for (let s of selectors) {
-        s = typeof s == "string" ? document.querySelector(s) : s;
-        let arr = flattenChildNodes(s);
-        if (arr.includes(s)) {
+        s = typeof s == "string" ? document.querySelector(s) : s; // convert string to queried element
+        let arr = flattenChildNodes(s); // get all descendant nodes in order
+        if (arr.includes(s)) { // remove element from list if it exists (won't ever run, ideally)
             arr.splice(arr.indexOf(s), 1);
         }
-        while (arr.length > 0) { // remove individual elements in order to purge event listeners
-            let el = arr.pop();
-            if (el.remove) {
-                el.remove();
+        while (arr.length > 0) { // remove individual elements to deep purge event listeners
+            let el = arr.pop(); // get element from end of list
+            if (el.remove) { // if element is removeable (not a text node)
+                el.remove(); // remove it
             }
         }
-        s.innerHTML = ""; // clear out any remaining nodes that didn't get removed, like text nodes
+        s.innerHTML = ""; // clear out any remaining text nodes
     }
 }
 
@@ -205,40 +289,6 @@ export function disable(message, ...selectors) {
  */
 export function enable(...selectors) {
     for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).removeAttribute("disabled");
-}
-
-/**
- * appends a &lt;warning> element to {this}
- * @param {String} text warning message
- */
-window.Element.prototype.warn = function (text = "!") {
-    this.querySelector("warn")?.remove(); // remove warn element if it exists
-    let warn = createElement("warn", { innerHTML: text });
-    this.add(warn); // add warn element
-}
-
-/**
- * clears the warning message from {this}
- */
-window.Element.prototype.clearWarn = function (text = "!") {
-    this.querySelector("warn")?.remove();
-}
-
-window.Element.prototype.clear = function () {
-    // while(this.firstChild){
-    //     this.firstChild.remove();
-    // }
-    let arr = flattenChildNodes(this);
-    if (arr.includes(this)) {
-        arr.splice(arr.indexOf(this), 1);
-    }
-    while (arr.length > 0) { // remove individual elements in order to purge event listeners
-        let el = arr.pop();
-        if (el.remove) {
-            el.remove();
-        }
-    }
-    this.innerHTML = ""; // clear out any remaining nodes that didn't get removed, like text nodes
 }
 
 /**
@@ -494,7 +544,7 @@ function convertTime(b) {
  */
 export function getColor(varname, ...append) {
     let color = getComputedStyle(document.querySelector(":root")).getPropertyValue(varname);
-    if (color.match(/#[a-zA-Z0-9]{3}/g)) {
+    if (color.match(/^#[a-zA-Z0-9]{3}$/g)) {
         color = "#" + color.substring(1).split("").map(e => e.padStart(e, 2)).join("") + append.join("");
     }
     return color + append.join("");
@@ -1222,10 +1272,131 @@ export function parseTrace(trace) {
         const locs = a.pop().split(":");
         return {
             func: a.join("@"),
-            char: locs.pop(),
-            line: locs.pop(),
+            char: parseInt(locs.pop()),
+            line: parseInt(locs.pop()),
             location: locs.join(":"),
         }
     });
     return paths;
 }
+
+/**
+ * converts an entire string to html entities
+ * @param {String} str string to convert
+ * @returns {String} convertet string
+ */
+function toHTMLEntities(str) {
+    return [...str].split("").map(e => `&#${e.charCodeAt(0)};`).join("");
+}
+
+let svgToDataUri = (function () {
+    const shorterNames = {
+        aqua: /#00ffff(ff)?(?!\w)|#0ff(f)?(?!\w)/gi,
+        azure: /#f0ffff(ff)?(?!\w)/gi,
+        beige: /#f5f5dc(ff)?(?!\w)/gi,
+        bisque: /#ffe4c4(ff)?(?!\w)/gi,
+        black: /#000000(ff)?(?!\w)|#000(f)?(?!\w)/gi,
+        blue: /#0000ff(ff)?(?!\w)|#00f(f)?(?!\w)/gi,
+        brown: /#a52a2a(ff)?(?!\w)/gi,
+        coral: /#ff7f50(ff)?(?!\w)/gi,
+        cornsilk: /#fff8dc(ff)?(?!\w)/gi,
+        crimson: /#dc143c(ff)?(?!\w)/gi,
+        cyan: /#00ffff(ff)?(?!\w)|#0ff(f)?(?!\w)/gi,
+        darkblue: /#00008b(ff)?(?!\w)/gi,
+        darkcyan: /#008b8b(ff)?(?!\w)/gi,
+        darkgrey: /#a9a9a9(ff)?(?!\w)/gi,
+        darkred: /#8b0000(ff)?(?!\w)/gi,
+        deeppink: /#ff1493(ff)?(?!\w)/gi,
+        dimgrey: /#696969(ff)?(?!\w)/gi,
+        gold: /#ffd700(ff)?(?!\w)/gi,
+        green: /#008000(ff)?(?!\w)/gi,
+        grey: /#808080(ff)?(?!\w)/gi,
+        honeydew: /#f0fff0(ff)?(?!\w)/gi,
+        hotpink: /#ff69b4(ff)?(?!\w)/gi,
+        indigo: /#4b0082(ff)?(?!\w)/gi,
+        ivory: /#fffff0(ff)?(?!\w)/gi,
+        khaki: /#f0e68c(ff)?(?!\w)/gi,
+        lavender: /#e6e6fa(ff)?(?!\w)/gi,
+        lime: /#00ff00(ff)?(?!\w)|#0f0(f)?(?!\w)/gi,
+        linen: /#faf0e6(ff)?(?!\w)/gi,
+        maroon: /#800000(ff)?(?!\w)/gi,
+        moccasin: /#ffe4b5(ff)?(?!\w)/gi,
+        navy: /#000080(ff)?(?!\w)/gi,
+        oldlace: /#fdf5e6(ff)?(?!\w)/gi,
+        olive: /#808000(ff)?(?!\w)/gi,
+        orange: /#ffa500(ff)?(?!\w)/gi,
+        orchid: /#da70d6(ff)?(?!\w)/gi,
+        peru: /#cd853f(ff)?(?!\w)/gi,
+        pink: /#ffc0cb(ff)?(?!\w)/gi,
+        plum: /#dda0dd(ff)?(?!\w)/gi,
+        purple: /#800080(ff)?(?!\w)/gi,
+        red: /#ff0000(ff)?(?!\w)|#f00(f)?(?!\w)/gi,
+        salmon: /#fa8072(ff)?(?!\w)/gi,
+        seagreen: /#2e8b57(ff)?(?!\w)/gi,
+        seashell: /#fff5ee(ff)?(?!\w)/gi,
+        sienna: /#a0522d(ff)?(?!\w)/gi,
+        silver: /#c0c0c0(ff)?(?!\w)/gi,
+        skyblue: /#87ceeb(ff)?(?!\w)/gi,
+        snow: /#fffafa(ff)?(?!\w)/gi,
+        tan: /#d2b48c(ff)?(?!\w)/gi,
+        teal: /#008080(ff)?(?!\w)/gi,
+        thistle: /#d8bfd8(ff)?(?!\w)/gi,
+        tomato: /#ff6347(ff)?(?!\w)/gi,
+        violet: /#ee82ee(ff)?(?!\w)/gi,
+        wheat: /#f5deb3(ff)?(?!\w)/gi,
+        white: /#ffffff(ff)?(?!\w)|#fff(f)?(?!\w)/gi,
+    };
+    const REGEX = {
+        whitespace: /\s+/g,
+        urlHexPairs: /%[\dA-F]{2}/g,
+        quotes: /"/g,
+    }
+
+    function collapseWhitespace(str) {
+        return str.trim().replace(REGEX.whitespace, ' ');
+    }
+
+    function dataURIPayload(string) {
+        return encodeURIComponent(string)
+            .replace(REGEX.urlHexPairs, specialHexEncode);
+    }
+
+    // `#` gets converted to `%23`, so quite a few CSS named colors are shorter than
+    // their equivalent URL-encoded hex codes.
+    function colorCodeToShorterNames(string) {
+        Object.keys(shorterNames).forEach(function (key) {
+            if (shorterNames[key].test(string)) {
+                string = string.replace(shorterNames[key], key);
+            }
+        });
+
+        return string;
+    }
+
+    function specialHexEncode(match) {
+        switch (match) { // Browsers tolerate these characters, and they're frequent
+            case '%20': return ' ';
+            case '%3D': return '=';
+            case '%3A': return ':';
+            case '%2F': return '/';
+            default: return match.toLowerCase(); // compresses better
+        }
+    }
+
+    function svgToTinyDataUri(svgString) {
+        if (typeof svgString !== 'string') {
+            throw new TypeError('Expected a string, but received ' + typeof svgString);
+        }
+        // Strip the Byte-Order Mark if the SVG has one
+        if (svgString.charCodeAt(0) === 0xfeff) { svgString = svgString.slice(1) }
+
+        var body = colorCodeToShorterNames(collapseWhitespace(svgString))
+            .replace(REGEX.quotes, "'");
+        return 'data:image/svg+xml,' + dataURIPayload(body);
+    }
+
+    svgToTinyDataUri.toSrcset = function toSrcset(svgString) {
+        return svgToTinyDataUri(svgString).replace(/ /g, '%20');
+    }
+    return svgToTinyDataUri.toSrcset;
+})();
