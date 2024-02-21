@@ -26,7 +26,12 @@ const Overload = (function () {
     }
 
     class Overload extends Function {
-        constructor(defaultCallback) {
+        /**
+         * creates a new Overloaded function
+         * @param {Function} defaultCallback callback function
+         * @returns {this}
+         */
+        constructor(defaultCallback = (...args) => console.log("no suitable callback for arguments:", args)) {
             super("...args", "return this.__self__.call(...args);");
             let self = this.bind(this);
             this.__self__ = self;
@@ -40,14 +45,17 @@ const Overload = (function () {
             return self;
         }
 
-        addOverload(options, ...types) {
-            if (typeof options == "function") {
-                options = {
-                    callback: options
-                };
+        /**
+         * 
+         * @param {Function} callback overload function to call if arguments match types
+         * @param  {...any} types types to overload
+         */
+        addOverload(callback, ...types) {
+            types = types.flat(Infinity);
+            let options = {};
+            if (types.includes(Object)) {
+                options.allowObject = true;
             }
-            let callback = options.callback;
-            delete options.callback;
             this.overloads.push({
                 options,
                 callback,
@@ -61,21 +69,6 @@ const Overload = (function () {
             }
             function compareType(x, y, o) {
                 let ancestor = getCommonAncestor(x, y);
-                // console.log(
-                //     [x, y, o, args],
-                //     (
-                //         x instanceof y && (
-                //             o.options.allowObject && y == Object ||
-                //             !o.options.allowObject && y != Object
-                //         ) && (
-                //             typeof x == "function" && y == Function ||
-                //             typeof x != "function" && y != Function
-                //         )
-                //     ),
-                //     (typeof x == y.name.toLowerCase()),
-                //     (o.options.allowObject && (ancestor === Object.getPrototypeOf({}))),
-                //     typeof (!o.options.allowObject && (ancestor != Object.getPrototypeOf({})) && ancestor) === "boolean"
-                // );
                 var a;
                 return !!(
                     (
@@ -92,6 +85,10 @@ const Overload = (function () {
                     (
                         (typeof (a = (!o.options.allowObject && (ancestor != Object.getPrototypeOf({})) && ancestor)) === "boolean") &&
                         a == true
+                    ) ||
+                    (
+                        typeof y == "string" &&
+                        typeof x == y.toLowerCase().trim()
                     )
                 );
             }
@@ -124,70 +121,64 @@ const Overload = (function () {
     return Overload;
 })();
 
-let loaded = new Overload((...args) => {
-    console.log("no suitable callback for:", args);
-});
+let loaded = new Overload((...args) => console.log("no suitable callback for arguments:", args));
 
-loaded.addOverload(function (el, count) {
-    console.log(count, el, ":", new Array(count).fill(el));
-}, Element, Number); // accepts an Element and a Number
+loaded.addOverload(
+    function (el, count) {
+        console.log("repeat the element " + count + " times:", new Array(count).fill(el));
+    },
+    Element, Number
+); // accepts an Element and a Number
 
-loaded.addOverload({
-    callback: (...args) => {
-        console.log("many numbers", ...args);
+loaded.addOverload(
+    function (...args) {
+        console.log("many numbers:", ...args);
         return args.reduce((a, b) => a + b, 0);
     },
-    allowObject: false
-}, new Rest(Number)); // Accepts any amount of numbers
+    new Rest(Number)
+); // Accepts any amount of numbers
 
-loaded.addOverload({
-    callback: (...args) => {
-        console.log("one number", ...args);
+loaded.addOverload(
+    function (...args) {
+        console.log("one number:", ...args);
     },
-    allowObject: false
-}, Number); // accepts one number
+    Number
+); // accepts one number
 
-loaded.addOverload({
-    callback: (...args) => {
+loaded.addOverload(
+    function (...args) {
         console.log("string:", ...args);
     },
-    allowObject: false
-}, String); // accepts one string
+    String
+); // accepts one string
 
-loaded.addOverload({
-    callback: (...args) => {
-        console.log("two numbers", ...args);
+loaded.addOverload(
+    function (...args) {
+        console.log("two numbers:", ...args);
     },
-    allowObject: false
-}, Number, Number); /// accepts 2 numbers
+    Number, Number
+); /// accepts 2 numbers
 
-loaded.addOverload({
-    callback: (...args) => {
+loaded.addOverload(
+    function (...args) {
         console.log("rest:", ...args);
     },
-    allowObject: false
-}, Rest); // accepts one instance of the class "Rest"
+    Rest
+); // accepts one instance of the class "Rest"
 
-loaded.addOverload({
-    callback: (...args) => {
+loaded.addOverload(
+    function (...args) {
         console.log("object:", ...args);
     },
-    allowObject: true
-}, Object); // accepts one object
+    Object
+); // accepts one object
 
-loaded.addOverload({
-    callback: (...args) => {
+loaded.addOverload(
+    function (...args) {
         console.log("function:", ...args);
     },
-    allowObject: false
-}, Function); // accepts one object
-
-loaded.addOverload({
-    callback: (...args) => {
-        console.log("rest:", ...args);
-    },
-    allowObject: false
-}, Rest); // accepts one object
+    Function
+); // accepts one function
 
 loaded(document.body, 7);
 loaded(3);
@@ -198,18 +189,19 @@ loaded(new Rest(Number));
 console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.random() * 10)))); // array of 20 random numbers
 
 
+console.log("%c↓ points ↓", "font-size: 20px;");
 (function () { // faked "overloading" using valueOf
     class StringBuilder {
         data = "";
         constructor() {
-            console.log("constructor");
+            // console.log("constructor");
         }
         valueOf() {
-            console.log("valueOf sb");
+            // console.log("valueOf sb");
             StringBuilder.current = this;
         }
         toString() {
-            console.log("toString");
+            // console.log("toString");
             return this.data;
         }
     }
@@ -231,7 +223,7 @@ console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.ran
                 operator = this.setSubtract;
             } else if (ops.length === 2 && value === 1) { // 3 / 3
                 operator = this.setDivide;
-            } else if (ops.length >= 2 && (value === 3 * ops.length)) { // 3 + 3
+            } else if (ops.length >= 2 && (value === 3 * ops.length)) { // 3 + 3 + 3
                 operator = this.setAdd;
             } else if (ops.length >= 2 && (value === Math.pow(3, ops.length))) { // 3 * 3
                 operator = this.setMultiply;
@@ -288,8 +280,8 @@ console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.ran
         }
     }
     let sb = new StringBuilder();
-    sb << add("abc") << add("def") << add("ghi") << add("jkl") << add("mno") << add("pqr");
-    sb.toString(); // abcdefghijklmnopqr
+    sb << add("abc") << add("def") << add("ghi") << add("jkl") << add("mno") << add("pqr") << add("stu") << add("vwx") << add("yz");
+    console.log(sb.toString()); // abcdefghijklmnopqr
 
     let p = new Point();
     p._ = new Point(1, 2) + new Point(3, 4) + new Point(5, 6);
