@@ -1,22 +1,3 @@
-function getPath(o) {
-    const path = [];
-    while (o) {
-        path.push(o);
-        o = Object.getPrototypeOf(o);
-    }
-    return path.reverse();
-}
-
-function getCommonAncestor(x, y) {
-    const xPath = getPath(x);
-    const yPath = getPath(y);
-    const steps = Math.min(xPath.length, yPath.length);
-
-    for (let i = 0; i < steps; i++) {
-        if (xPath[i] !== yPath[i]) return (xPath[i - 1]?.prototype || xPath[i - 1]);
-    }
-}
-
 class Rest {
     type = null;
     constructor(type) {
@@ -24,87 +5,131 @@ class Rest {
     }
 }
 
-class Overload extends Function {
-    constructor(defaultCallback) {
-        super("...args", "return this.__self__.call(...args);");
-        let self = this.bind(this);
-        this.__self__ = self;
-        if (defaultCallback === undefined) {
-            defaultCallback = function (...args) {
-                console.log("no suitable overload found for arguments:", args);
-            }
+const Overload = (function () {
+    function getPath(o) {
+        const path = [];
+        while (o) {
+            path.push(o);
+            o = Object.getPrototypeOf(o);
         }
-        self.defaultCallback = defaultCallback;
-        self.overloads = [];
-        return self;
+        return path.reverse();
     }
 
-    addOverload(options, ...types) {
-        if (typeof options == "function") {
-            options = {
-                callback: options
-            };
+    function getCommonAncestor(x, y) {
+        const xPath = getPath(x);
+        const yPath = getPath(y);
+        const steps = Math.min(xPath.length, yPath.length);
+
+        for (let i = 0; i < steps; i++) {
+            if (xPath[i] !== yPath[i]) return (xPath[i - 1]?.prototype || xPath[i - 1]);
         }
-        let callback = options.callback;
-        delete options.callback;
-        this.overloads.push({
-            options,
-            callback,
-            types
-        });
     }
 
-    call(...args) {
-        function hasRest(c) {
-            return c.types[c.types.length - 1] instanceof Rest;
-        }
-        function compareType(x, y, o) {
-            let ancestor = getCommonAncestor(x, y);
-            return !!(
-                (
-                    x instanceof y && (
-                        o.options.allowObject && y == Object ||
-                        !o.options.allowObject && y != Object
-                    ) && (
-                        typeof x == "function" && y == Function ||
-                        typeof x != "function" && y != Function
-                    )
-                ) ||
-                (typeof x == y.name.toLowerCase()) ||
-                (o.options.allowObject && ancestor === Object.getPrototypeOf({})) ||
-                (!o.options.allowObject && ancestor != Object.getPrototypeOf({}) && ancestor)
-            );
-        }
-        let candidates = this.overloads.filter(o => {
-            if (args.length == o.types.length && !hasRest(o)) { // types list is defined length
-                let arr = o.types.map((t, n) => compareType(args[n], t, o));
-                return !(arr.includes(false));
-            } else if (hasRest(o)) {
-                // has rest parameter
-                let types = Object.assign([], o.types);
-                let rest = types.pop();
-                let unrestArgs = args.splice(0, types.length);
-                let unrestMatch = types.map((t, n) => compareType(unrestArgs[n], t, o));
-                if (unrestMatch.includes(false)) {
-                    return false;
+    class Overload extends Function {
+        constructor(defaultCallback) {
+            super("...args", "return this.__self__.call(...args);");
+            let self = this.bind(this);
+            this.__self__ = self;
+            if (defaultCallback === undefined) {
+                defaultCallback = function (...args) {
+                    console.log("no suitable overload found for arguments:", args);
                 }
-                return !(args.map(e => compareType(e, rest.type, o)).includes(false));
             }
+            self.defaultCallback = defaultCallback;
+            self.overloads = [];
+            return self;
+        }
 
-        });
-        let funcToCall;
-        if (funcToCall = candidates.find(e => !hasRest(e))) { }
-        else if (funcToCall = candidates.find(hasRest)) { }
-        else { funcToCall = { callback: this.defaultCallback }; }
+        addOverload(options, ...types) {
+            if (typeof options == "function") {
+                options = {
+                    callback: options
+                };
+            }
+            let callback = options.callback;
+            delete options.callback;
+            this.overloads.push({
+                options,
+                callback,
+                types
+            });
+        }
 
-        return funcToCall.callback(...args);
+        call(...args) {
+            function hasRest(c) {
+                return c.types[c.types.length - 1] instanceof Rest;
+            }
+            function compareType(x, y, o) {
+                let ancestor = getCommonAncestor(x, y);
+                // console.log(
+                //     [x, y, o, args],
+                //     (
+                //         x instanceof y && (
+                //             o.options.allowObject && y == Object ||
+                //             !o.options.allowObject && y != Object
+                //         ) && (
+                //             typeof x == "function" && y == Function ||
+                //             typeof x != "function" && y != Function
+                //         )
+                //     ),
+                //     (typeof x == y.name.toLowerCase()),
+                //     (o.options.allowObject && (ancestor === Object.getPrototypeOf({}))),
+                //     typeof (!o.options.allowObject && (ancestor != Object.getPrototypeOf({})) && ancestor) === "boolean"
+                // );
+                var a;
+                return !!(
+                    (
+                        (x instanceof y) && (
+                            (o.options.allowObject && (y == Object)) ||
+                            (!o.options.allowObject && (y != Object))
+                        ) && (
+                            ((typeof x == "function") && (y == Function)) ||
+                            ((typeof x != "function") && (y != Function))
+                        )
+                    ) ||
+                    (typeof x == y.name.toLowerCase()) ||
+                    (o.options.allowObject && (ancestor === Object.getPrototypeOf({}))) ||
+                    (
+                        (typeof (a = (!o.options.allowObject && (ancestor != Object.getPrototypeOf({})) && ancestor)) === "boolean") &&
+                        a == true
+                    )
+                );
+            }
+            const candidates = this.overloads.filter(o => {
+                if (args.length == o.types.length && !hasRest(o)) { // types list is defined length
+                    let arr = o.types.map((t, n) => compareType(args[n], t, o));
+                    return !(arr.includes(false));
+                } else if (hasRest(o)) {
+                    // has rest parameter
+                    let types = Object.assign([], o.types);
+                    let rest = types.pop();
+                    let unrestArgs = args.splice(0, types.length);
+                    let unrestMatch = types.map((t, n) => compareType(unrestArgs[n], t, o));
+                    if (unrestMatch.includes(false)) {
+                        return false;
+                    }
+                    return !(args.map(e => compareType(e, rest.type, o)).includes(false));
+                }
+
+            });
+            let funcToCall;
+            // console.log("candidates", candidates);
+            if (funcToCall = candidates.find(e => !hasRest(e))) { }
+            else if (funcToCall = candidates.find(hasRest)) { }
+            else { funcToCall = { callback: this.defaultCallback }; }
+
+            return funcToCall.callback(...args);
+        }
     }
-}
+    return Overload;
+})();
 
-let loaded = new Overload((...args) => console.log("no suitable callback for:", args));
+let loaded = new Overload((...args) => {
+    console.log("no suitable callback for:", args);
+});
 
 loaded.addOverload(function (el, count) {
-    return new Array(count).fill(el);
+    console.log(count, el, ":", new Array(count).fill(el));
 }, Element, Number); // accepts an Element and a Number
 
 loaded.addOverload({
@@ -157,11 +182,19 @@ loaded.addOverload({
     allowObject: false
 }, Function); // accepts one object
 
-console.log(loaded(document.body, 3));
+loaded.addOverload({
+    callback: (...args) => {
+        console.log("rest:", ...args);
+    },
+    allowObject: false
+}, Rest); // accepts one object
+
+loaded(document.body, 7);
 loaded(3);
 loaded({ a: 1, b: 2 });
 loaded("hello world");
 loaded(console.log);
+loaded(new Rest(Number));
 console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.random() * 10)))); // array of 20 random numbers
 
 
