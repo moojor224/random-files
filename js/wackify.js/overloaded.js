@@ -1,10 +1,3 @@
-class Rest {
-    type = null;
-    constructor(type) {
-        this.type = type;
-    }
-}
-
 const Overload = (function () {
     function getPath(o) {
         const path = [];
@@ -26,6 +19,13 @@ const Overload = (function () {
     }
 
     class Overload extends Function {
+
+        static Rest = class{
+            type = null;
+            constructor(type) {
+                this.type = type;
+            }
+        }
         /**
          * creates a new Overloaded function
          * @param {Function} defaultCallback callback function
@@ -65,7 +65,7 @@ const Overload = (function () {
 
         call(...args) {
             function hasRest(c) {
-                return c.types[c.types.length - 1] instanceof Rest;
+                return c.types[c.types.length - 1] instanceof Overload.Rest;
             }
             function compareType(x, y, o) {
                 let ancestor = getCommonAncestor(x, y);
@@ -135,7 +135,7 @@ loaded.addOverload(
         console.log("many numbers:", ...args);
         return args.reduce((a, b) => a + b, 0);
     },
-    new Rest(Number)
+    new Overload.Rest(Number)
 ); // Accepts any amount of numbers
 
 loaded.addOverload(
@@ -163,7 +163,7 @@ loaded.addOverload(
     function (...args) {
         console.log("rest:", ...args);
     },
-    Rest
+    Overload.Rest
 ); // accepts one instance of the class "Rest"
 
 loaded.addOverload(
@@ -185,7 +185,7 @@ loaded(3);
 loaded({ a: 1, b: 2 });
 loaded("hello world");
 loaded(console.log);
-loaded(new Rest(Number));
+loaded(new Overload.Rest(Number));
 console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.random() * 10)))); // array of 20 random numbers
 
 
