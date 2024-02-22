@@ -72,8 +72,6 @@ let svgToTinyDataUri = (function () {
         return encodeURIComponent(string).replace(REGEX.urlHexPairs, specialHexEncode);
     }
 
-    // `#` gets converted to `%23`, so quite a few CSS named colors are shorter than
-    // their equivalent URL-encoded hex codes.
     function colorCodeToShorterNames(string) {
         Object.keys(shorterNames).forEach(function (key) {
             if (shorterNames[key].test(string)) {
