@@ -37,10 +37,6 @@ export let RubiksDate = (function () {
             this._d = new Date(...date);
         }
 
-        get date() {
-            return this._d;
-        }
-
         clone() {
             return new RubiksDate(this._d);
         }
@@ -120,24 +116,31 @@ export let RubiksDate = (function () {
                 case "second": clone._d.setSeconds(amount); break;
                 case "hour": clone._d.setHours(amount); break;
                 case "date": clone._d.setDate(amount); break;
-                case "day": clone._d.setDate(amount); break;
+                // case "day": clone._d.setDate(amount); break;
                 case "month": clone._d.setMonth(amount); break;
                 case "quarter":
+                    clone = clone.add(3 * (amount - clone.quarter()), "month");
                     break;
                 case "year": clone._d.setFullYear(amount); break;
             }
+            return clone;
+        }
+        month(amount) {
+            if (amount != undefined)
+                return this._d.getMonth();
+        }
+        quarter(amount) {
+            if (amount != undefined)
+                return Math.ceil((this._d.getMonth() + 1) / 3);
+            else return this.set("quarter", amount)
         }
     }
-
-    function time(amount) { if (amount != undefined) return this._d.getTime(); else return this.set("time", amount) }  // returns total milliseconds since jan 1st, 1970
-    function milliseconds(amount) { if (amount != undefined) return this._d.getMilliseconds(); else return this.set("milliseconds", amount) } // returns milliseconds since the start of the second
-    function seconds(amount) { if (amount != undefined) return this._d.getSeconds(); else return this.set("seconds", amount) } // returns the seconds of the date
-    function minutes(amount) { if (amount != undefined) return this._d.getMinutes(); else return this.set("minutes", amount) } // returns the minutes of the date
-    function hours(amount) { if (amount != undefined) return this._d.getHours(); else return this.set("hours", amount) } // returns the hours of the date
-    function date(amount) { if (amount != undefined) return this._d.getDate(); else return this.set("date", amount) } // returns the date of the date
-    function day(amount) { if (amount != undefined) return this._d.getDay(); else return this.set("day", amount) } // returns the day of the date
-    function month(amount) { if (amount != undefined) return this._d.getMonth(); } // returns the month of the date
-    function quarter(amount) { if (amount != undefined) return Math.ceil((this._d.getMonth() + 1) / 3); else return this.set("quarter", amount) } // returns the quarter of the date
-    function year(amount) { if (amount != undefined) return this._d.getYear(); else return this.set("year", amount) } // returns the year of the date
+    ["time", "milliseconds", "seconds", "minutes", "hours", "date", "day"].forEach(e => {
+        RubiksDate.prototype[e] = function (amount) {
+            if (amount != undefined) return this._d["get" + (e == "year" ? "Full" : "") + e.split("").pop().toUpperCase() + e.substring(1)]();
+            else return this.set(e, amount);
+        }
+    });
+    window.RubiksDate = RubiksDate;
     return RubiksDate;
 })();

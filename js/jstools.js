@@ -1510,4 +1510,21 @@ export function logFormatted(element, raw = false) {
 
     const font = false;
     flattened.forEach(e => {
-        if (e.
+        if (e.nodeName != "#text") return;
+        logs.push(`%c${e.textContent}`);
+        let str = "";
+        if (e.parentNode.style.color.length > 0) {
+            str = `color:${e.parentNode.style.color};`;
+        }
+        styles.push(str + `${font ? "font-family:Consolas,'Courier New',monospace;" : ""}`);
+    });
+    if (raw) {
+        return {
+            logs: logs.join(""),
+            styles
+        }
+    } else {
+        console.log(logs.join(""), ...styles);
+    }
+}
+window.logFormatted = logFormatted;

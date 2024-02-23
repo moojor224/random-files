@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="prism.css">
     <script type="module">
         import { RubiksDate } from "./RubiksDate.js";
 
@@ -13,10 +14,54 @@
         console.log(date);
         console.log(date.add(1, "year"));
     </script>
+    <style>
+        body {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        pre,
+        code {
+            background-color: black;
+            margin: 0px;
+        }
+
+        pre {
+            padding: 20px 5px;
+        }
+    </style>
 </head>
 
 <body>
-
+    <code class="language-javascript">
+<pre>
+<span class="token keyword">function</span> <span class="token function">add</span><span class="token punctuation">(</span><span class="token parameter">amount<span class="token punctuation">,</span> interval</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            interval <span class="token operator">=</span> <span class="token function">unabbreviate</span><span class="token punctuation">(</span>interval<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">let</span> clone <span class="token operator">=</span> immutable <span class="token operator">?</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">clone</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+            <span class="token keyword">let</span> milliseconds <span class="token operator">=</span> <span class="token constant">AMOUNTS</span><span class="token punctuation">[</span>interval<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>milliseconds <span class="token operator">===</span> <span class="token keyword">undefined</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                <span class="token keyword">switch</span> <span class="token punctuation">(</span>interval<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                    <span class="token keyword">case</span> <span class="token string">"month"</span><span class="token operator">:</span>
+                        clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">setMonth</span><span class="token punctuation">(</span>clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getMonth</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> amount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        <span class="token keyword">let</span> yr <span class="token operator">=</span> clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getFullYear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        <span class="token keyword">let</span> mo <span class="token operator">=</span> clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getMonth</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">+</span> amount<span class="token punctuation">;</span>
+                        <span class="token keyword">while</span> <span class="token punctuation">(</span>mo <span class="token operator">></span> <span class="token number">12</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                            mo <span class="token operator">-=</span> <span class="token number">12</span><span class="token punctuation">;</span>
+                            yr<span class="token operator">++</span><span class="token punctuation">;</span>
+                        <span class="token punctuation">}</span>
+                        clone <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RubiksDate</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>yr<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">/</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>mo<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">/</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getDate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getHours</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getMinutes</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getSeconds</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">.</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getMilliseconds</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">)</span>
+                        <span class="token keyword">break</span><span class="token punctuation">;</span>
+                    <span class="token keyword">case</span> <span class="token string">"year"</span><span class="token operator">:</span>
+                        clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">setFullYear</span><span class="token punctuation">(</span>clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getFullYear</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> amount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+                clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">setTime</span><span class="token punctuation">(</span>clone<span class="token punctuation">.</span>_d<span class="token punctuation">.</span><span class="token function">getTime</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token punctuation">(</span>milliseconds <span class="token operator">*</span> amount<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">return</span> clone<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+</pre>
+</code>
 </body>
 
 </html>
