@@ -1,4 +1,5 @@
-export const devMode = true;
+import { devlog } from "./dev-helper.js";
+import * as Prism from "./prism.js";
 
 /**
  * accepts a css selector and a callback function\
@@ -6,7 +7,7 @@ export const devMode = true;
  * @param {String} query css selector to wait for
  * @param {Function} callback callback function to run when the element is found
  * @param {Boolean} stopAfterFound whether to stop looking after the element is found
- * @param {Element} [element=document] parent element to look within -  defaults to document
+ * @param {Element} [element = document] parent element to look within -  defaults to document
  */
 export function waitForKeyElements(query, callback, stopAfterFound, element) {
     let o, r;
@@ -492,20 +493,58 @@ export function interleaveArrays(fill, ...arrays) {
  * run this before using any console logging functions in order to capture everything
  */
 export function captureConsole() {
+    // if (console.everything === undefined) {
+    //     console.everything = [];
+    //     ["log", "warn", "error", "debug"].forEach(e => {
+    //         let d = "default" + e.split("")[0].toUpperCase() + e.substring(1);
+    //         console[d] = console[e].bind(console);
+    //         console[e] = function (...args) {
+    //             console.everything.push({
+    //                 type: e,
+    //                 datetime: Date().toLocaleString(),
+    //                 value: args
+    //             });
+    //             console[d].apply(console, args);
+    //         }
+    //     });
+    // }
     if (console.everything === undefined) {
         console.everything = [];
-        ["log", "warn", "error", "debug"].forEach(e => {
-            let d = "default" + e.split("")[0].toUpperCase() + e.substring(1);
-            console[d] = console[e].bind(console);
-            console[e] = function (...args) {
+        function TS() {
+            return (new Date).toLocaleString("sv", { timeZone: 'UTC' }) + "Z"
+        }
+        window.onerror = function (error, url, line) {
+            console.everything.push({
+                type: "exception",
+                timeStamp: TS(),
+                value: { error, url, line }
+            })
+            return false;
+        }
+        window.onunhandledrejection = function (e) {
+            console.everything.push({
+                type: "promiseRejection",
+                timeStamp: TS(),
+                value: e.reason
+            })
+        }
+        window.onun
+
+        function hookLogType(logType) {
+            const original = console[logType].bind(console)
+            return function () {
                 console.everything.push({
-                    type: e,
-                    datetime: Date().toLocaleString(),
-                    value: args
-                });
-                console[d].apply(console, args);
+                    type: logType,
+                    timeStamp: TS(),
+                    value: Array.from(arguments)
+                })
+                original.apply(console, arguments)
             }
-        });
+        }
+
+        ['log', 'error', 'warn', 'debug'].forEach(logType => {
+            console[logType] = hookLogType(logType)
+        })
     }
 }
 
@@ -758,6 +797,8 @@ function convertBase(str, fromBase, toBase) {
     return out;
 }
 
+// get settings not loading settings
+
 let Settings = window.Settings;
 if (Settings === undefined) {
     Settings = class extends EventTarget {
@@ -781,14 +822,16 @@ if (Settings === undefined) {
                 section.settings_obj = this; // set parent object of each section
             });
         }
+
         render() {
+            devlog("render settings");
             let div = createElement("div", { // main settings div
                 classList: "settings"
             }).add(
                 createElement("h2", { innerHTML: this.config.name })
             );
             div.add(...this.sections.map(s => s.render())); // render all subsections and add them to the settings div
-            // return div;
+            return div;
         }
 
         /**
@@ -801,7 +844,7 @@ if (Settings === undefined) {
         }
 
         /**
-         * converts the settings object to a stringified JSON object cabable of being imported through the Settings.loadJson() method
+         * converts the settings object to a stringified JSON object cabable of being imported through the Settings.fromJson() method
          * @returns {String}
          */
         export() {
@@ -857,7 +900,7 @@ if (Settings === undefined) {
          * @param {String} jsontext stringified json data
          * @returns {Settings}
          */
-        static loadJson(jsontext) {
+        static fromJson(jsontext) {
             if (jsontext.length == 0) {
                 return null;
             }
@@ -899,10 +942,12 @@ if (Settings === undefined) {
         }
 
         replaceWith(settings) {
+            devlog("replacing", Object.assign({}, this), "with", Object.assign({}, settings));
             // replaces this settings object with another one by overriding sections array and config.
             // because this object was exported, it can't be assigned in other modules,
             // so a custom function had to be made
             if (!(settings instanceof Settings)) { // only override if provided object is a Setting object
+                devlog("settings object is not an instance of the Settings class", settings);
                 return;
             }
             this.config = settings.config; // override config
@@ -954,6 +999,7 @@ if (Section === undefined) {
          * @returns {HTMLElement}
          */
         render() {
+            devlog("render section");
             let section = createElement("section").add(
                 createElement("h2", { innerHTML: this.config.name }) // section title
             );
@@ -1032,9 +1078,11 @@ if (Option === undefined) {
         }
 
         set value(val) {
-            console.log("set value to", val);
+            devlog("set value to", val);
             show("#loadingModal"); // show the loading modal
             let option = this;
+            let previousVal = this.config.value;
+            this.config.value = val;
             fetch("/Reports/Report/SaveSettings", { // fetch request to server to save user settings
                 method: "POST",
                 body: this.section_obj.settings_obj.export(),
@@ -1043,10 +1091,16 @@ if (Option === undefined) {
                 }
             }).then(e => {
                 e.text().then(t => {
-                    if (!t.includes("error")) { // settings could not save
-                        this.config.value = val; // revert option change
+                    if (t.includes("error")) { // settings could not save
+                        devlog("error saving settings");
+                        this.config.value = previousVal; // revert option change in config object
+                        if (this.input.checked != undefined) { // revert option change in input element
+                            this.input.checked = previousVal;
+                        } else {
+                            this.input = previousVal;
+                        }
                     } else {
-                        this.input.value = this.config.value; // save option change in option object
+                        devlog("successfully saved settings");
                     }
                     option.dispatchEvent(new Event("change")); // forward event from html element to option object
                     hide("#loadingModal"); // hide the loading modal
@@ -1059,6 +1113,7 @@ if (Option === undefined) {
          * @returns {HTMLLabelElement}
          */
         render() {
+            devlog("render option");
             let label = createElement("label");
             let span = createElement("span", {
                 innerHTML: this.config.name
@@ -1078,7 +1133,8 @@ if (Option === undefined) {
             if (this.config.type == "toggle") { // standard on/off toggle
                 input = createElement("input", {
                     type: "checkbox",
-                    classList: "slider" // pure css toggle switch
+                    classList: "slider", // pure css toggle switch
+                    checked: option.config.value
                 });
             } else if (this.config.type == "dropdown") {
                 input = createElement("select");
@@ -1105,7 +1161,11 @@ if (Option === undefined) {
                 input.value = this.config.value || this.config.values[0];
             }
             input.addEventListener("input", function () { // when setting is changed, dispatch change event on the potions object
-                option.value = input.value;
+                if (input.checked != undefined) {
+                    option.value = input.checked;
+                } else {
+                    option.value = input.value;
+                }
             });
             return input;
         }
@@ -1400,3 +1460,54 @@ let svgToDataUri = (function () {
     }
     return svgToTinyDataUri.toSrcset;
 })();
+
+/**
+ * formats the text content of an HTML element such that it can be logged to the console and preserve the colors
+ * @param {HTMLElement|String} element element or HTML string to log
+ * @param {Boolean} raw whether to return the raw result or just console.log it
+ * @returns {Object[]}
+ */
+export function logFormatted(element, raw = false) {
+    element = (function () {
+        let el = document.createElement("div");
+        el.innerHTML = (element instanceof Element ? element : {
+            innerHTML: element
+        }).innerHTML;
+        return el;
+    })();
+
+    function calcStyle(element) {
+        if (!element.style) return;
+        let clss = [...element.classList];
+        clss.forEach(e => {
+            classes.forEach(c => {
+                if (c[0].includes(e)) {
+                    element.style.color = c[1];
+                }
+            });
+        });
+
+    }
+    const classes = [
+        [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
+        [["boolean", "constant", "number", "property", "symbol", "tag"], "#4fc1ff"],
+        [["attr-name", "builtin", "char", "inserted", "selector", "string"], "#ce9178"],
+        [["entity", "url", "variable"], "#f4b73d"],
+        [["atrule", "attr-value", "keyword"], "#569cd6"],
+        [["important", "regex"], "#ee9900"],
+        [["deleted"], "#ff0000"],
+        [["function"], "#dcdcaa"],
+        [["parameter"], "#9cdcfe"],
+        [["template-punctuation"], "#ce9178"],
+        [["interpolation-punctuation"], "#ff8800"],
+        [["class-name"], "#4ec9b0"],
+    ];
+    const flat = (el) => [el, ...([...el.childNodes].flatMap((e) => flat(e)) || [])];
+    let logs = [];
+    let styles = [];
+    const flattened = flat(element);
+    flattened.forEach(calcStyle);
+
+    const font = false;
+    flattened.forEach(e => {
+        if (e.
