@@ -1,5 +1,4 @@
 import { devlog } from "./dev-helper.js";
-import * as Prism from "./prism.js";
 
 /**
  * accepts a css selector and a callback function\
@@ -1461,20 +1460,111 @@ let svgToDataUri = (function () {
     return svgToTinyDataUri.toSrcset;
 })();
 
+import { Prism } from "./prism.js";
+import { js_beautify } from "./beautify.js";
+
+
+
+
 /**
  * formats the text content of an HTML element such that it can be logged to the console and preserve the colors
  * @param {HTMLElement|String} element element or HTML string to log
  * @param {Boolean} raw whether to return the raw result or just console.log it
  * @returns {Object[]}
  */
-export function logFormatted(element, raw = false) {
-    element = (function () {
-        let el = document.createElement("div");
-        el.innerHTML = (element instanceof Element ? element : {
-            innerHTML: element
-        }).innerHTML;
-        return el;
-    })();
+export function logFormatted(object, raw = false, collapsed = false, maxDepth = Infinity) {
+    let objects = [];
+    let indentAmount = 1;
+    let depth = 0;
+    function stringify(obj) {
+        if (depth > maxDepth) return "<max depth reached>";
+        try {
+            const type = typeof obj;
+            //             console.log(type, obj);
+            let pad = "".padStart(indentAmount * 4, " ");
+            if (type == "number" || type == "boolean") {
+                return obj;
+            } else if (type == "function") {
+                objects.push(obj);
+                let beautified = js_beautify(obj.toString()); // beautify function to make tabs equal
+                let splitFunc = beautified.split("\n"); //  stringified function split along newlines
+                let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) : "") + e); // indent all lines after first to match current indent amount
+                let injected = padded.map((e, n) => n == 0 ? e + " %o" : e);// add %o to after first line
+                return injected.join("\n"); // rejoin function lines and return
+            } else if (type == "string") {
+                [
+                    ["\n", "\\n"],
+                    ["\r", "\\r"],
+                    ["\t", "\\t"],
+                ].forEach(e => {
+                    obj = obj.replaceAll(e[0], e[1]);
+                });
+                return `"${obj.replaceAll('"', '\\"')}"`;
+            } else if (type == "object") {
+                if (objects.includes(obj)) {
+                    return "<already stringified (recursion prevention)>"
+                }
+                // console.log("push to objects");
+                objects.push(obj);
+                let arr = [];
+                if (!obj) return "";
+                Object.entries(obj).forEach(function (kvp) {
+                    let [key, value] = kvp;
+                    //                     console.log("key, value", key, value);
+                    indentAmount++;
+                    depth++;
+                    arr.push(`${key}: ${stringify(value)}`);
+                    indentAmount--;
+                    depth--;
+                });
+                return `{ %o
+${pad + arr.join(",\n" + pad)}
+${pad.substring(4)}}`;
+            } else {
+                return "" + obj;
+            }
+        } catch (err) {
+            if (obj.toString) {
+                return obj.toString();
+            }
+            console.log(obj);
+            console.error(err);
+            return
+        }
+    }
+    let stringified = "const data = " + stringify(object);
+    let chars = stringified.split("");
+    let parsed = "";
+    let percentbuffer = "";
+    let indexes = [];
+    chars.forEach(function (c, index) {
+        if (c == "%") {
+            percentbuffer += c;
+        } else if (percentbuffer.length > 0) {
+            if (c.match(/[^a-zA-Z]/g)) {
+                parsed += percentbuffer + c;
+                percentbuffer = "";
+            } else if (percentbuffer.length % 2 == 0) {
+                parsed += percentbuffer;
+                percentbuffer = "";
+            } else {
+                parsed += ("".padStart("%", (percentbuffer.length - 1) * 2));
+                indexes.push(index + percentbuffer.length);
+                percentbuffer = "";
+            }
+        } else {
+            parsed += c;
+        }
+    });
+    // console.log("stringified", "\n" + stringified);
+    // console.log("objects", objects);
+    // console.log("chars", chars);
+    // console.log("parsed", "\n" + parsed);
+    // console.log("indexes", indexes);
+    let element = createElement("div", {
+        innerHTML: Prism.highlight(parsed, Prism.languages.javascript).replaceAll("%", "%%")
+    });
+    // console.log(element.outerHTML);
 
     function calcStyle(element) {
         if (!element.style) return;
@@ -1488,6 +1578,7 @@ export function logFormatted(element, raw = false) {
         });
 
     }
+
     const classes = [
         [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
         [["boolean", "constant", "number", "property", "symbol", "tag"], "#4fc1ff"],
@@ -1502,11 +1593,39 @@ export function logFormatted(element, raw = false) {
         [["interpolation-punctuation"], "#ff8800"],
         [["class-name"], "#4ec9b0"],
     ];
-    const flat = (el) => [el, ...([...el.childNodes].flatMap((e) => flat(e)) || [])];
+    // const flat = (el) => [el, ...([...el.childNodes].flatMap((e) => flat(e)) || [])];
     let logs = [];
     let styles = [];
-    const flattened = flat(element);
+    const flattened = flattenChildNodes(element);
     flattened.forEach(calcStyle);
+
+    let index = 0;
+    let inserted = 1;
+    let lastpercent = false;
+    function count(node) {
+        let text = "";
+        node.textContent.split("").forEach(function (char) {
+            if (index + 2 * inserted == indexes[0]) {
+                indexes.shift();
+                text += "%o";
+                inserted++;
+            }
+            text += char;
+            if (char == "%" && !lastpercent) {
+                lastpercent = true;
+            } else {
+                lastpercent = false;
+                index++;
+            }
+        });
+        node.textContent = text || "";
+    }
+
+    flattened.forEach(e => {
+        if (e.nodeName == "#text") {
+            count(e);
+        }
+    });
 
     const font = false;
     flattened.forEach(e => {
@@ -1518,13 +1637,71 @@ export function logFormatted(element, raw = false) {
         }
         styles.push(str + `${font ? "font-family:Consolas,'Courier New',monospace;" : ""}`);
     });
+    logs = logs.join("");
+
+    function regexSplit(string) {
+        let regex = /(?<=[^%]|^)(?:%%)*%[co]/g;
+        let str = [];
+        let reg = [];
+        let match;
+        let lastindex = 0;
+        let index;
+        while (match = regex.exec(string)) {
+            index = match.index;
+            let kind = match[0];
+            let mod = 0;
+            if (kind.length > 2) {
+                str[str.length - 1] += kind.substring(0, kind.length - 2);
+                mod = kind.length - 2;
+                kind = kind.substring(kind.length - 2);
+            }
+            str.push(string.substring(((lastindex + 2) > index ? index : (lastindex + 2)), index));
+            lastindex = index + mod;
+            reg.push(kind);
+        }
+        // console.log(lastindex, index, string);
+        str.push(string.substring(lastindex + 2));
+        return {
+            split: str,
+            matches: reg,
+        };
+    }
+
+    let { matches, split } = regexSplit(logs);
+    // console.log("matches\n", matches);
+    // console.log("split\n", split);
+    // debugger
+    let final = [];
+    let finalStyles = [];
+    while (matches.length > 0) {
+        let type = matches.shift();
+        final.push(split.shift() || "");
+        final.push(type);
+        if (type == "%o") {
+            finalStyles.push(objects.shift() || "");
+        } else {
+            finalStyles.push(styles.shift() || "");
+        }
+    }
+    while (split.length > 0) final.push(split.shift());
+    while (objects.length > 0) finalStyles.push(objects.shift());
+    while (styles.length > 0) finalStyles.push(styles.shift());
+
+    final = final.join("");
+
     if (raw) {
         return {
-            logs: logs.join(""),
-            styles
+            logs: final,
+            styles: finalStyles
         }
     } else {
-        console.log(logs.join(""), ...styles);
+        if (collapsed) {
+            console.groupCollapsed("formatted log");
+            console.log(final, ...finalStyles);
+            console.groupEnd();
+        } else {
+            console.log(final, ...finalStyles);
+        }
     }
 }
 window.logFormatted = logFormatted;
