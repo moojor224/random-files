@@ -1477,7 +1477,7 @@ export function logFormatted(object, raw = false, collapsed = false, maxDepth = 
     let indentAmount = 1;
     let depth = 0;
     function stringify(obj) {
-        if (depth > maxDepth) return "<max depth reached>";
+        if (depth > maxDepth) return "'<max depth reached>'";
         try {
             const type = typeof obj;
             //             console.log(type, obj);
@@ -1502,7 +1502,7 @@ export function logFormatted(object, raw = false, collapsed = false, maxDepth = 
                 return `"${obj.replaceAll('"', '\\"')}"`;
             } else if (type == "object") {
                 if (objects.includes(obj)) {
-                    return "<already stringified (recursion prevention)>"
+                    return "'<already stringified (recursion prevention)>'"
                 }
                 // console.log("push to objects");
                 objects.push(obj);
