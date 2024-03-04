@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Document</title>
+    <style>
+        u {
+            padding: 0px 1px;
+        }
+
+        label {
+            width: 65px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div oninput='o.innerHTML=t.value[c="replaceAll"](/<(?!\/?u)/g,"&lt;")[c](/&/g,"&amp;")[c](new RegExp(r.value,"g"),/*"<\u0014$&</\u0014"*/t=>`<u>${t}</u>`)[c](/\u0014/g,"u>")'>
+        <p id=o></p>
+        <p><label>regex</label><input id=r></p>
+        <p><label>text input</label><textarea id=t></textarea></p>
+    </div>
+</body>
+
+</html>
