@@ -2,9 +2,9 @@
 type Dayjs = import("dayjs").Dayjs; // use this format to prevent index.d.ts from breaking
 
 // @ts-ignore
-interface HTMLElement {
-    add: (...arg0: HTMLElement[]) => this
-}
+// interface HTMLElement{
+//     add: (...arg0: HTMLElement[]) => this
+// }
 
 type Without<T, K> = {
     [L in Exclude<keyof T, K>]: T[L];
@@ -93,10 +93,6 @@ interface Window {
     Section: Section;
     Options: Options;
     Tab: Tab;
-}
-
-interface Element {
-    add(...args: Element[]): this;
 }
 
 type HTMLTabElement = HTMLDivElement;

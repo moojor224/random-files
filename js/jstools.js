@@ -1480,16 +1480,15 @@ export function logFormatted(object, raw = false, collapsed = false, maxDepth = 
         if (depth > maxDepth) return "'<max depth reached>'";
         try {
             const type = typeof obj;
-            //             console.log(type, obj);
             let pad = "".padStart(indentAmount * 4, " ");
             if (type == "number" || type == "boolean") {
                 return obj;
             } else if (type == "function") {
                 objects.push(obj);
                 let beautified = js_beautify(obj.toString()); // beautify function to make tabs equal
-                let splitFunc = beautified.split("\n"); //  stringified function split along newlines
+                let splitFunc = beautified.split("\n"); // split formatted function by lines
                 let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) : "") + e); // indent all lines after first to match current indent amount
-                let injected = padded.map((e, n) => n == 0 ? e + " %o" : e);// add %o to after first line
+                let injected = padded.map((e, n) => n == 0 ? e + " %o" : e);// add %o to end of first line
                 return injected.join("\n"); // rejoin function lines and return
             } else if (type == "string") {
                 [
@@ -1497,17 +1496,17 @@ export function logFormatted(object, raw = false, collapsed = false, maxDepth = 
                     ["\r", "\\r"],
                     ["\t", "\\t"],
                 ].forEach(e => {
-                    obj = obj.replaceAll(e[0], e[1]);
+                    obj = obj.replaceAll(e[0], e[1]); // double-escape all escape characters
                 });
-                return `"${obj.replaceAll('"', '\\"')}"`;
+                return `"${obj.replaceAll('"', '\\"')}"`; // escape double quotes
             } else if (type == "object") {
                 if (objects.includes(obj)) {
-                    return "'<already stringified (recursion prevention)>'"
+                    objects.push("<already stringified (recursion prevention)>");
+                    return "%s";
                 }
-                // console.log("push to objects");
                 objects.push(obj);
                 let arr = [];
-                if (!obj) return "";
+                if (!obj) return "null";
                 Object.entries(obj).forEach(function (kvp) {
                     let [key, value] = kvp;
                     //                     console.log("key, value", key, value);
@@ -1532,7 +1531,8 @@ ${pad.substring(4)}}`;
             return
         }
     }
-    let stringified = "const data = " + stringify(object);
+    let stringified = stringify(object);
+    if (typeof object == "object") stringified = "const data = " + stringified;
     let chars = stringified.split("");
     let parsed = "";
     let percentbuffer = "";
@@ -1545,7 +1545,7 @@ ${pad.substring(4)}}`;
                 parsed += percentbuffer + c;
                 percentbuffer = "";
             } else if (percentbuffer.length % 2 == 0) {
-                parsed += percentbuffer;
+                parsed += percentbuffer + c;
                 percentbuffer = "";
             } else {
                 parsed += ("".padStart("%", (percentbuffer.length - 1) * 2));
@@ -1556,30 +1556,23 @@ ${pad.substring(4)}}`;
             parsed += c;
         }
     });
-    // console.log("stringified", "\n" + stringified);
-    // console.log("objects", objects);
-    // console.log("chars", chars);
-    // console.log("parsed", "\n" + parsed);
-    // console.log("indexes", indexes);
     let element = createElement("div", {
         innerHTML: Prism.highlight(parsed, Prism.languages.javascript).replaceAll("%", "%%")
     });
-    // console.log(element.outerHTML);
 
     function calcStyle(element) {
         if (!element.style) return;
         let clss = [...element.classList];
         clss.forEach(e => {
-            classes.forEach(c => {
+            PRISM_CLASSES.forEach(c => {
                 if (c[0].includes(e)) {
                     element.style.color = c[1];
                 }
             });
         });
-
     }
 
-    const classes = [
+    const PRISM_CLASSES = [
         [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
         [["boolean", "constant", "number", "property", "symbol", "tag"], "#4fc1ff"],
         [["attr-name", "builtin", "char", "inserted", "selector", "string"], "#ce9178"],
@@ -1593,7 +1586,6 @@ ${pad.substring(4)}}`;
         [["interpolation-punctuation"], "#ff8800"],
         [["class-name"], "#4ec9b0"],
     ];
-    // const flat = (el) => [el, ...([...el.childNodes].flatMap((e) => flat(e)) || [])];
     let logs = [];
     let styles = [];
     const flattened = flattenChildNodes(element);
@@ -1632,9 +1624,7 @@ ${pad.substring(4)}}`;
         if (e.nodeName != "#text") return;
         logs.push(`%c${e.textContent}`);
         let str = "";
-        if (e.parentNode.style.color.length > 0) {
-            str = `color:${e.parentNode.style.color};`;
-        }
+        if (e.parentNode.style.color.length > 0) str = `color:${e.parentNode.style.color};`;
         styles.push(str + `${font ? "font-family:Consolas,'Courier New',monospace;" : ""}`);
     });
     logs = logs.join("");
@@ -1659,7 +1649,6 @@ ${pad.substring(4)}}`;
             lastindex = index + mod;
             reg.push(kind);
         }
-        // console.log(lastindex, index, string);
         str.push(string.substring(lastindex + 2));
         return {
             split: str,
@@ -1668,9 +1657,6 @@ ${pad.substring(4)}}`;
     }
 
     let { matches, split } = regexSplit(logs);
-    // console.log("matches\n", matches);
-    // console.log("split\n", split);
-    // debugger
     let final = [];
     let finalStyles = [];
     while (matches.length > 0) {
@@ -1690,10 +1676,7 @@ ${pad.substring(4)}}`;
     final = final.join("");
 
     if (raw) {
-        return {
-            logs: final,
-            styles: finalStyles
-        }
+        return { logs: final, styles: finalStyles }
     } else {
         if (collapsed) {
             console.groupCollapsed("formatted log");
@@ -1705,3 +1688,318 @@ ${pad.substring(4)}}`;
     }
 }
 window.logFormatted = logFormatted;
+
+// JSFuck
+// library that converts javascript to code that only uses the following characters: []()!+
+(function () {
+    const MIN = 32, MAX = 126;
+
+    const SIMPLE = {
+        'false': '![]',
+        'true': '!![]',
+        'undefined': '[][[]]',
+        'NaN': '+[![]]',
+        'Infinity': '+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])' // +"1e1000"
+    };
+
+    const CONSTRUCTORS = {
+        'Array': '[]',
+        'Number': '(+[])',
+        'String': '([]+[])',
+        'Boolean': '(![])',
+        'Function': '[]["flat"]',
+        'RegExp': 'Function("return/"+false+"/")()',
+        'Object': '[]["entries"]()'
+    };
+
+    const MAPPING = {
+        'a': '(false+"")[1]',
+        'b': '([]["entries"]()+"")[2]',
+        'c': '([]["flat"]+"")[3]',
+        'd': '(undefined+"")[2]',
+        'e': '(true+"")[3]',
+        'f': '(false+"")[0]',
+        'g': '(false+[0]+String)[20]',
+        'h': '(+(101))["to"+String["name"]](21)[1]',
+        'i': '([false]+undefined)[10]',
+        'j': '([]["entries"]()+"")[3]',
+        'k': '(+(20))["to"+String["name"]](21)',
+        'l': '(false+"")[2]',
+        'm': '(Number+"")[11]',
+        'n': '(undefined+"")[1]',
+        'o': '(true+[]["flat"])[10]',
+        'p': '(+(211))["to"+String["name"]](31)[1]',
+        'q': '("")["fontcolor"]([0]+false+")[20]',
+        'r': '(true+"")[1]',
+        's': '(false+"")[3]',
+        't': '(true+"")[0]',
+        'u': '(undefined+"")[0]',
+        'v': '(+(31))["to"+String["name"]](32)',
+        'w': '(+(32))["to"+String["name"]](33)',
+        'x': '(+(101))["to"+String["name"]](34)[1]',
+        'y': '(NaN+[Infinity])[10]',
+        'z': '(+(35))["to"+String["name"]](36)',
+        'A': '(NaN+[]["entries"]())[11]',
+        'B': '(+[]+Boolean)[10]',
+        'C': 'Function("return escape")()(("")["italics"]())[2]',
+        'D': 'Function("return escape")()([]["flat"])["slice"]("-1")',
+        'E': '(RegExp+"")[12]',
+        'F': '(+[]+Function)[10]',
+        'G': '(false+Function("return Date")()())[30]',
+        'H': null,
+        'I': '(Infinity+"")[0]',
+        'J': null,
+        'K': null,
+        'L': null,
+        'M': '(true+Function("return Date")()())[30]',
+        'N': '(NaN+"")[0]',
+        'O': '(+[]+Object)[10]',
+        'P': null,
+        'Q': null,
+        'R': '(+[]+RegExp)[10]',
+        'S': '(+[]+String)[10]',
+        'T': '(NaN+Function("return Date")()())[30]',
+        'U': '(NaN+Object()["to"+String["name"]]["call"]())[11]',
+        'V': null,
+        'W': null,
+        'X': null,
+        'Y': null,
+        'Z': null,
+        ' ': '(NaN+[]["flat"])[11]',
+        '!': null,
+        '"': '("")["fontcolor"]()[12]',
+        '#': null,
+        '$': null,
+        '%': 'Function("return escape")()([]["flat"])[21]',
+        '&': '("")["fontcolor"](")[13]',
+        '\'': null,
+        '(': '([]["flat"]+"")[13]',
+        ')': '([0]+false+[]["flat"])[20]',
+        '*': null,
+        '+': '(+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]])+[])[2]',
+        ',': '[[]]["concat"]([[]])+""',
+        '-': '(+(.+[0000001])+"")[2]',
+        '.': '(+(+!+[]+[+!+[]]+(!![]+[])[!+[]+!+[]+!+[]]+[!+[]+!+[]]+[+[]])+[])[+!+[]]',
+        '/': '(false+[0])["italics"]()[10]',
+        ':': '(RegExp()+"")[3]',
+        ';': '("")["fontcolor"](NaN+")[21]',
+        '<': '("")["italics"]()[0]',
+        '=': '("")["fontcolor"]()[11]',
+        '>': '("")["italics"]()[2]',
+        '?': '(RegExp()+"")[2]',
+        '@': null,
+        '[': '([]["entries"]()+"")[0]',
+        '\\': '(RegExp("/")+"")[1]',
+        ']': '([]["entries"]()+"")[22]',
+        '^': null,
+        '_': null,
+        '`': null,
+        '{': '(true+[]["flat"])[20]',
+        '|': null,
+        '}': '([]["flat"]+"")["slice"]("-1")',
+        '~': null
+    };
+
+    const GLOBAL = 'Function("return this")()';
+
+    function fillMissingDigits() {
+        let output;
+        for (let number = 0; number < 10; number++) {
+            output = "+[]";
+            if (number > 0) { output = "+!" + output; }
+            for (let i = 1; i < number; i++) { output = "+!+[]" + output; }
+            if (number > 1) { output = output.substring(1); }
+            MAPPING[number] = "[" + output + "]";
+        }
+    }
+
+    function replaceMap() {
+        let character = "", value, i, key;
+
+        function replace(pattern, replacement) {
+            value = value.replace(
+                new RegExp(pattern, "gi"),
+                replacement
+            );
+        }
+
+        function digitReplacer(_, x) { return MAPPING[x]; }
+
+        function numberReplacer(_, y) {
+            let values = y.split("");
+            let head = +(values.shift());
+            let output = "+[]";
+
+            if (head > 0) { output = "+!" + output; }
+            for (i = 1; i < head; i++) { output = "+!+[]" + output; }
+            if (head > 1) { output = output.substring(1); }
+
+            return [output].concat(values).join("+").replace(/(\d)/g, digitReplacer);
+        }
+
+        for (i = MIN; i <= MAX; i++) {
+            character = String.fromCharCode(i);
+            value = MAPPING[character];
+            if (!value) { continue; }
+
+            for (key in CONSTRUCTORS) {
+                replace("\\b" + key, CONSTRUCTORS[key] + '["constructor"]');
+            }
+
+            for (key in SIMPLE) {
+                replace(key, SIMPLE[key]);
+            }
+
+            replace('(\\d\\d+)', numberReplacer);
+            replace('\\((\\d)\\)', digitReplacer);
+            replace('\\[(\\d)\\]', digitReplacer);
+
+            replace("GLOBAL", GLOBAL);
+            replace('\\+""', "+[]");
+            replace('""', "[]+[]");
+
+            MAPPING[character] = value;
+        }
+    }
+
+    function replaceStrings() {
+        let regEx = /[^\[\]\(\)\!\+]{1}/g,
+            all, value, missing,
+            count = MAX - MIN;
+
+        function findMissing() {
+            let all, value, done = false;
+
+            missing = {};
+
+            for (all in MAPPING) {
+
+                value = MAPPING[all];
+
+                if (value && value.match(regEx)) {
+                    missing[all] = value;
+                    done = true;
+                }
+            }
+
+            return done;
+        }
+
+        function mappingReplacer(a, b) {
+            return b.split("").join("+");
+        }
+
+        function valueReplacer(c) {
+            return missing[c] ? c : MAPPING[c];
+        }
+
+        for (all in MAPPING) {
+            if (MAPPING[all]) {
+                MAPPING[all] = MAPPING[all].replace(/\"([^\"]+)\"/gi, mappingReplacer);
+            }
+        }
+
+        while (findMissing()) {
+            for (all in missing) {
+                value = MAPPING[all];
+                value = value.replace(regEx, valueReplacer);
+                MAPPING[all] = value;
+                missing[all] = value;
+            }
+
+            if (count-- === 0) {
+                console.error("Could not compile the following chars:", missing);
+            }
+        }
+    }
+
+    function escapeSequence(c) {
+        let cc = c.charCodeAt(0);
+        if (cc < 256) {
+            return '\\' + cc.toString(8);
+        } else {
+            let cc16 = cc.toString(16);
+            return '\\u' + ('0000' + cc16).substring(cc16.length);
+        }
+    }
+
+    function escapeSequenceForReplace(c) {
+        return escapeSequence(c).replace('\\', 't');
+    }
+
+    function encode(input, wrapWithEval, runInParentScope) {
+        let output = [];
+        if (!input) return "";
+
+        let unmappped = ''
+        for (let k in MAPPING) if (MAPPING[k]) unmappped += k;
+        unmappped = unmappped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        unmappped = new RegExp('[^' + unmappped + ']', 'g');
+        let unmappedCharactersCount = (input.match(unmappped) || []).length;
+        if (unmappedCharactersCount > 1) {
+            input = input.replace(/[^0123456789.adefilnrsuN]/g, escapeSequenceForReplace);
+        } else if (unmappedCharactersCount > 0) {
+            input = input.replace(/["\\]/g, escapeSequence);
+            input = input.replace(unmappped, escapeSequence);
+        }
+
+        let r = "";
+        for (let i in SIMPLE) {
+            r += i + "|";
+        }
+        r += ".";
+
+        input.replace(new RegExp(r, 'g'), function (c) {
+            let replacement = SIMPLE[c];
+            if (replacement) {
+                output.push("(" + replacement + "+[])");
+            } else {
+                replacement = MAPPING[c];
+                if (replacement) {
+                    output.push(replacement);
+                } else {
+                    throw new Error('Found unmapped character: ' + c);
+                }
+            }
+        });
+
+        output = output.join("+");
+
+        if (/^\d$/.test(input)) {
+            output += "+[]";
+        }
+
+        if (unmappedCharactersCount > 1) {
+            output = "(" + output + ")[" + encode("split") + "](" + encode("t") + ")[" + encode("join") + "](" + encode("\\") + ")";
+        }
+
+        if (unmappedCharactersCount > 0) {
+            output = "[][" + encode("flat") + "]" +
+                "[" + encode("constructor") + "]" +
+                "(" + encode("return\"") + "+" + output + "+" + encode("\"") + ")()";
+        }
+
+        if (wrapWithEval) {
+            if (runInParentScope) {
+                output = "[][" + encode("flat") + "]" +
+                    "[" + encode("constructor") + "]" +
+                    "(" + encode("return eval") + ")()" +
+                    "(" + output + ")";
+            } else {
+                output = "[][" + encode("flat") + "]" +
+                    "[" + encode("constructor") + "]" +
+                    "(" + output + ")()";
+            }
+        }
+
+        return output;
+    }
+
+    fillMissingDigits();
+    replaceMap();
+    replaceStrings();
+
+    window.JSFuck = {
+        encode: encode
+    };
+})();
