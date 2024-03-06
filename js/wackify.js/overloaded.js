@@ -20,7 +20,7 @@ const Overload = (function () {
 
     class Overload extends Function {
 
-        static Rest = class{
+        static Rest = class {
             type = null;
             constructor(type) {
                 this.type = type;
@@ -189,8 +189,8 @@ loaded(new Overload.Rest(Number));
 console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.random() * 10)))); // array of 20 random numbers
 
 
-console.log("%c↓ points ↓", "font-size: 20px;");
 (function () { // faked "overloading" using valueOf
+    console.log("%c↓ points ↓", "font-size: 20px;");
     class StringBuilder {
         data = "";
         constructor() {

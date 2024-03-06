@@ -1,6 +1,7 @@
 var style = "font-size: 1.5em; font-weight: bolder; background-color: #42381f; margin: 0px; padding: 3px; color: #fce2a1; cursor: url(\"data:image/svg+xml,%3csvg width='32' height='32' transform='rotate(90%2c 0%2c 0)' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'%3e %3cpath d='M2 0 0 2 1 2 1 3 3 3 3 2 4 2 2 0' fill='%23000000'/%3e %3c/svg%3e\") 16 16, crosshair;";
 console.info("%cconflicting globals! please verify code.\ns\ns\ns\ns", style);
 console.warn("conflicting globals! please verify code. ");
+
 let svgToTinyDataUri = (function () {
     let shorterNames = {
         aqua: /#00ffff(ff)?(?!\w)|#0ff(f)?(?!\w)/gi,
