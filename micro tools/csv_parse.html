@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <tt>
+        <h2>MiniCSV</h2>
+
+        <p>Inspired by @samthor's <a href="https://whistlr.info/2022/code-golf-csv/">code-golf-csv</a>
+            <br>
+            <br>
+        </p>
+        <p>Parse:
+            <br>
+            <br>
+            <textarea readonly style="width:600px;height:60px;background:#444;color:#fff;padding:5px;resize:none">parse=s=>s.replace(/"[^"]*"?/g,a=>s.push(a)&&'"',s=[]).split`\n`.map(y=>y.split`,`.map(z=>z.replace(/"/g,a=>s.shift()).replace(/"([^]?)/g,"$1")))</textarea>
+            <br>
+            <br>
+        </p>
+        <p>Build:
+            <br>
+            <br>
+            <textarea readonly style="width:600px;background:#444;color:#fff;padding:5px;resize:none">build=a=>a.map(y=>y.map(z=>/,|\n/.test(z)?`"${z}"`:z).join`,`).join`\n`</textarea>
+
+            <script>
+
+                // Parse
+                // =====
+
+                parse = s => s.replace(/"[^"]*"?/g, a => s.push(a) && '"', s = []).split`\n`.map(y => y.split`,`.map(z => z.replace(/"/g, a => s.shift()).replace(/"([^]?)/g, "$1")))
+
+
+                console.table(parse(`1,2,3
+        "one","two",mi"xe"d
+        """quotes""inside"""
+        "1:"" 2:"""" 3:"""""" 4:"""""""""
+        "new\nline",dangling quote"`))
+
+                console.table(parse(`\n`)); // [[],[]] or [[""],[""]]
+
+
+                // Build
+                // =====
+
+                build = a => a.map(y => y.map(z => /,|\n/.test(z) ? `"${z}"` : z).join`,`).join`\n`
+
+                console.log(build([['1,', '2\na', 3], [1]])); // '"1,","2\na",3\n1'
+
+            </script>
+        </p>
+</body>
+
+</html>

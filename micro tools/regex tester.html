@@ -4,23 +4,73 @@
 <head>
     <title>Document</title>
     <style>
-        u {
-            padding: 0px 1px;
+        /* u { */
+        /* padding: 0px 1px; */
+        /* } */
+
+        u:nth-of-type(odd) {
+            background-color: #d5ebff;
+        }
+
+        u:nth-of-type(even) {
+            background-color: #9fcfff;
         }
 
         label {
             width: 65px;
             display: inline-block;
         }
+
+        #o {
+            white-space: pre;
+            font-family: monospace;
+        }
+
+        #o span.whitespace {
+            background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAaUlEQVQoU2NkQAUyQK4EEPNAhb8A6RdA/ASmjBHKYAHSBkgK0cxhAGm8AMR/YBpM8CiGaQZpOgPSAHKGCrqROPh3QBqIMR1uC0iDA5Gmg5WRpYFkJ5HsaZDTiLEFHqwgDSRHHCygCCYNADkjFS0ZxPtRAAAAAElFTkSuQmCC);
+            background-position: 50%;
+            background-size: 50%;
+            background-repeat: no-repeat;
+        }
     </style>
 </head>
 
 <body>
-    <div oninput='o.innerHTML=t.value[c="replaceAll"](/<(?!\/?u)/g,"&lt;")[c](/&/g,"&amp;")[c](new RegExp(r.value,"g"),/*"<\u0014$&</\u0014"*/t=>`<u>${t}</u>`)[c](/\u0014/g,"u>")'>
+    <div>
         <p id=o></p>
         <p><label>regex</label><input id=r></p>
         <p><label>text input</label><textarea id=t></textarea></p>
     </div>
+    <script>
+        let o = document.getElementById("o");
+        let r = document.getElementById("r");
+        let t = document.getElementById("t");
+        r.oninput = t.oninput = function () {
+            o.innerHTML = t.value[c = "replaceAll"](/<(?!\/?u)/g, "&lt;")[c](/&/g, "&amp;")[c](new RegExp(r.value, "g"),/*"<\u0014$&</\u0014"*/t => `<u>${t}</u>`)[c](/\u0014/g, "u>")
+            let arr = [...o.childNodes];
+            o.innerHTML = "";
+            debugger
+            arr.forEach(e => {
+                if (e.nodeName == "#text") {
+                    e.textContent.split("").forEach(t => {
+                        let span = t;
+                        if (t == " ") {
+                            span = document.createElement("span");
+                            span.classList.add("whitespace");
+                            span.innerHTML = " ";
+                        } else if (t == "\n") {
+                            span = document.createElement("span");
+                            span.innerHTML = "↵\n";
+                            span.style = "color: #bfbfbf;";
+                        }
+                        o.append(span);
+                    })
+                } else {
+                    o.append(e);
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

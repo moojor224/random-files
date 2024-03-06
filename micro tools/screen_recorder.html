@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <p onclick='(async z=>(R=new MediaRecorder(M=await navigator.mediaDevices.getDisplayMedia({video:1,audio:1}))).start())()'>Start</p>
+    <p onclick='M.getTracks(R.ondataavailable=e=>C.href=top.URL.createObjectURL(e.data)).forEach(t=>t.stop())'>Stop</p>
+    <p><a id=C>DL</a></p>
+</body>
+
+</html>
