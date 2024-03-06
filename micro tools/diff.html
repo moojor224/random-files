@@ -75,17 +75,17 @@ f
 
         diff=(f,r,t,n,o,e,h,g,s=f.length,a=r.length,c=s+a,l=[],d=[],v=[],b=[],j=c)=>{for(;j--;)b[j]=[];for(l[c+1]=0,t=0;t<=c&&-1===j;t++)for(n=-t;n<=t&&-1===j;n+=2){for(n===-t||n!==t&&l[n-1+c]<l[n+1+c]?(o=l[n+1+c],h=3):(o=l[n-1+c]+1,h=2),b[o][e=o-n]=h;o<s&&e<a&&f[o]===r[e];)b[++o][++e]=0;l[n+c]=o,o>=s&&e>=a&&(j=t)}for(;s||a;)d.unshift((g=b[s][a])>2?-1:f[s-1]),v.unshift([0,h=r[a-1],-1,h][g]),g<3&&s--,2!=g&&a--;return[d,v]}
 
-        function logDiff(original, changed) {
+        function logDiff(o, c) {
             let l = [], s = [], g = "padding:2px;display:block", d = "background-color:#f003;" + g, a = "background-color:#9b53;" + g;
-            changed.forEach((e, n) => {
+            c.forEach((e, n) => {
                 if (e === -1) {
-                    l.push("%c- " + original[n] + "%c");
+                    l.push("%c- " + o[n] + "%c");
                     s.push(d, "");
-                } else if (original[n] === -1) {
-                    l.push("%c+ " + changed[n] + "%c");
+                } else if (o[n] === -1) {
+                    l.push("%c+ " + c[n] + "%c");
                     s.push(a, "");
                 } else {
-                    l.push("%c  " + original[n] + "%c");
+                    l.push("%c  " + o[n] + "%c");
                     s.push(g, "");
                 }
             });
@@ -109,8 +109,6 @@ f
 
     <style>
         body {
-            /* color: ; */
-            /* color: ; */
             width: 800px;
             font-family: arial;
         }
@@ -143,7 +141,6 @@ f
 
         code {
             display: block;
-            width: 90%;
             padding: 5px;
         }
     </style>
