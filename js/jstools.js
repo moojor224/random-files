@@ -1630,7 +1630,7 @@ ${pad.substring(4)}}`;
     logs = logs.join("");
 
     function regexSplit(string) {
-        let regex = /(?<=[^%]|^)(?:%%)*%[co]/g;
+        let regex = /(?<!%)(%%)*%[co]/g;
         let str = [];
         let reg = [];
         let match;
