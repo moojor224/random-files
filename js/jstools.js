@@ -2003,3 +2003,24 @@ window.logFormatted = logFormatted;
         encode: encode
     };
 })();
+
+function meyerDiff(seq1, seq2) {
+    var N = seq1.length, M = seq2.length, MAX = N + M, furthestReaching = [], D, k, x, y, step, src = [], target = [], stepMap = [], dist = MAX, a;
+    for (; dist--;)stepMap[dist] = [];
+    furthestReaching[MAX + 1] = 0;
+    for (D = 0; D <= MAX && dist === -1; D++) {
+        for (k = -D, x, y, step; k <= D && dist === -1; k += 2) {
+            if (k === -D || (k !== D && furthestReaching[k - 1 + MAX] < furthestReaching[k + 1 + MAX])) x = furthestReaching[k + 1 + MAX], step = 3;
+            else x = furthestReaching[k - 1 + MAX] + 1, step = 2;
+            y = x - k;
+            stepMap[x][y] = step;
+            while (x < N && y < M && seq1[x] === seq2[y]) x++, y++, stepMap[x][y] = 0;
+            furthestReaching[k + MAX] = x;
+            if (x >= N && y >= M) dist = D;
+        }
+    }
+    for (; N || M;) {
+        a = stepMap[N][M]; src.unshift(a > 2 ? -1 : seq1[N - 1]); target.unshift(a == 2 ? -1 : seq2[M - 1]); a < 3 && N--; a != 2 && M--;
+    }
+    return [src, target]
+}
