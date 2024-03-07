@@ -6,203 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        :root {
-            --color55: #3c8dbc;
+        div#box {
+            width: 200px;
+            height: 20px;
+            border: 1px solid black;
         }
 
-        label.toggle {
-            --scale: 1;
-            --duration: 0.25s;
-            --padding: 5px;
-            cursor: pointer;
+        div#bar {
+            height: 100%;
+            background: red;
             display: inline-block;
-            font-size: 0px;
-        }
-
-        label.toggle>span {
-            font-size: 30px;
-        }
-
-        label.toggle>input[type="checkbox"] {
-            position: absolute;
-            visibility: hidden;
-            height: 0px;
-            width: 0px;
-            padding: 0px;
-            margin: 0px;
-        }
-
-        label.toggle>input[type="checkbox"]:checked+div>div {
-            background-color: var(--color55);
-            border-color: #fff0;
-        }
-
-        label.toggle>input[type="checkbox"]:checked+div>div::before {
-            left: calc(16px * var(--scale));
-            background-color: white;
-        }
-
-        label.toggle .toggle-wrapper {
-            width: calc(32px * var(--scale));
-            height: calc(16px * var(--scale));
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-        }
-
-        label.toggle .toggle-wrapper div {
-            display: inline-block;
-            border-radius: calc(8px * var(--scale));
-            width: calc(58px * var(--scale));
-            height: calc(16px * var(--scale));
-            position: relative;
-            vertical-align: middle;
-            transition-property: background-color, border-color;
-            transition-duration: var(--duration);
-            border: 1px solid var(--color55);
-        }
-
-        label.toggle .toggle-wrapper div::before {
-            display: block;
-            background-color: var(--color55);
-            box-sizing: border-box;
-            border-radius: 50%;
-            width: calc(12px * var(--scale));
-            height: calc(12px * var(--scale));
-            position: absolute;
-            top: calc(2px * var(--scale));
-            left: calc(2px * var(--scale));
-            transition-property: left, background-color;
-            transition-duration: var(--duration);
-            content: "";
-        }
-
-        label.toggle span {
-            padding-right: var(--padding);
-            padding-left: var(--padding);
-        }
-
-        div.cloud {
-            --duration: 0.5s;
-            width: 800px;
-            height: 300px;
-            display: flex;
-            flex-wrap: nowrap;
-
-            &>div.drop {
-                border: 1px solid green;
-                /* display: inline-block; */
-                height: 100%;
-                box-sizing: border-box;
-                flex-basis: calc(100% / 3);
-                width: calc(100% / 3);
-                flex-grow: 1;
-                transition-property: flex-grow, width, flex-basis;
-                transition-duration: var(--duration);
-                display: grid;
-                grid-template-rows: auto 1fr;
-                grid-template-columns: 1fr;
-
-                & div.controls {
-                    grid-row: 1 / span 1;
-                    grid-column: 1 / span 1;
-                    height: 0px;
-                    overflow: hidden;
-                    transition-property: height, padding;
-                    transition-duration: var(--duration);
-                    border-radius: 0px;
-                    border: 1px solid red;
-                    box-sizing: border-box;
-                    padding: 0px;
-                    text-align: center;
-
-                    overflow: hidden;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-
-                & div.graph {
-                    grid-row: 2 / span 1;
-                    grid-column: 1 / span 1;
-                    display: block;
-                    overflow: hidden;
-
-                    &>div.container {
-                        position: relative;
-                        height: 100%;
-                        width: 100%;
-                    }
-                }
-
-                &:hover {
-                    /* flex-grow: 4; */
-                    flex-basis: calc(250% / 3);
-
-                    & div.controls {
-                        height: 25px;
-                        padding: 5px;
-                    }
-                }
-            }
         }
     </style>
 </head>
 
 <body>
-    <div class="cloud">
-        <div class="drop">
-            <div class="controls">
-                <button class="export">button</button>
-            </div>
-            <div class="graph"></div>
-        </div>
-        <div class="drop">
-            <div class="controls">
-                <button class="export">button</button>
-            </div>
-            <div class="graph"></div>
-        </div>
-        <div class="drop">
-            <div class="controls">
-                <button class="export">button</button>
-            </div>
-            <div class="graph"></div>
-        </div>
+    <div id="box">
+        <div id="bar"></div>
     </div>
-
-    <!-- <label class="toggle">
-        <input type="checkbox">
-        <div class="toggle-wrapper">
-            <div></div>
-        </div>
-        <span>option 1</span>
-    </label> -->
-
+    <div id="time"></div>
     <script>
-        function toggleSwitch(text) {
-            let label = document.createElement("label");
-            label.classList = "toggle";
-            let input = document.createElement("input");
-            input.type = "checkbox";
-            let div = document.createElement("div");
-            div.classList = "toggle-wrapper";
-            div.append(document.createElement("div"));
-            let span = document.createElement("span");
-            span.innerHTML = text;
-            label.append(input, div, span);
-            return label;
-            return createElement("label", { "classList": "toggle" }).add(
-                createElement("input", { type: "checkbox" }),
-                createElement("div", { classList: "toggle-wrapper" }).add(createElement("div")),
-                createElement("span", { innerHTML: text })
-            );
-        }
-        ["option 1", "option 2", "option 3"].forEach(e => {
-            document.body.append(toggleSwitch(e));
-            document.body.append(document.createElement("br"));
-        });
     </script>
 
 </body>
