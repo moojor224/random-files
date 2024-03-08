@@ -21,12 +21,590 @@
 </head>
 
 <body>
-    <div id="box">
-        <div id="bar"></div>
-    </div>
-    <div id="time"></div>
     <script>
+        let counter = 100;
+        let seconds = .75;
+        onkeydown = oninput = (_ => counter = 100);
+        setInterval(_ => counter ? (counter--, !counter ? r() : 0) : 0, seconds * 10);
     </script>
+    <pre>const data = { %o
+    events: { %o
+        mouseup: [ %o
+            { %o
+                type: "mouseup",
+                origType: "mouseup",
+                data: undefined,
+                handler: function() { %o
+                    mouseHandled = false;
+                },
+                guid: 1,
+                selector: undefined,
+                needsContext: undefined,
+                namespace: ""
+            },
+            { %o
+                type: "mouseup",
+                origType: "mouseup",
+                data: undefined,
+                handler: function() { %o
+                    if (mousedown) {
+                        mousedown = false;
+                        clearInterval(mousedownInterval);
+                        mousedownInterval = null;
+                    }
+                },
+                guid: 35,
+                selector: undefined,
+                needsContext: undefined,
+                namespace: ""
+            }
+        ],
+        ajaxStart: [ %o
+            { %o
+                type: "ajaxStart",
+                origType: "ajaxStart",
+                data: undefined,
+                handler: function() {
+ %o
+                    clearTimeout(npt);
+
+                    npt = setTimeout(NProgress.start, 200);
+
+                },
+                guid: 4,
+                selector: undefined,
+                needsContext: undefined,
+                namespace: ""
+            }
+        ],
+        ajaxStop: [ %o
+            { %o
+                type: "ajaxStop",
+                origType: "ajaxStop",
+                data: undefined,
+                handler: function() {
+ %o
+                    clearTimeout(npt);
+
+                    NProgress.done();
+
+                },
+                guid: 5,
+                selector: undefined,
+                needsContext: undefined,
+                namespace: ""
+            }
+        ],
+        panelopen: [ %o
+            { %o
+                type: "panelopen",
+                origType: "panelopen",
+                data: undefined,
+                handler: function(event, ui) {
+ %o
+                    if (!Router.enabled)
+
+                        return;
+
+                    var dlg = $(event.target);
+
+                    dlg.data("qrouterorder", routerOrder++);
+
+                    if (dlg.data("qroute"))
+
+                        return;
+
+                    dlg.data("qprhash", window.location.hash);
+
+                    var owner = $(visibleDialogs).not(dlg).last();
+
+                    if (!owner.length)
+
+                        owner = $('html');
+
+                    dialogOpen(owner, dlg, function() {
+
+                        return "!" + (++autoinc).toString(36);
+
+                    });
+
+                },
+                guid: 6,
+                selector: ".ui-dialog-content, .s-Panel",
+                needsContext: false,
+                namespace: ""
+            }
+        ],
+        dialogopen: [ %o
+            { %o
+                type: "dialogopen",
+                origType: "dialogopen",
+                data: undefined,
+                handler: function(event, ui) {
+ %o
+                    if (!Router.enabled)
+
+                        return;
+
+                    var dlg = $(event.target);
+
+                    dlg.data("qrouterorder", routerOrder++);
+
+                    if (dlg.data("qroute"))
+
+                        return;
+
+                    dlg.data("qprhash", window.location.hash);
+
+                    var owner = $(visibleDialogs).not(dlg).last();
+
+                    if (!owner.length)
+
+                        owner = $('html');
+
+                    dialogOpen(owner, dlg, function() {
+
+                        return "!" + (++autoinc).toString(36);
+
+                    });
+
+                },
+                guid: 6,
+                selector: ".ui-dialog-content, .s-Panel",
+                needsContext: false,
+                namespace: ""
+            }
+        ],
+        click: [ %o
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    if (event) {
+                        event.preventDefault();
+                    }
+                
+                    CardRefresh._jQueryInterface.call($__default["default"](this), 'load');
+                },
+                guid: 7,
+                selector: "[data-card-widget=\"card-refresh\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    if (event) {
+                        event.preventDefault();
+                    }
+                
+                    CardWidget._jQueryInterface.call($__default["default"](this), 'toggle');
+                },
+                guid: 8,
+                selector: "[data-card-widget=\"collapse\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    if (event) {
+                        event.preventDefault();
+                    }
+                
+                    CardWidget._jQueryInterface.call($__default["default"](this), 'remove');
+                },
+                guid: 9,
+                selector: "[data-card-widget=\"remove\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    if (event) {
+                        event.preventDefault();
+                    }
+                
+                    CardWidget._jQueryInterface.call($__default["default"](this), 'toggleMaximize');
+                },
+                guid: 10,
+                selector: "[data-card-widget=\"maximize\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    event.preventDefault();
+                
+                    ControlSidebar._jQueryInterface.call($__default["default"](this), 'toggle');
+                },
+                guid: 11,
+                selector: "[data-widget=\"control-sidebar\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    if (event) {
+                        event.preventDefault();
+                    }
+                
+                    DirectChat._jQueryInterface.call($__default["default"](this), 'toggle');
+                },
+                guid: 12,
+                selector: "[data-widget=\"chat-pane-toggle\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function() { %o
+                    ExpandableTable._jQueryInterface.call($__default["default"](this), 'toggleRow');
+                },
+                guid: 13,
+                selector: "[data-widget=\"expandable-table\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function() { %o
+                    Fullscreen._jQueryInterface.call($__default["default"](this), 'toggle');
+                },
+                guid: 14,
+                selector: "[data-widget=\"fullscreen\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    event.preventDefault();
+                    var button = event.currentTarget;
+                
+                    if ($__default["default"](button).data('widget') !== 'pushmenu') {
+                        button = $__default["default"](button).closest(SELECTOR_TOGGLE_BUTTON$1);
+                    }
+                
+                    PushMenu._jQueryInterface.call($__default["default"](button), 'toggle');
+                },
+                guid: 18,
+                selector: "[data-widget=\"pushmenu\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    event.preventDefault();
+                
+                    SidebarSearch._jQueryInterface.call($__default["default"](SELECTOR_DATA_WIDGET$1), 'toggle');
+                },
+                guid: 20,
+                selector: "[data-widget=\"sidebar-search\"] .btn",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    event.preventDefault();
+                    var button = $__default["default"](event.currentTarget);
+                
+                    if (button.data('widget') !== 'navbar-search') {
+                        button = button.closest(SELECTOR_TOGGLE_BUTTON);
+                    }
+                
+                    NavbarSearch._jQueryInterface.call(button, 'toggle');
+                },
+                guid: 24,
+                selector: "[data-widget=\"navbar-search\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(e) { %o
+                    e.preventDefault();
+                
+                    _this3.onTabClick(e.target);
+                
+                    _this3.switchTab(e.target);
+                },
+                guid: 29,
+                selector: ".content-wrapper.iframe-mode .navbar-nav .nav-link",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(e) { %o
+                    e.preventDefault();
+                
+                    _this3.onTabClick(e.target);
+                
+                    _this3.switchTab(e.target);
+                },
+                guid: 30,
+                selector: ".content-wrapper.iframe-mode .navbar-nav .nav-link",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(e) { %o
+                    e.preventDefault();
+                    var target = e.target;
+                
+                    if (target.nodeName == 'I') {
+                        target = e.target.offsetParent;
+                    }
+                
+                    _this3.removeActiveTab(target.attributes['data-type'] ? target.attributes['data-type'].nodeValue : null, target);
+                },
+                guid: 31,
+                selector: "[data-widget=\"iframe-close\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(e) { %o
+                    e.preventDefault();
+                
+                    _this3.toggleFullscreen();
+                },
+                guid: 32,
+                selector: "[data-widget=\"iframe-fullscreen\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "click",
+                origType: "click",
+                data: undefined,
+                handler: function(event) { %o
+                    _this3.toggle(event);
+                },
+                guid: 38,
+                selector: "#s-sidebar-menu[data-widget=\"treeview\"] .nav-link",
+                needsContext: false,
+                namespace: ""
+            }
+        ],
+        MSFullscreenChange: [ %o
+            { %o
+                type: "MSFullscreenChange",
+                origType: "MSFullscreenChange",
+                data: undefined,
+                handler: function() { %o
+                    Fullscreen._jQueryInterface.call($__default["default"](SELECTOR_DATA_WIDGET$2), 'toggleIcon');
+                },
+                guid: 15,
+                selector: undefined,
+                needsContext: undefined,
+                namespace: ""
+            }
+        ],
+        fullscreenchange: [ %o
+            { %o
+                type: "fullscreenchange",
+                origType: "fullscreenchange",
+                data: undefined,
+                handler: function() { %o
+                    Fullscreen._jQueryInterface.call($__default["default"](SELECTOR_DATA_WIDGET$2), 'toggleIcon');
+                },
+                guid: 15,
+                selector: undefined,
+                needsContext: undefined,
+                namespace: ""
+            }
+        ],
+        mozfullscreenchange: [ %o
+            { %o
+                type: "mozfullscreenchange",
+                origType: "mozfullscreenchange",
+                data: undefined,
+                handler: function() { %o
+                    Fullscreen._jQueryInterface.call($__default["default"](SELECTOR_DATA_WIDGET$2), 'toggleIcon');
+                },
+                guid: 15,
+                selector: undefined,
+                needsContext: undefined,
+                namespace: ""
+            }
+        ],
+        webkitfullscreenchange: [ %o
+            { %o
+                type: "webkitfullscreenchange",
+                origType: "webkitfullscreenchange",
+                data: undefined,
+                handler: function() { %o
+                    Fullscreen._jQueryInterface.call($__default["default"](SELECTOR_DATA_WIDGET$2), 'toggleIcon');
+                },
+                guid: 15,
+                selector: undefined,
+                needsContext: undefined,
+                namespace: ""
+            }
+        ],
+        keyup: [ %o
+            { %o
+                type: "keyup",
+                origType: "keyup",
+                data: undefined,
+                handler: function(event) { %o
+                    if (event.keyCode == 38) {
+                        event.preventDefault();
+                        $__default["default"](SELECTOR_SEARCH_RESULTS_GROUP).children().last().focus();
+                        return;
+                    }
+                
+                    if (event.keyCode == 40) {
+                        event.preventDefault();
+                        $__default["default"](SELECTOR_SEARCH_RESULTS_GROUP).children().first().focus();
+                        return;
+                    }
+                
+                    setTimeout(function() {
+                        SidebarSearch._jQueryInterface.call($__default["default"](SELECTOR_DATA_WIDGET$1), 'search');
+                    }, 100);
+                },
+                guid: 21,
+                selector: "[data-widget=\"sidebar-search\"] .form-control",
+                needsContext: false,
+                namespace: ""
+            }
+        ],
+        keydown: [ %o
+            { %o
+                type: "keydown",
+                origType: "keydown",
+                data: undefined,
+                handler: function(event) { %o
+                    var $focused = $__default["default"](':focus');
+                
+                    if (event.keyCode == 38) {
+                        event.preventDefault();
+                
+                        if ($focused.is(':first-child')) {
+                            $focused.siblings().last().focus();
+                        } else {
+                            $focused.prev().focus();
+                        }
+                    }
+                
+                    if (event.keyCode == 40) {
+                        event.preventDefault();
+                
+                        if ($focused.is(':last-child')) {
+                            $focused.siblings().first().focus();
+                        } else {
+                            $focused.next().focus();
+                        }
+                    }
+                },
+                guid: 22,
+                selector: ".sidebar-search-results .list-group",
+                needsContext: false,
+                namespace: ""
+            }
+        ],
+        mousedown: [ %o
+            { %o
+                type: "mousedown",
+                origType: "mousedown",
+                data: undefined,
+                handler: function(e) { %o
+                    e.preventDefault();
+                    clearInterval(mousedownInterval);
+                    var scrollOffset = _this3._config.scrollOffset;
+                
+                    if (!_this3._config.scrollBehaviorSwap) {
+                        scrollOffset = -scrollOffset;
+                    }
+                
+                    mousedown = true;
+                
+                    _this3._navScroll(scrollOffset);
+                
+                    mousedownInterval = setInterval(function() {
+                        _this3._navScroll(scrollOffset);
+                    }, 250);
+                },
+                guid: 33,
+                selector: "[data-widget=\"iframe-scrollleft\"]",
+                needsContext: false,
+                namespace: ""
+            },
+            { %o
+                type: "mousedown",
+                origType: "mousedown",
+                data: undefined,
+                handler: function(e) { %o
+                    e.preventDefault();
+                    clearInterval(mousedownInterval);
+                    var scrollOffset = _this3._config.scrollOffset;
+                
+                    if (_this3._config.scrollBehaviorSwap) {
+                        scrollOffset = -scrollOffset;
+                    }
+                
+                    mousedown = true;
+                
+                    _this3._navScroll(scrollOffset);
+                
+                    mousedownInterval = setInterval(function() {
+                        _this3._navScroll(scrollOffset);
+                    }, 250);
+                },
+                guid: 34,
+                selector: "[data-widget=\"iframe-scrollright\"]",
+                needsContext: false,
+                namespace: ""
+            }
+        ]
+    },
+    handle: function(e) { %o
+    
+        // Discard the second event of a jQuery.event.trigger() and
+        // when an event is called after a page has unloaded
+        return typeof jQuery !== "undefined" && jQuery.event.triggered !== e.type ?
+            jQuery.event.dispatch.apply(elem, arguments) : undefined;
+    }
+}</pre>
 
 </body>
 

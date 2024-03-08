@@ -725,6 +725,7 @@ function extend(target, source) {
     Object.keys(source).forEach(key => {
         target[key] = source[key];
     });
+    return target;
 }
 
 /**
@@ -1472,105 +1473,135 @@ import { js_beautify } from "./beautify.js";
  * @param {Boolean} raw whether to return the raw result or just console.log it
  * @returns {Object[]}
  */
-export function logFormatted(object, raw = false, collapsed = false, maxDepth = Infinity) {
+export function logFormatted(object, options) {
+    let { embedObjects, raw, collapsed, maxDepth } = (function () {
+        let defaults = {
+            embedObjects: false,
+            raw: false,
+            collapsed: false,
+            maxDepth: Infinity
+        }
+        return extend(defaults, options);
+    })();
     let objects = [];
     let indentAmount = 1;
     let depth = 0;
+    let stringifyIndex = 0;
+    let indexes = [];
     function stringify(obj) {
-        if (depth > maxDepth) return "'<max depth reached>'";
+        if (depth > maxDepth) return (stringifyIndex += (temp = "'<max depth reached>'").length, temp);
         try {
             const type = typeof obj;
-            let pad = "".padStart(indentAmount * 4, " ");
+            let pad = " ".repeat(indentAmount * 4);
             if (type == "number" || type == "boolean") {
+                let str = obj + "";
+                stringifyIndex += str.length;
                 return obj;
             } else if (type == "function") {
-                objects.push(obj);
+                if (embedObjects) objects.push(obj);
                 let beautified = js_beautify(obj.toString()); // beautify function to make tabs equal
                 let splitFunc = beautified.split("\n"); // split formatted function by lines
                 let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) : "") + e); // indent all lines after first to match current indent amount
-                let injected = padded.map((e, n) => n == 0 ? e + " %o" : e);// add %o to end of first line
-                return injected.join("\n"); // rejoin function lines and return
+                // console.log("stringified function", injected.join("\n"));
+                stringifyIndex += padded[0].length;
+                indexes.push(stringifyIndex);
+                stringifyIndex += (padded.slice(0).join("\n").length + 1);
+                return padded.join("\n"); // rejoin function lines and return
             } else if (type == "string") {
                 [
                     ["\n", "\\n"],
                     ["\r", "\\r"],
                     ["\t", "\\t"],
+                    ["\"", "\\\""],
                 ].forEach(e => {
-                    obj = obj.replaceAll(e[0], e[1]); // double-escape all escape characters
+                    obj = obj.replaceAll(e[0], e[1]); // double-escape double quotes and all escape characters
                 });
-                return `"${obj.replaceAll('"', '\\"')}"`; // escape double quotes
+                let str = `"${obj}"`;
+                stringifyIndex += str.length;
+                return str;
             } else if (type == "object") {
                 if (objects.includes(obj)) {
-                    objects.push("<already stringified (recursion prevention)>");
-                    return "%s";
+                    let str = "<already stringified (recursion prevention)>";
+                    stringifyIndex += str.length;
+                    return str;
                 }
-                objects.push(obj);
+                if (embedObjects) objects.push(obj);
                 let arr = [];
-                if (!obj) return "null";
-                Object.entries(obj).forEach(function (kvp) {
-                    let [key, value] = kvp;
-                    //                     console.log("key, value", key, value);
-                    indentAmount++;
-                    depth++;
-                    arr.push(`${key}: ${stringify(value)}`);
+                indentAmount++;
+                depth++;
+                stringifyIndex++; // opening brace/bracket
+                indexes.push(stringifyIndex);
+                if (Array.isArray(obj)) {
+                    obj.forEach(e => {
+                        let str = stringify(e);
+                        arr.push(str);
+                    });
                     indentAmount--;
                     depth--;
-                });
-                return `{ %o
+                    stringifyIndex += 1 + // first \n
+                        pad.length + // first line pad
+                        (2 + pad.length) * (arr.length - 1) + // ,\n+pad in between each array item
+                        1 + // \n
+                        pad.length - 4 + // last pad
+                        1; // closing bracket
+                    let returnVal = `[
+${pad + arr.join(",\n" + pad)}
+${pad.substring(4)}]`;
+                    return returnVal;
+                } else {
+                    if (!obj) return "null";
+                    Object.entries(obj).forEach(function (kvp) {
+                        let [key, value] = kvp;
+                        let str = `${key}: ${stringify(value)}`;
+                        arr.push(str);
+                        stringifyIndex += key.length + 3 + pad.length;
+                    });
+                    indentAmount--;
+                    depth--;
+                    stringifyIndex += 1 + // first \n
+                        pad.length + // first line pad
+                        (2 + pad.length) * (arr.length - 1) + // ,\n+pad in between each array item
+                        1 + // \n
+                        pad.length - 4 + // last pad
+                        1; // closing curly brace
+                    let returnVal = `{
 ${pad + arr.join(",\n" + pad)}
 ${pad.substring(4)}}`;
+                    return returnVal;
+                }
             } else {
-                return "" + obj;
+                let str = "" + obj;
+                stringifyIndex += str.length;
+                return str;
             }
         } catch (err) {
             if (obj.toString) {
-                return obj.toString();
+                let str = obj.toString();
+                stringifyIndex += str.length;
+                return str;
             }
-            console.log(obj);
+            // console.log(obj);
             console.error(err);
-            return
+            return;
         }
     }
     let stringified = stringify(object);
-    if (typeof object == "object") stringified = "const data = " + stringified;
-    let chars = stringified.split("");
-    let parsed = "";
-    let percentbuffer = "";
-    let indexes = [];
-    chars.forEach(function (c, index) {
-        if (c == "%") {
-            percentbuffer += c;
-        } else if (percentbuffer.length > 0) {
-            if (c.match(/[^a-zA-Z]/g)) {
-                parsed += percentbuffer + c;
-                percentbuffer = "";
-            } else if (percentbuffer.length % 2 == 0) {
-                parsed += percentbuffer + c;
-                percentbuffer = "";
-            } else {
-                parsed += ("".padStart("%", (percentbuffer.length - 1) * 2));
-                indexes.push(index + percentbuffer.length);
-                percentbuffer = "";
-            }
-        } else {
-            parsed += c;
-        }
-    });
+    let stringifyIndexOffset = 0;
+    if (typeof object == "object") {
+        let str = "const data = ";
+        stringifyIndexOffset = str.length;
+        stringified = str + stringified;
+    }
+    let parsed = "", doubledIndexes = [], tracker = 0;
+    const regex = /(?<!%)(%%)*%[co]/g;
+    console.log("stringified", stringified);
+
+    parsed = stringified;
+
+    console.log("indexes", indexes);
     let element = createElement("div", {
         innerHTML: Prism.highlight(parsed, Prism.languages.javascript).replaceAll("%", "%%")
     });
-
-    function calcStyle(element) {
-        if (!element.style) return;
-        let clss = [...element.classList];
-        clss.forEach(e => {
-            PRISM_CLASSES.forEach(c => {
-                if (c[0].includes(e)) {
-                    element.style.color = c[1];
-                }
-            });
-        });
-    }
 
     const PRISM_CLASSES = [
         [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
@@ -1584,62 +1615,75 @@ ${pad.substring(4)}}`;
         [["parameter"], "#9cdcfe"],
         [["template-punctuation"], "#ce9178"],
         [["interpolation-punctuation"], "#ff8800"],
-        [["class-name"], "#4ec9b0"],
+        [["class-name"], "#4ec9b0"]
     ];
+
+    function calcStyle(element) {
+        if (!element.style) return;
+        let clss = [...element.classList];
+        clss.forEach(e => {
+            PRISM_CLASSES.forEach(c => {
+                if (c[0].includes(e)) {
+                    element.style.color = c[1];
+                }
+            });
+        });
+    }
+
     let logs = [];
     let styles = [];
     const flattened = flattenChildNodes(element);
     flattened.forEach(calcStyle);
-
-    let index = 0;
-    let inserted = 1;
-    let lastpercent = false;
-    function count(node) {
-        let text = "";
-        node.textContent.split("").forEach(function (char) {
-            if (index + 2 * inserted == indexes[0]) {
-                indexes.shift();
-                text += "%o";
-                inserted++;
-            }
-            text += char;
-            if (char == "%" && !lastpercent) {
-                lastpercent = true;
-            } else {
-                lastpercent = false;
+    if (embedObjects) {
+        let index = 0;
+        let inserted = 0;
+        let fulltext = "";
+        let lastPercent = false;
+        function count(node) {
+            let text = "";
+            node.textContent.split("").forEach(function (char) {
+                if (char == "\r") return;
+                if (index + (2 * inserted) == indexes[0] + stringifyIndexOffset) {
+                    indexes.shift();
+                    inserted++;
+                    text += "%o";
+                }
+                if (char == "%" && !lastPercent) {
+                    lastPercent = true;
+                    text += "%";
+                    index--;
+                } else if (lastPercent) {
+                    lastPercent = false;
+                    text += char;
+                } else {
+                    text += char;
+                }
                 index++;
+            });
+            node.textContent = text;
+        }
+        flattened.forEach(e => {
+            if (e.nodeName.includes("text")) {
+                count(e);
             }
         });
-        node.textContent = text || "";
+        console.log("fulltext", fulltext);
     }
 
     flattened.forEach(e => {
-        if (e.nodeName == "#text") {
-            count(e);
-        }
-    });
-
-    const font = false;
-    flattened.forEach(e => {
         if (e.nodeName != "#text") return;
         logs.push(`%c${e.textContent}`);
-        let str = "";
-        if (e.parentNode.style.color.length > 0) str = `color:${e.parentNode.style.color};`;
-        styles.push(str + `${font ? "font-family:Consolas,'Courier New',monospace;" : ""}`);
+        let color = "";
+        if (e.parentNode.style.color) color = `color:${e.parentNode.style.color};`;
+        styles.push(color);
     });
     logs = logs.join("");
 
     function regexSplit(string) {
-        let regex = /(?<!%)(%%)*%[co]/g;
-        let str = [];
-        let reg = [];
-        let match;
-        let lastindex = 0;
-        let index;
+        let str = [], reg = [], match, lastindex = 0, index;
         while (match = regex.exec(string)) {
             index = match.index;
-            let kind = match[0];
-            let mod = 0;
+            let kind = match[0], mod = 0;
             if (kind.length > 2) {
                 str[str.length - 1] += kind.substring(0, kind.length - 2);
                 mod = kind.length - 2;
@@ -1656,9 +1700,7 @@ ${pad.substring(4)}}`;
         };
     }
 
-    let { matches, split } = regexSplit(logs);
-    let final = [];
-    let finalStyles = [];
+    let { matches, split } = regexSplit(logs), final = [], finalStyles = [];
     while (matches.length > 0) {
         let type = matches.shift();
         final.push(split.shift() || "");
@@ -1670,13 +1712,13 @@ ${pad.substring(4)}}`;
         }
     }
     while (split.length > 0) final.push(split.shift());
-    while (objects.length > 0) finalStyles.push(objects.shift());
+    while (objects.length > 0 && embedObjects) finalStyles.push(objects.shift());
     while (styles.length > 0) finalStyles.push(styles.shift());
 
     final = final.join("");
 
     if (raw) {
-        return { logs: final, styles: finalStyles }
+        return { logs: final, styles: finalStyles, html: element.outerHTML }
     } else {
         if (collapsed) {
             console.groupCollapsed("formatted log");
@@ -1691,6 +1733,7 @@ window.logFormatted = logFormatted;
 
 // JSFuck
 // library that converts javascript to code that only uses the following characters: []()!+
+
 (function () {
     const MIN = 32, MAX = 126;
 
