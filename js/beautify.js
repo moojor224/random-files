@@ -1,14 +1,19 @@
 
 
+/**
+ * @function js_beautify
+ * @param {String} code
+ * @returns {String}
+ */
 export let js_beautify = (function () {
 
     /* GENERATED_BUILD_OUTPUT */
     var legacy_beautify_js;
-/******/ (function () { // webpackBootstrap
-/******/ 	"use strict";
-/******/ 	var __webpack_modules__ = ([
-/* 0 */
-/***/ (function (module, __unused_webpack_exports, __webpack_require__) {
+    (function () { // webpackBootstrap
+        "use strict";
+        var __webpack_modules__ = ([
+            /* 0 */
+            (function (module, __unused_webpack_exports, __webpack_require__) {
 
                 /*jshint node:true */
                 /*
@@ -52,12 +57,9 @@ export let js_beautify = (function () {
                 module.exports.defaultOptions = function () {
                     return new Options();
                 };
-
-
-                /***/
             }),
-/* 1 */
-/***/ (function (module, __unused_webpack_exports, __webpack_require__) {
+            /* 1 */
+            (function (module, __unused_webpack_exports, __webpack_require__) {
 
                 /*jshint node:true */
                 /*
@@ -1541,10 +1543,10 @@ export let js_beautify = (function () {
                 module.exports.Beautifier = Beautifier;
 
 
-                /***/
+
             }),
-/* 2 */
-/***/ (function (module) {
+            /* 2 */
+            (function (module) {
 
                 /*jshint node:true */
                 /*
@@ -1967,10 +1969,10 @@ export let js_beautify = (function () {
                 module.exports.Output = Output;
 
 
-                /***/
+
             }),
-/* 3 */
-/***/ (function (module) {
+            /* 3 */
+            (function (module) {
 
                 /*jshint node:true */
                 /*
@@ -2028,10 +2030,10 @@ export let js_beautify = (function () {
                 module.exports.Token = Token;
 
 
-                /***/
+
             }),
-/* 4 */
-/***/ (function (__unused_webpack_module, exports) {
+            /* 4 */
+            (function (__unused_webpack_module, exports) {
 
                 /* jshint node: true, curly: false */
                 // Parts of this section of code is taken from acorn.
@@ -2093,10 +2095,10 @@ export let js_beautify = (function () {
                 exports.allLineBreaks = new RegExp(exports.lineBreak.source, 'g');
 
 
-                /***/
+
             }),
-/* 5 */
-/***/ (function (module, __unused_webpack_exports, __webpack_require__) {
+            /* 5 */
+            (function (module, __unused_webpack_exports, __webpack_require__) {
 
                 /*jshint node:true */
                 /*
@@ -2193,10 +2195,10 @@ export let js_beautify = (function () {
                 module.exports.Options = Options;
 
 
-                /***/
+
             }),
-/* 6 */
-/***/ (function (module) {
+            /* 6 */
+            (function (module) {
 
                 /*jshint node:true */
                 /*
@@ -2393,10 +2395,10 @@ export let js_beautify = (function () {
                 module.exports.mergeOpts = _mergeOpts;
 
 
-                /***/
+
             }),
-/* 7 */
-/***/ (function (module, __unused_webpack_exports, __webpack_require__) {
+            /* 7 */
+            (function (module, __unused_webpack_exports, __webpack_require__) {
 
                 /*jshint node:true */
                 /*
@@ -2986,10 +2988,10 @@ export let js_beautify = (function () {
                 module.exports.line_starters = line_starters.slice();
 
 
-                /***/
+
             }),
-/* 8 */
-/***/ (function (module) {
+            /* 8 */
+            (function (module) {
 
                 /*jshint node:true */
                 /*
@@ -3185,10 +3187,10 @@ export let js_beautify = (function () {
                 module.exports.InputScanner = InputScanner;
 
 
-                /***/
+
             }),
-/* 9 */
-/***/ (function (module, __unused_webpack_exports, __webpack_require__) {
+            /* 9 */
+            (function (module, __unused_webpack_exports, __webpack_require__) {
 
                 /*jshint node:true */
                 /*
@@ -3332,10 +3334,10 @@ export let js_beautify = (function () {
                 module.exports.TOKEN = TOKEN;
 
 
-                /***/
+
             }),
-/* 10 */
-/***/ (function (module) {
+            /* 10 */
+            (function (module) {
 
                 /*jshint node:true */
                 /*
@@ -3417,10 +3419,10 @@ export let js_beautify = (function () {
                 module.exports.TokenStream = TokenStream;
 
 
-                /***/
+
             }),
-/* 11 */
-/***/ (function (module, __unused_webpack_exports, __webpack_require__) {
+            /* 11 */
+            (function (module, __unused_webpack_exports, __webpack_require__) {
 
                 /*jshint node:true */
                 /*
@@ -3529,10 +3531,10 @@ export let js_beautify = (function () {
                 module.exports.WhitespacePattern = WhitespacePattern;
 
 
-                /***/
+
             }),
-/* 12 */
-/***/ (function (module) {
+            /* 12 */
+            (function (module) {
 
                 /*jshint node:true */
                 /*
@@ -3630,10 +3632,10 @@ export let js_beautify = (function () {
                 module.exports.Pattern = Pattern;
 
 
-                /***/
+
             }),
-/* 13 */
-/***/ (function (module) {
+            /* 13 */
+            (function (module) {
 
                 /*jshint node:true */
                 /*
@@ -3699,10 +3701,10 @@ export let js_beautify = (function () {
                 module.exports.Directives = Directives;
 
 
-                /***/
+
             }),
-/* 14 */
-/***/ (function (module, __unused_webpack_exports, __webpack_require__) {
+            /* 14 */
+            (function (module, __unused_webpack_exports, __webpack_require__) {
 
                 /*jshint node:true */
                 /*
@@ -3918,46 +3920,41 @@ export let js_beautify = (function () {
                 module.exports.TemplatablePattern = TemplatablePattern;
 
 
-                /***/
+
             })
-/******/]);
-/************************************************************************/
-/******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
-/******/ 		if (cachedModule !== undefined) {
-/******/ 			return cachedModule.exports;
-                /******/
+        ]);
+
+        // The module cache
+        var __webpack_module_cache__ = {};
+
+        // The require function
+        function __webpack_require__(moduleId) {
+            // Check if module is in cache
+            var cachedModule = __webpack_module_cache__[moduleId];
+            if (cachedModule !== undefined) {
+                return cachedModule.exports;
             }
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
-/******/ 			// no module.id needed
-/******/ 			// no module.loaded needed
-/******/ 			exports: {}
-                /******/
+            // Create a new module (and put it into the cache)
+            var module = __webpack_module_cache__[moduleId] = {
+                // no module.id needed
+                // no module.loaded needed
+                exports: {}
             };
-/******/
-/******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-            /******/
+
+            // Execute the module function
+            __webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+
+            // Return the exports of the module
+            return module.exports;
         }
-/******/
-/************************************************************************/
-/******/
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__(0);
-/******/ 	legacy_beautify_js = __webpack_exports__;
-        /******/
-        /******/
+
+        // startup
+        // Load entry module and return exports
+        // This entry module is referenced by other modules so it can't be inlined
+        var __webpack_exports__ = __webpack_require__(0);
+        legacy_beautify_js = __webpack_exports__;
+
+
     })()
         ;
     var js_beautify = legacy_beautify_js;
@@ -3978,7 +3975,12 @@ export let js_beautify = (function () {
     //     // If we don't even have window, try global.
     //     global.js_beautify = js_beautify;
     // }
-    return js_beautify;
+    /**
+     * @return {String}
+     */
+    return function (...args) {
+        return js_beautify(args);
+    };
 
 }());
 
