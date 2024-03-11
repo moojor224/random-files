@@ -54,10 +54,6 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
  *      }
  * });// <div style="color: red; font-size: 20px; padding: 3px;" data-title="title">Text Here</div>
  */
-// an unintended benefit of this function is that it can also function similar to jQuery's extend function
-// jQuery.extend(target, source1, source2)
-// createElement(target, source1); createElement(target, source2);
-// however, there may be some cases where it won't work
 
 let createElement = window.createElement;
 if (createElement === undefined) { // this is done to allow typescript type definitions in index.d.ts to work
@@ -713,8 +709,6 @@ export function getValueOrDefault(val, def) {
     }
     return val;
 }
-
-export const gvod = getValueOrDefault;
 
 /**
  * puts the properties from source onto target
@@ -1564,7 +1558,7 @@ export function logFormatted(object, options = {}) {
                     });
                     indentAmount--; // decrement indent amount
                     depth--; // decrement depth
-                    let returnVal = `[
+                    let returnVal = `[ 
 ${pad + arr.join(",\n" + pad)}
 ${pad.substring(4)}]`;
                     embedIndex += (1 + // newline before closing bracket
@@ -1591,7 +1585,7 @@ ${pad.substring(4)}]`;
                     });
                     indentAmount--;
                     depth--;
-                    let returnVal = `{
+                    let returnVal = `{ 
 ${pad + arr.join(",\n" + pad)}
 ${pad.substring(4)}}`;
                     embedIndex += (pad.length - 4) +  // end pad
@@ -1671,7 +1665,7 @@ ${pad.substring(4)}}`;
                     index++;
                 } else {
                     text += char;
-                index++;
+                    index++;
                 }
             });
             node.textContent = text;
