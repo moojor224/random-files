@@ -1,0 +1,11 @@
+:root {
+    --grid-size: 3px;
+}
+
+.outputTables>div {
+    margin-bottom: var(--grid-size);
+}
+
+.outputTables>div>table {
+    margin-right: var(--grid-size);
+}
