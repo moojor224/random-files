@@ -57,7 +57,7 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
 
 let createElement = window.createElement;
 if (createElement === undefined) { // this is done to allow typescript type definitions in index.d.ts to work
-    createElement = function (tag = "span", data = {}) {
+    createElement = function (tag, data = {}) {
         if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) { // if tag is a string and string includes non alphanumeric characters, parse as emmet string
             let div = createElement("div"); // create temporary parent node
             if (expandAbbreviation && typeof expandAbbreviation == "function") { // if expandAbbreviation is defined
@@ -1484,128 +1484,115 @@ export function logFormatted(object, options = {}) {
     let depth = 0; // current depth
     let embedIndex = 0; // how many characters have been stringified
     let indexes = []; // array of indexes where objects should be embedded
+    /**
+     * alternative to JSON.stringify that auto-formats the result and supports functions
+     * @param {any} obj object to stringify
+     * @returns {String}
+     */
     function stringify(obj) {
-        if (depth > maxDepth) {
+        if (depth > maxDepth) { // prevent stringifying objects deeper than the max depth
             let str = "'<max depth reached>'";
             embedIndex += str.length
-            return str; // prevent stringifying objects deeper than the max depth
+            return str;
         }
-        try {
-            const type = typeof obj; // store type of object
-            let pad = " ".repeat(indentAmount * 4); // calulate number of spaces to indent
-            if (type == "number" || type == "boolean") { // primitives
-                let str = "" + obj; // convert to string
-                embedIndex += str.length; // add string length to total characters stringified
-                return obj;
-            } else if (type == "function") {
-                objects.push(obj);
-                let beautified = js_beautify(obj.toString().replaceAll("\r", "")); // beautify function to make tabs equal
-                let splitFunc = beautified.split("\n"); // split formatted function by lines
-                while (splitFunc[1].length == 0) {
-                    splitFunc.splice(1, 1);// remove first line of function body if it's blank (optional)
-                }
-                let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) + e : e + " ")); // indent all lines after first to match current indent amount and add space to end of first line
-                embedIndex += padded[0].length; // length of first line
-                indexes.push(embedIndex);
-                embedIndex += (padded.slice(1).join("\n").length + 1); // length of all lines after first line + newline between 1st and 2nd line
-                return padded.join("\n"); // rejoin function lines and return
-            } else if (type == "string") {
-                let quote;
-                if (!obj.includes('"')) {
-                    quote = '"';
-                } else {
-                    quote = "'";
-                }
-                [
-                    ["\n", "\\n"],
-                    ["\r", "\\r"],
-                    ["\t", "\\t"],
-                    (function () {
-                        if (quote == '"') return ['"', '\\"']
-                        return ["'", "\\'"];
-                    })(),
-                ].forEach(e => {
-                    obj = obj.replaceAll(e[0], e[1]); // double-escape double-quotes and all escape characters
-                });
-                let str = `${quote}${obj}${quote}`; // wrap string with quotes
-                embedIndex += str.length; // add to stringified character count
-                return str;
-            } else if (type == "object") {
-                if (objects.includes(obj)) { // prevent recursion by checking objects that have already been stringified
-                    let str = "<already stringified (recursion prevention)>"; // return plain string
-                    embedIndex += str.length; // add to character count
-                    indexes.push(embedIndex); // save index
-                    return str;
-                }
-                objects.push(obj); // add to list of objects
-                let arr = []; // make array that stores all of this object's properties
-                indentAmount++; // increment indent amount
-                depth++; // increment depth
-
-                embedIndex += 2; // opening brace/bracket+space
-                indexes.push(embedIndex); // embed object after opening brace/bracket
-                embedIndex += (1 + // newline after opening brace/bracket
-                    pad.length); // first line pad
-
-                if (Array.isArray(obj)) { // object is an array
-                    obj.forEach((item, index) => { // loop through array items
-                        let str = stringify(item);
-                        arr.push(str);
-                        if (index < obj.length - 1) {
-                            embedIndex += 2 + // comma+newline
-                                pad.length; // next line pad
-                        }
-                    });
-                    indentAmount--; // decrement indent amount
-                    depth--; // decrement depth
-                    let returnVal = `[ 
-${pad + arr.join(",\n" + pad)}
-${pad.substring(4)}]`;
-                    embedIndex += (1 + // newline before closing bracket
-                        (pad.length - 4) + // end pad
-                        1); // closing bracket
-                    return returnVal;
-                } else {
-                    if (!obj) {
-                        embedIndex += 4;
-                        return "null";
-                    }
-                    let entries = Object.entries(obj);
-                    entries.forEach(function (kvp, index) {
-                        let [key, value] = kvp;
-                        embedIndex += key.length + // key length
-                            2; // colon+space
-                        let str = stringify(value);
-                        str = `${key}: ${str}`;
-                        arr.push(str);
-                        if (index < entries.length - 1) {
-                            embedIndex += 2 + // comma+newline
-                                pad.length; // next line pad
-                        }
-                    });
-                    indentAmount--;
-                    depth--;
-                    let returnVal = `{ 
-${pad + arr.join(",\n" + pad)}
-${pad.substring(4)}}`;
-                    embedIndex += (pad.length - 4) +  // end pad
-                        1 + // newline before closing brace
-                        1; // closing brace
-                    return returnVal;
-                }
+        const type = typeof obj; // store type of object
+        let pad = " ".repeat(indentAmount * 4); // calulate number of spaces to indent
+        if (type == "number" || type == "boolean") { // primitives
+            let str = "" + obj; // convert to string
+            embedIndex += str.length; // add string length to total characters stringified
+            return obj;
+        } else if (type == "function") {
+            objects.push(obj); // add to list of objects
+            let beautified = js_beautify(obj.toString().replaceAll("\r", "")); // beautify function to make tabs equal
+            let splitFunc = beautified.split("\n"); // split formatted function by lines
+            while (splitFunc[1].length == 0) {
+                splitFunc.splice(1, 1);// remove first line of function body if it's blank (optional)
+            }
+            let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) + e : e + " ")); // indent all lines after first to match current indent amount and add space to end of first line
+            embedIndex += padded[0].length; // length of first line
+            indexes.push(embedIndex);
+            embedIndex += (padded.slice(1).join("\n").length + 1); // length of all lines after first line + newline between 1st and 2nd line
+            return padded.join("\n"); // rejoin function lines and return
+        } else if (type == "string") {
+            let quote;
+            if (!obj.includes('"')) {
+                quote = '"';
             } else {
-                let str = "" + obj;
-                embedIndex += str.length;
+                quote = "'";
+            }
+            [
+                ["\n", "\\n"],
+                ["\r", "\\r"],
+                ["\t", "\\t"],
+                (quote == '"') ? ['"', '\\"'] : ["'", "\\'"],
+            ].forEach(e => {
+                obj = obj.replaceAll(e[0], e[1]); // double-escape double-quotes and all escape characters
+            });
+            let str = `${quote}${obj}${quote}`; // wrap string with quotes
+            embedIndex += str.length; // add to stringified character count
+            return str;
+        } else if (type == "object") {
+            if (objects.includes(obj)) { // prevent recursion by checking objects that have already been stringified
+                let str = "<already stringified (recursion prevention)>"; // return plain string
+                embedIndex += str.length; // add to character count
+                indexes.push(embedIndex); // save index
                 return str;
             }
-        } catch (err) {
-            console.error(err);
-            if (obj.toString) {
-                let str = obj.toString();
-                embedIndex += str.length;
-                return str;
+            objects.push(obj); // add to list of objects
+            let arr = []; // make array that stores all of this object's properties
+            indentAmount++; // increment indent amount
+            depth++; // increment depth
+
+            embedIndex += 2; // opening brace/bracket+space
+            indexes.push(embedIndex); // embed object after opening brace/bracket
+            embedIndex += (1 + // newline after opening brace/bracket
+                pad.length); // first line pad
+
+            if (Array.isArray(obj)) { // object is an array
+                obj.forEach((item, index) => { // loop through array items
+                    let str = stringify(item);
+                    arr.push(str);
+                    if (index < obj.length - 1) {
+                        embedIndex += 2 + // comma+newline
+                            pad.length; // next line pad
+                    }
+                });
+                indentAmount--; // decrement indent amount
+                depth--; // decrement depth
+                embedIndex += (1 + // newline before closing bracket
+                    (pad.length - 4) + // end pad
+                    1); // closing bracket
+                return `[ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}]`;
+            } else {
+                if (!obj) { // typeof null === "object"
+                    embedIndex += 4;
+                    return "null";
+                }
+                let entries = Object.entries(obj);
+                entries.forEach(function (kvp, index) {
+                    let [key, value] = kvp;
+                    embedIndex += key.length + // key length
+                        2; // colon+space
+                    let str = stringify(value);
+                    str = `${key}: ${str}`;
+                    arr.push(str);
+                    if (index < entries.length - 1) {
+                        embedIndex += 2 + // comma+newline
+                            pad.length; // next line pad
+                    }
+                });
+                indentAmount--; // decrement indent amount
+                depth--; // decrement depth
+                let returnVal = `{ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}}`;
+                embedIndex += 1 + // newline before closing brace
+                    (pad.length - 4) +  // end pad
+                    1; // closing brace
+                return returnVal;
             }
-            return err;
+        } else {
+            let str = "" + obj; // convert to string
+            embedIndex += str.length; // add string length to character count
+            return str;
         }
     }
 
