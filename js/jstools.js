@@ -316,7 +316,8 @@ export function tabColor(color) {
 }
 
 /**
- * parses cookies into a hashmap
+ * parses cookies into a hashmap\
+ * doesn't always work well; just use a library for this
  * @param {string} [cookies=document.cookie] cookies to parse
  * @returns {Map} hashmap of all cookies
  */
@@ -376,14 +377,14 @@ export function parseCookies(cookies = document.cookie) {
  * ```
  */
 export function dynamicSort(prop) {
-    let sortOrder = 1;
-    if (typeof prop === "string" && prop[0] === "-") {
-        sortOrder = -1;
-        prop = prop.substring(1);
+    let sortOrder = 1; // normal sort order
+    if (typeof prop === "string" && prop.startsWith("-")) { // if property name starts with a -
+        sortOrder = -1; // reversed sort order
+        prop = prop.substring(1); // remove minus from property name
     }
-    return function (a, b) {
-        let result = a[prop] < b[prop] ? -1 : a[prop] > b[prop] ? 1 : 0;
-        return result * sortOrder;
+    return function (a, b) { // use this function in array.sort(func); to sort it by the given  property name
+        let result = a[prop] < b[prop] ? -1 : a[prop] > b[prop] ? 1 : 0;  // run comparison and set result to -1,0,1
+        return result * sortOrder; // if sortOrder is reversed, this will return 1,0,-1
     };
 }
 
@@ -404,19 +405,18 @@ export function rgbGradient(
         { r: 0xff, g: 0, b: 0xff }, // 100% purple
     ]
 ) {
-    p = typeof p === "string" ? parseInt(p) : p;
-    let numChunks = colors.length - 1;
-    let chunkSize = 100 / numChunks;
-    for (let i = 1; i <= numChunks; i++) {
+    p = typeof p === "string" ? parseInt(p) : p; // convert p to a number if it is a string
+    let numChunks = colors.length - 1; // get number of sub-gradients
+    let chunkSize = 100 / numChunks; // get what percent each sub-gradient represents out of the whole gradient
+    for (let i = 1; i <= numChunks; i++) { // loop through sub-gradients and find if p is within that gradient
         if (p <= chunkSize * i) {
-            let percent = ((p + (1 - i) * chunkSize) * numChunks) / 100;
-            let color1 = colors[i], color2 = colors[i - 1];
+            let percent = ((p + (1 - i) * chunkSize) * numChunks) / 100; // get percent relative to the sub-gradient
+            let color1 = colors[i], color2 = colors[i - 1]; // get left/right colors for sub-gradient
             let result = [];
-
             Object.keys(colors[0]).forEach((e) => {
-                result.push(Math.floor((color1[e] * percent + color2[e] * (1 - percent)) * 100) / 100);
+                result.push(Math.floor((color1[e] * percent + color2[e] * (1 - percent)) * 100) / 100); // blend colors according to wher p is within the sub-gradient
             });
-            return "rgb(" + result.join(",") + ")";
+            return "rgb(" + result.join(",") + ")"; // return result
         }
     }
 }
@@ -449,12 +449,12 @@ export function gradient(count, colors = [
     { r: 0, g: 0, b: 0xff }, // 80% blue
     { r: 0xff, g: 0, b: 0xff }, // 100% purple
 ]) {
-    if (count == 1) {
+    if (count == 1) { // only one color needed, so just return the first color in the gradient range
         let { r, g, b } = colors[0];
         return [`rgb(${r},${g},${b})`];
     }
-    let arr = new Array(count).fill("");
-    arr = arr.map((e, n) => rgbGradient(map(n, 0, count - 1, 0, 100), colors));
+    let arr = new Array(count).fill(""); // make array of how many colors you need
+    arr = arr.map((e, n) => rgbGradient(map(n, 0, count - 1, 0, 100), colors)); // fill array with colors
     return arr;
 }
 
@@ -465,19 +465,14 @@ export function gradient(count, colors = [
  * @returns {any[]} interleaved arrays
  */
 export function interleaveArrays(fill, ...arrays) {
-    let max = Math.max(...arrays.map(e => e.length));
-    if (fill) arrays = arrays.map(arr => [...arr, ...new Array(max - arr.length).fill(null)]);
-    let change = true;
+    if (fill) {
+        let max = Math.max(...arrays.map(e => e.length)); // get max length of all arrays
+        arrays = arrays.map(arr => [...arr, ...new Array(max - arr.length).fill(null)]); // fill all arrays with null so that they're all the same length
+    }
     let result = [];
-    let count = 0;
-    while (change && count < 100) {
-        count++;
-        change = false;
-        arrays.forEach(arr => {
-            if (arr.length > 0) {
-                change = true;
-                result.push(arr.shift());
-            }
+    while (arrays.filter(e => e.length > 0).length > 0) { // while at least one array still has at least one item in it
+        arrays.forEach(arr => { // loop through each array
+            if (arr.length > 0) result.push(arr.shift()); // remove first element from array and add it to result array
         });
     }
     return result;
@@ -488,27 +483,12 @@ export function interleaveArrays(fill, ...arrays) {
  * run this before using any console logging functions in order to capture everything
  */
 export function captureConsole() {
-    // if (console.everything === undefined) {
-    //     console.everything = [];
-    //     ["log", "warn", "error", "debug"].forEach(e => {
-    //         let d = "default" + e.split("")[0].toUpperCase() + e.substring(1);
-    //         console[d] = console[e].bind(console);
-    //         console[e] = function (...args) {
-    //             console.everything.push({
-    //                 type: e,
-    //                 datetime: Date().toLocaleString(),
-    //                 value: args
-    //             });
-    //             console[d].apply(console, args);
-    //         }
-    //     });
-    // }
     if (console.everything === undefined) {
         console.everything = [];
-        function TS() {
+        function TS() { // timestamp function
             return (new Date).toLocaleString("sv", { timeZone: 'UTC' }) + "Z"
         }
-        window.onerror = function (error, url, line) {
+        window.onerror = function (error, url, line) { // catches all console errors, includes those not made by console.error
             console.everything.push({
                 type: "exception",
                 timeStamp: TS(),
@@ -516,29 +496,28 @@ export function captureConsole() {
             })
             return false;
         }
-        window.onunhandledrejection = function (e) {
+        window.onunhandledrejection = function (e) { // catch some other things, idk
             console.everything.push({
                 type: "promiseRejection",
                 timeStamp: TS(),
                 value: e.reason
-            })
+            });
         }
-
         function hookLogType(logType) {
-            const original = console[logType].bind(console)
-            return function () {
-                console.everything.push({
+            const original = console[logType].bind(console); // save orginal function
+            return function (...args) {
+                console.everything.push({ // add object to console.everything
                     type: logType,
                     timeStamp: TS(),
-                    value: Array.from(arguments)
-                })
-                original.apply(console, arguments)
+                    value: Array.from(args)
+                });
+                original.apply(console, args); // log message to console
             }
         }
 
-        ['log', 'error', 'warn', 'debug'].forEach(logType => {
+        ['log', 'error', 'warn', 'debug'].forEach(logType => { // hook  each log type
             console[logType] = hookLogType(logType)
-        })
+        });
     }
 }
 
@@ -584,16 +563,24 @@ export function getColor(varname, ...append) {
 }
 
 /**
- * 
- * @param {Function} val function to call
+ * returns an object whose valueof result will always be synced with the return value of the function
+ * @param {Function} callback function to call
  * @param  {...any} args arguments to pass to function
- * @returns returns an object whose value will automatically 
+ * @example
+ * let val = lockValue(function(){
+ *     return Math.floor(Math.random() * 10);
+ * });
+ * console.log(+val);
+ * console.log(+val);
+ * console.log(+val);
+ * console.log(+val);
+ * // logs 4 random numbers
  */
-export function lockValue(val, ...args) {
+export function lockValue(callback, ...args) {
     return class {
         constructor() { }
         static valueOf() {
-            return val(...args);
+            return callback(...args);
         }
     }
 }
@@ -609,18 +596,16 @@ export function listAllColorsOnPage() {
             color = color.replace("#", "");
             let split, a;
             switch (color.length) {
-                case 4:
-                    a = true;
-                case 3:
-                    split = color.split("");
+                case 4: a = true; // short rgba
+                case 3: // short rgb
+                    split = color.split(""); // get color channels
                     break;
-                case 8:
-                    a = true;
-                case 6:
-                    split = color.match(/.{1,2}/g);
+                case 8: a = true; // long rgba
+                case 6: // long rgb
+                    split = color.match(/.{1,2}/g); // get color channels
                     break;
             }
-            return `rgb${a ? "a" : ""}(${split.map((e, n) => parseInt(e.padStart(2, e), 16) / (n == 3 ? 255 : 1)).join(", ")})`;
+            return `rgb${a ? "a" : ""}(${split.map((e, n) => parseInt(e.padStart(2, e), 16) / (n == 3 ? 255 : 1)).join(", ")})`; // convert base16 to base10, join with comma and put into rgba()
         }
     }
 
@@ -791,6 +776,7 @@ function convertBase(str, fromBase, toBase) {
 }
 
 // get settings not loading settings
+// ^honestly don't know what ths means, but it's funny, so I'm leaving it
 
 let Settings = window.Settings;
 if (Settings === undefined) {
@@ -1272,7 +1258,7 @@ export let settings = new Settings({
  */
 export function copyObject(obj) {
     return clone(obj);
-    return JSON.parse(JSON.stringify(obj));
+    // return JSON.parse(JSON.stringify(obj));
 }
 
 function clone(obj) {
@@ -1514,18 +1500,20 @@ export function logFormatted(object, options = {}) {
             return padded.join("\n"); // rejoin function lines and return
         } else if (type == "string") {
             let quote;
-            if (!obj.includes('"')) {
+            if (!obj.includes('"')) { // if there are no '"', wrap with '"'
                 quote = '"';
-            } else {
+            } else if (!obj.includes("'")) { // otherwise, if no "'", wrap with "'"
                 quote = "'";
+            } else {
+                quote = '"'; // otherwise, wrap with '"'
             }
             [
                 ["\n", "\\n"],
                 ["\r", "\\r"],
                 ["\t", "\\t"],
-                (quote == '"') ? ['"', '\\"'] : ["'", "\\'"],
+                (quote == '"') ? ['"', '\\"'] : ["'", "\\'"], // only escape the quotes that are the same as what the string is wrapped with
             ].forEach(e => {
-                obj = obj.replaceAll(e[0], e[1]); // double-escape double-quotes and all escape characters
+                obj = obj.replaceAll(e[0], e[1]); // escape quotes and all escape characters
             });
             let str = `${quote}${obj}${quote}`; // wrap string with quotes
             embedIndex += str.length; // add to stringified character count
@@ -1572,10 +1560,10 @@ export function logFormatted(object, options = {}) {
                     let [key, value] = kvp;
                     embedIndex += key.length + // key length
                         2; // colon+space
-                    let str = stringify(value);
-                    str = `${key}: ${str}`;
-                    arr.push(str);
-                    if (index < entries.length - 1) {
+                    let str = stringify(value); // convert value to string
+                    str = `${key}: ${str}`; // create stringified kvp
+                    arr.push(str); // add to array
+                    if (index < entries.length - 1) { // only increment for comma/newlines between lines (1 less than the number of entries)
                         embedIndex += 2 + // comma+newline
                             pad.length; // next line pad
                     }
@@ -1595,12 +1583,10 @@ export function logFormatted(object, options = {}) {
         }
     }
 
-    let element = createElement("div", {
-        innerHTML: Prism.highlight(stringify(object), Prism.languages.javascript).replaceAll("%", "%%")
-    });
+    let element = createElement("div", { innerHTML: Prism.highlight(stringify(object), Prism.languages.javascript).replaceAll("%", "%%") }); // syntax-highlight stringified code and put the result into a div
 
-    const regex = /(?<!%)(%%)*%[co]/g;
-    const PRISM_CLASSES = [
+    const regex = /(?<!%)(%%)*%[co]/g; // regex for matching [co] with odd number of 5 before it
+    const PRISM_CLASSES = [ // list of prism.js classes and their corresponding colors
         [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
         [["boolean", "constant", "number", "property", "symbol", "tag"], "#4fc1ff"],
         [["attr-name", "builtin", "char", "inserted", "selector", "string"], "#ce9178"],
@@ -1615,117 +1601,98 @@ export function logFormatted(object, options = {}) {
         [["class-name"], "#4ec9b0"]
     ];
 
-    function calcStyle(element) {
-        if (!element.style) return;
-        let classList = [...element.classList];
-        classList.forEach(clss => {
-            PRISM_CLASSES.forEach(pclass => {
-                if (pclass[0].includes(clss)) {
-                    element.style.color = pclass[1];
-                }
+    function calcStyle(element) { // get calculated color of a text node based off of the classes it has
+        if (!element.style) return; // if element isa text node, return
+        let classList = [...element.classList]; // convert class list to array
+        classList.forEach(clss => { // loop through element classes
+            PRISM_CLASSES.forEach(pclass => { // check against each prism.js class
+                if (pclass[0].includes(clss)) element.style.color = pclass[1];
             });
         });
     }
 
     let logs = [];
     let styles = [];
-    const flattened = flattenChildNodes(element);
-    flattened.forEach(calcStyle);
-    if (embedObjects) {
-        let index = 0;
-        let lastPercent = false;
-        function count(node) {
-            let text = "";
+    const flattened = flattenChildNodes(element); // get list of all nodes in element
+    flattened.forEach(calcStyle); // manually set style.color for each element based off of its classes
+    if (embedObjects) { // objects will be embedd into the console.log statement for better inspection
+        let index = 0; // current character index
+        let lastPercent = false; // whether the last character was a % (functions as an escape character)
+        function count(node) { // count through each character of the node's textContent and inject a %o
+            let text = ""; // processed text
             node.textContent.split("").forEach(function (char) {
-                if (char == "\r") return;
-                if (index == indexes[0]) {
-                    indexes.shift();
-                    text += "%o";
+                if (char == "\r") return; // completely ignore carriage returns
+                if (index == indexes[0]) { // if current character count is where a %o needs to be injected
+                    indexes.shift(); // remove the inject index
+                    text += "%o"; // inject
                 }
-                if (char == "%" && !lastPercent) {
-                    lastPercent = true;
-                    text += "%";
-                } else if (lastPercent) {
-                    lastPercent = false;
-                    text += char;
-                    index++;
-                } else {
-                    text += char;
-                    index++;
-                }
+                if (char == "%" && !lastPercent) lastPercent = true; // next character should be escaped
+                else if (lastPercent) { // if this character should be escaped
+                    lastPercent = false; // character has been escaped
+                    index++; // increment index
+                } else index++;
+                text += char; // add character to processed text
             });
-            node.textContent = text;
+            node.textContent = text; // set node content to processed text
         }
-        flattened.forEach(e => {
-            if (e.nodeName.includes("text")) {
-                count(e);
-            }
+        flattened.forEach(e => { // loop through all nodes and count through the text nodes
+            if (e.nodeName.includes("text")) count(e);
         });
     }
 
-    flattened.forEach(e => {
+    flattened.forEach(e => { // convert text nodes to console log with interleaved formatting
         if (e.nodeName != "#text") return;
-        logs.push(`%c${e.textContent}`);
-        let color = "";
-        if (e.parentNode.style.color) color = `color:${e.parentNode.style.color};`;
-        styles.push(color);
+        logs.push(`%c${e.textContent}`); // push formatting tag and textContent
+        let color = ""; // set color to default
+        if (e.parentNode.style.color) color = `color:${e.parentNode.style.color};`; // if parent node has color, set it
+        styles.push(color); // add style to list
     });
-    logs = logs.join("");
+    logs = logs.join(""); // join all text nodes into one message
 
-    function regexSplit(string) {
+    function regexSplit(string) { // splits a string along REGEX and returns both the matches and split string
         let str = [], reg = [], match, lastindex = 0, index;
-        while (match = regex.exec(string)) {
+        while (match = regex.exec(string)) { // while string has match to the regex
             index = match.index;
-            let kind = match[0], mod = 0;
-            if (kind.length > 2) {
-                str[str.length - 1] += kind.substring(0, kind.length - 2);
-                mod = kind.length - 2;
+            let kind = match[0], mod = 0; // kind is the string that was matched
+            if (kind.length > 2) { // if match  has more than one %
+                str[str.length - 1] += kind.substring(0, kind.length - 2); // add extra % to previous split string
+                mod = kind.length - 2; // offset index by amount of extra %
                 kind = kind.substring(kind.length - 2);
             }
-            str.push(string.substring(((lastindex + 2) > index ? index : (lastindex + 2)), index));
-            lastindex = index + mod;
-            reg.push(kind);
+            str.push(string.substring(((lastindex + 2) > index ? index : (lastindex + 2)), index)); // push string from (end of last match to beginning of this match) to list
+            lastindex = index + mod; // offset index
+            reg.push(kind); // push %[oc] to matches list
         }
-        str.push(string.substring(lastindex + 2));
-        return {
-            split: str,
-            matches: reg,
-        };
+        str.push(string.substring(lastindex + 2)); // add final chunk of string to list of splits
+        return { split: str, matches: reg, };
     }
 
     let { matches, split } = regexSplit(logs), final = [], finalStyles = [];
     while (matches.length > 0) {
-        let type = matches.shift();
-        final.push(split.shift() || "");
-        final.push(type);
-        if (type == "%o") {
-            finalStyles.push(objects.shift() || "");
-        } else {
-            finalStyles.push(styles.shift() || "");
-        }
+        let type = matches.shift(); // get %[oc] from list
+        final.push(split.shift() || ""); // add first split string to list
+        final.push(type); // push %[oc] to list
+        if (type == "%o") finalStyles.push(objects.shift() || ""); // if %[oc] is %o, push object
+        else finalStyles.push(styles.shift() || ""); // else, push style
     }
-    while (split.length > 0) final.push(split.shift());
-    while (objects.length > 0 && embedObjects) finalStyles.push(objects.shift());
-    while (styles.length > 0) finalStyles.push(styles.shift());
+    while (split.length > 0) final.push(split.shift()); // push all remaining strings
+    while (embedObjects && objects.length > 0) finalStyles.push(objects.shift()); // push all remaining objects
+    while (styles.length > 0) finalStyles.push(styles.shift()); // push all remaining styles
 
-    final = final.join("");
-
-    if (raw) {
-        return { logs: final, styles: finalStyles, html: element.outerHTML }
-    } else {
-        if (collapsed) {
-            console.groupCollapsed(label);
-            console.log(final, ...finalStyles);
-            console.groupEnd();
-        } else {
-            console.log(final, ...finalStyles);
-        }
+    final = final.join(""); // join array into one message
+    if (raw) return { logs: final, styles: finalStyles, html: element.outerHTML } // return raw results without logging to console
+    else {
+        if (collapsed) { // if console log should be inside collapsed console group
+            console.groupCollapsed(label); // create collapsed group
+            console.log(final, ...finalStyles); // log formatted message
+            console.groupEnd(); // end group
+        } else console.log(final, ...finalStyles); // log formatted message
     }
 }
 
-window.logFormatted = logFormatted;
+window.logFormatted = logFormatted; // make function globally available
 
-// JSFuck
+// JSF*ck
 // library that converts javascript to code that only uses the following characters: []()!+
 
 (function () {
@@ -2041,6 +2008,12 @@ window.logFormatted = logFormatted;
     };
 })();
 
+/**
+ * diffs the two strings
+ * @param {String|String[]} seq1 version 1 of file
+ * @param {String|String[]} seq2 version 2 of file
+ * @returns {Object[]}
+ */
 function meyerDiff(seq1, seq2) {
     var N = seq1.length, M = seq2.length, MAX = N + M, furthestReaching = [], D, k, x, y, step, src = [], target = [], stepMap = [], dist = MAX, a;
     for (; dist--;)stepMap[dist] = [];
