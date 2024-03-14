@@ -523,7 +523,6 @@ export function captureConsole() {
                 value: e.reason
             })
         }
-        window.onun
 
         function hookLogType(logType) {
             const original = console[logType].bind(console)
