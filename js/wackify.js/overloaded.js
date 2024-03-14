@@ -1,14 +1,18 @@
 const Overload = (function () {
-    function getPath(o) {
+    /*
+    this library is kinda janky, so it may not work in all cases
+    I'm adding more and more conditionals to adjust for edge cases
+    */
+    function getPath(o) { // make array of object's prototypes all the way up to Object.prototype
         const path = [];
         while (o) {
-            path.push(o);
+            path.unshift(o);
             o = Object.getPrototypeOf(o);
         }
-        return path.reverse();
+        return path;
     }
 
-    function getCommonAncestor(x, y) {
+    function getCommonAncestor(x, y) { // check if two objects have any common prototypes in their prototype tree
         const xPath = getPath(x);
         const yPath = getPath(y);
         const steps = Math.min(xPath.length, yPath.length);
@@ -19,7 +23,6 @@ const Overload = (function () {
     }
 
     class Overload extends Function {
-
         static Rest = class {
             type = null;
             constructor(type) {
@@ -71,66 +74,66 @@ const Overload = (function () {
                 let ancestor = getCommonAncestor(x, y);
                 var a;
                 return !!(
-                    (
-                        (x instanceof y) && (
-                            (o.options.allowObject && (y == Object)) ||
-                            (!o.options.allowObject && (y != Object))
+                    ( // spaghetti
+                        (x instanceof (y instanceof Overload.Rest ? y.type : y)) && ( //  if x instance of (if y is rest, y.type, else y)
+                            (o.options.allowObject && (y == Object)) || // if allowObject and y in Object
+                            (!o.options.allowObject && (y != Object)) // if !allowObject and y is not Object
                         ) && (
-                            ((typeof x == "function") && (y == Function)) ||
-                            ((typeof x != "function") && (y != Function))
+                            ((typeof x == "function") && (y == Function)) || // both x and y are functions
+                            ((typeof x != "function") && (y != Function)) // both x and y are not functions
                         )
                     ) ||
-                    (typeof x == y.name.toLowerCase()) ||
-                    (o.options.allowObject && (ancestor === Object.getPrototypeOf({}))) ||
+                    (typeof x == (y instanceof Overload.Rest ? y.type : y).name.toLowerCase()) || // typeof x is equal to y.name.toLowerCase()
+                    (o.options.allowObject && (ancestor === Object.getPrototypeOf({}))) || // if allowObject and common ancestor prototype is Object.prototype
                     (
-                        (typeof (a = (!o.options.allowObject && (ancestor != Object.getPrototypeOf({})) && ancestor)) === "boolean") &&
+                        (typeof (a = (!o.options.allowObject && (ancestor != Object.getPrototypeOf({})) && ancestor)) === "boolean") && // if type is Boolean and a is true (this edge case is only needed if the argument to check is true, not false)
                         a == true
                     ) ||
                     (
-                        typeof y == "string" &&
-                        typeof x == y.toLowerCase().trim()
+                        typeof y == "string" && // if the type is a string
+                        typeof x == y.toLowerCase().trim() // and typeof x is equal to that string
                     )
-                );
+                ); // regret
             }
-            const candidates = this.overloads.filter(o => {
-                if (args.length == o.types.length && !hasRest(o)) { // types list is defined length
-                    let arr = o.types.map((t, n) => compareType(args[n], t, o));
-                    return !(arr.includes(false));
-                } else if (hasRest(o)) {
-                    // has rest parameter
-                    let types = Object.assign([], o.types);
-                    let rest = types.pop();
-                    let unrestArgs = args.splice(0, types.length);
-                    let unrestMatch = types.map((t, n) => compareType(unrestArgs[n], t, o));
-                    if (unrestMatch.includes(false)) {
+            const candidates = this.overloads.filter(overload => {
+                if (args.length == overload.types.length && !hasRest(overload)) { // types array is static in length, and number of argments matches length of types array
+                    let arr = overload.types.map((type, index) => compareType(args[index], type, overload));
+                    return !arr.includes(false); // if array is entirely true, return true, else return false
+                } else if (hasRest(overload)) { // types list can be any length >= given length
+                    // has Rest parameter
+                    let types = Object.assign([], overload.types); // copy array of types
+                    let rest = types.pop(); // get rest parameter
+                    let unrestArgs = args.splice(0, types.length); // remove all arguments up to rest parameter
+                    let unrestMatch = types.map((t, n) => compareType(unrestArgs[n], t, overload)); // check if unrest args match with unrest types
+                    if (unrestMatch.includes(false)) { // if any don't match, return false
                         return false;
                     }
-                    return !(args.map(e => compareType(e, rest.type, o)).includes(false));
+                    return !(args.map(e => compareType(e, rest.type, overload)).includes(false)); // check if the remaining arguments match the rest parameter type
                 }
-
+                return false;
             });
             let funcToCall;
             // console.log("candidates", candidates);
-            if (funcToCall = candidates.find(e => !hasRest(e))) { }
-            else if (funcToCall = candidates.find(hasRest)) { }
-            else { funcToCall = { callback: this.defaultCallback }; }
+            if (funcToCall = candidates.find(e => !hasRest(e))) { } // find an overload that doesn't use rest parameters (exact parameter list match)
+            else if (funcToCall = candidates.find(hasRest)) { } // find the first overload that uses a rest parameter
+            else { funcToCall = { callback: this.defaultCallback }; } // no valid overloads found (no exact matches for non-rest overloads, and no valid rest overloads)
 
-            return funcToCall.callback(...args);
+            return funcToCall.callback(...args); // call the overloaded function
         }
     }
     return Overload;
 })();
 
-let loaded = new Overload((...args) => console.log("no suitable callback for arguments:", args));
+let loaded = new Overload(); //  make new overloaded function
 
-loaded.addOverload(
+loaded.addOverload( // add an overload
     function (el, count) {
-        console.log("repeat the element " + count + " times:", new Array(count).fill(el));
+        console.log(`repeat the element ${count} times:`, new Array(count).fill(el));
     },
     Element, Number
 ); // accepts an Element and a Number
 
-loaded.addOverload(
+loaded.addOverload( // add an overload
     function (...args) {
         console.log("many numbers:", ...args);
         return args.reduce((a, b) => a + b, 0);
@@ -138,21 +141,21 @@ loaded.addOverload(
     new Overload.Rest(Number)
 ); // Accepts any amount of numbers
 
-loaded.addOverload(
+loaded.addOverload( // add an overload
     function (...args) {
         console.log("one number:", ...args);
     },
     Number
 ); // accepts one number
 
-loaded.addOverload(
+loaded.addOverload( // add an overload
     function (...args) {
         console.log("string:", ...args);
     },
     String
 ); // accepts one string
 
-loaded.addOverload(
+loaded.addOverload( // and so on...
     function (...args) {
         console.log("two numbers:", ...args);
     },
@@ -180,6 +183,7 @@ loaded.addOverload(
     Function
 ); // accepts one function
 
+// call the overloaded function with various types of arguments
 loaded(document.body, 7);
 loaded(3);
 loaded({ a: 1, b: 2 });
@@ -189,19 +193,16 @@ loaded(new Overload.Rest(Number));
 console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.random() * 10)))); // array of 20 random numbers
 
 
-(function () { // faked "overloading" using valueOf
+(function () { // manipulating valueOf to do chained operations
+    // easier to make a .add().add().add() function, but whatever, it's kinda cool
     console.log("%c↓ points ↓", "font-size: 20px;");
     class StringBuilder {
         data = "";
-        constructor() {
-            // console.log("constructor");
-        }
+        constructor() { }
         valueOf() {
-            // console.log("valueOf sb");
             StringBuilder.current = this;
         }
         toString() {
-            // console.log("toString");
             return this.data;
         }
     }
@@ -219,17 +220,11 @@ console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.ran
         set _(value) {
             var ops = Point.operands;
             var operator;
-            if (ops.length === 2 && value === 0) { // 3 - 3
-                operator = this.setSubtract;
-            } else if (ops.length === 2 && value === 1) { // 3 / 3
-                operator = this.setDivide;
-            } else if (ops.length >= 2 && (value === 3 * ops.length)) { // 3 + 3 + 3
-                operator = this.setAdd;
-            } else if (ops.length >= 2 && (value === Math.pow(3, ops.length))) { // 3 * 3
-                operator = this.setMultiply;
-            } else {
-                throw new Error("Unsupported operation (code " + value + ")");
-            }
+            if (ops.length === 2 && value === 0) operator = this.setSubtract; // 3 - 3
+            else if (ops.length === 2 && value === 1) operator = this.setDivide; // 3 / 3
+            else if (ops.length >= 2 && (value === 3 * ops.length)) operator = this.setAdd; // 3 + 3 + 3
+            else if (ops.length >= 2 && (value === Math.pow(3, ops.length))) operator = this.setMultiply; // 3 * 3
+            else throw new Error("Unsupported operation (code " + value + ")");
             Point.operands = []; // reset
             return operator.apply(this, ops);
         }
@@ -265,7 +260,7 @@ console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.ran
             return this;
         }
         toString() {
-            return "Point(" + this.x + ", " + this.y + ")";
+            return `Point(${this.x}, ${this.y})`;
         }
         equals(other) {
             return this.x === other.x && this.y === other.y;
