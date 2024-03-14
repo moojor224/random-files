@@ -1,4 +1,6 @@
 import { devlog } from "./dev-helper.js";
+import { Prism } from "./prism.js";
+import { js_beautify } from "./beautify.js";
 
 /**
  * accepts a css selector and a callback function\
@@ -688,9 +690,7 @@ export function clamp(val, min, max) {
  * @returns {any | undefined}
  */
 export function getValueOrDefault(val, def) {
-    if (val === undefined || val === null) {
-        return def;
-    }
+    if (val === undefined || val === null) return def;
     return val;
 }
 
@@ -1289,6 +1289,8 @@ function clone(obj) {
 function getRegExpFlags(regExp) {
     if (typeof regExp.source.flags == 'string') {
         return regExp.source.flags;
+    } else if (regExp.flags) {
+        return regExp.flags;
     } else {
         var flags = [];
         regExp.global && flags.push('g');
@@ -1439,12 +1441,6 @@ let svgToDataUri = (function () {
     }
     return svgToTinyDataUri.toSrcset;
 })();
-
-import { Prism } from "./prism.js";
-import { js_beautify } from "./beautify.js";
-
-
-
 
 /**
  * stringifies and syntax highlights almost any javascript object and logs it to the console
@@ -1697,25 +1693,8 @@ window.logFormatted = logFormatted; // make function globally available
 
 (function () {
     const MIN = 32, MAX = 126;
-
-    const SIMPLE = {
-        'false': '![]',
-        'true': '!![]',
-        'undefined': '[][[]]',
-        'NaN': '+[![]]',
-        'Infinity': '+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])' // +"1e1000"
-    };
-
-    const CONSTRUCTORS = {
-        'Array': '[]',
-        'Number': '(+[])',
-        'String': '([]+[])',
-        'Boolean': '(![])',
-        'Function': '[]["flat"]',
-        'RegExp': 'Function("return/"+false+"/")()',
-        'Object': '[]["entries"]()'
-    };
-
+    const SIMPLE = { false: '![]', true: '!![]', undefined: '[][[]]', NaN: '+[![]]', Infinity: '+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])'/* +"1e1000" */ };
+    const CONSTRUCTORS = { Array: '[]', Number: '(+[])', String: '([]+[])', Boolean: '(![])', Function: '[]["flat"]', RegExp: 'Function("return/"+false+"/")()', Object: '[]["entries"]()' };
     const MAPPING = {
         'a': '(false+"")[1]',
         'b': '([]["entries"]()+"")[2]',
@@ -1803,106 +1782,63 @@ window.logFormatted = logFormatted; // make function globally available
         '}': '([]["flat"]+"")["slice"]("-1")',
         '~': null
     };
-
     const GLOBAL = 'Function("return this")()';
-
     function fillMissingDigits() {
         let output;
         for (let number = 0; number < 10; number++) {
             output = "+[]";
-            if (number > 0) { output = "+!" + output; }
-            for (let i = 1; i < number; i++) { output = "+!+[]" + output; }
-            if (number > 1) { output = output.substring(1); }
+            if (number > 0) output = "+!" + output;
+            for (let i = 1; i < number; i++) output = "+!+[]" + output;
+            if (number > 1) output = output.substring(1);
             MAPPING[number] = "[" + output + "]";
         }
     }
-
     function replaceMap() {
         let character = "", value, i, key;
-
-        function replace(pattern, replacement) {
-            value = value.replace(
-                new RegExp(pattern, "gi"),
-                replacement
-            );
-        }
-
-        function digitReplacer(_, x) { return MAPPING[x]; }
-
+        let replace = (pattern, replacement) => value = value.replace(new RegExp(pattern, "gi"), replacement);
+        let digitReplacer = (_, x) => MAPPING[x];
         function numberReplacer(_, y) {
             let values = y.split("");
             let head = +(values.shift());
             let output = "+[]";
-
-            if (head > 0) { output = "+!" + output; }
-            for (i = 1; i < head; i++) { output = "+!+[]" + output; }
-            if (head > 1) { output = output.substring(1); }
-
+            if (head > 0) output = "+!" + output;
+            for (i = 1; i < head; i++) output = "+!+[]" + output;
+            if (head > 1) output = output.substring(1);
             return [output].concat(values).join("+").replace(/(\d)/g, digitReplacer);
         }
 
         for (i = MIN; i <= MAX; i++) {
             character = String.fromCharCode(i);
             value = MAPPING[character];
-            if (!value) { continue; }
-
-            for (key in CONSTRUCTORS) {
-                replace("\\b" + key, CONSTRUCTORS[key] + '["constructor"]');
-            }
-
-            for (key in SIMPLE) {
-                replace(key, SIMPLE[key]);
-            }
-
+            if (!value) continue;
+            for (key in CONSTRUCTORS) replace("\\b" + key, CONSTRUCTORS[key] + '["constructor"]');
+            for (key in SIMPLE) replace(key, SIMPLE[key]);
             replace('(\\d\\d+)', numberReplacer);
             replace('\\((\\d)\\)', digitReplacer);
             replace('\\[(\\d)\\]', digitReplacer);
-
             replace("GLOBAL", GLOBAL);
             replace('\\+""', "+[]");
             replace('""', "[]+[]");
-
             MAPPING[character] = value;
         }
     }
-
     function replaceStrings() {
-        let regEx = /[^\[\]\(\)\!\+]{1}/g,
-            all, value, missing,
-            count = MAX - MIN;
-
+        let regEx = /[^\[\]\(\)\!\+]{1}/g, all, value, missing, count = MAX - MIN;
         function findMissing() {
             let all, value, done = false;
-
             missing = {};
-
             for (all in MAPPING) {
-
                 value = MAPPING[all];
-
                 if (value && value.match(regEx)) {
                     missing[all] = value;
                     done = true;
                 }
             }
-
             return done;
         }
-
-        function mappingReplacer(a, b) {
-            return b.split("").join("+");
-        }
-
-        function valueReplacer(c) {
-            return missing[c] ? c : MAPPING[c];
-        }
-
-        for (all in MAPPING) {
-            if (MAPPING[all]) {
-                MAPPING[all] = MAPPING[all].replace(/\"([^\"]+)\"/gi, mappingReplacer);
-            }
-        }
-
+        let mappingReplacer = (a, b) => b.split("").join("+");
+        let valueReplacer = c => missing[c] ? c : MAPPING[c];
+        for (all in MAPPING) if (MAPPING[all]) MAPPING[all] = MAPPING[all].replace(/\"([^\"]+)\"/gi, mappingReplacer);
         while (findMissing()) {
             for (all in missing) {
                 value = MAPPING[all];
@@ -1910,102 +1846,50 @@ window.logFormatted = logFormatted; // make function globally available
                 MAPPING[all] = value;
                 missing[all] = value;
             }
-
-            if (count-- === 0) {
-                console.error("Could not compile the following chars:", missing);
-            }
+            if (count-- === 0) console.error("Could not compile the following chars:", missing);
         }
     }
-
     function escapeSequence(c) {
         let cc = c.charCodeAt(0);
-        if (cc < 256) {
-            return '\\' + cc.toString(8);
-        } else {
+        if (cc < 256) return '\\' + cc.toString(8);
+        else {
             let cc16 = cc.toString(16);
             return '\\u' + ('0000' + cc16).substring(cc16.length);
         }
     }
-
-    function escapeSequenceForReplace(c) {
-        return escapeSequence(c).replace('\\', 't');
-    }
-
-    function encode(input, wrapWithEval, runInParentScope) {
-        let output = [];
+    let escapeSequenceForReplace = c => escapeSequence(c).replace('\\', 't');
+    function encode(input, wrapWithEval, runInParentScope, unmappped = '', output = [], r = "") {
         if (!input) return "";
-
-        let unmappped = ''
         for (let k in MAPPING) if (MAPPING[k]) unmappped += k;
-        unmappped = unmappped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        unmappped = new RegExp('[^' + unmappped + ']', 'g');
+        unmappped = new RegExp('[^' + unmappped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']', 'g');
         let unmappedCharactersCount = (input.match(unmappped) || []).length;
-        if (unmappedCharactersCount > 1) {
-            input = input.replace(/[^0123456789.adefilnrsuN]/g, escapeSequenceForReplace);
-        } else if (unmappedCharactersCount > 0) {
-            input = input.replace(/["\\]/g, escapeSequence);
-            input = input.replace(unmappped, escapeSequence);
-        }
-
-        let r = "";
-        for (let i in SIMPLE) {
-            r += i + "|";
-        }
+        if (unmappedCharactersCount > 1) input = input.replace(/[^0123456789.adefilnrsuN]/g, escapeSequenceForReplace);
+        else if (unmappedCharactersCount > 0) input = input.replace(/["\\]/g, escapeSequence).replace(unmappped, escapeSequence);
+        for (let i in SIMPLE) r += i + "|";
         r += ".";
-
         input.replace(new RegExp(r, 'g'), function (c) {
             let replacement = SIMPLE[c];
-            if (replacement) {
-                output.push("(" + replacement + "+[])");
-            } else {
+            if (replacement) output.push("(" + replacement + "+[])");
+            else {
                 replacement = MAPPING[c];
-                if (replacement) {
-                    output.push(replacement);
-                } else {
-                    throw new Error('Found unmapped character: ' + c);
-                }
+                if (replacement) output.push(replacement);
+                else throw new Error('Found unmapped character: ' + c);
             }
         });
-
         output = output.join("+");
-
-        if (/^\d$/.test(input)) {
-            output += "+[]";
-        }
-
-        if (unmappedCharactersCount > 1) {
-            output = "(" + output + ")[" + encode("split") + "](" + encode("t") + ")[" + encode("join") + "](" + encode("\\") + ")";
-        }
-
-        if (unmappedCharactersCount > 0) {
-            output = "[][" + encode("flat") + "]" +
-                "[" + encode("constructor") + "]" +
-                "(" + encode("return\"") + "+" + output + "+" + encode("\"") + ")()";
-        }
-
+        if (/^\d$/.test(input)) output += "+[]";
+        if (unmappedCharactersCount > 1) output = `(${output})[${encode("split")}](${encode("t")})[${encode("join")}](${encode("\\")})`;
+        if (unmappedCharactersCount > 0) output = `[][${encode("flat")}][${encode("constructor")}](${encode("return\"")}+${output}+${encode("\"")})()`;
         if (wrapWithEval) {
-            if (runInParentScope) {
-                output = "[][" + encode("flat") + "]" +
-                    "[" + encode("constructor") + "]" +
-                    "(" + encode("return eval") + ")()" +
-                    "(" + output + ")";
-            } else {
-                output = "[][" + encode("flat") + "]" +
-                    "[" + encode("constructor") + "]" +
-                    "(" + output + ")()";
-            }
+            if (runInParentScope) output = `[][${encode("flat")}][${encode("constructor")}](${encode("return eval")})()(${output})`;
+            else output = `[][${encode("flat")}][${encode("constructor")}](${output})()`;
         }
-
         return output;
     }
-
     fillMissingDigits();
     replaceMap();
     replaceStrings();
-
-    window.JSFuck = {
-        encode: encode
-    };
+    window.JSFuck = { encode };
 })();
 
 /**
@@ -2016,21 +1900,38 @@ window.logFormatted = logFormatted; // make function globally available
  */
 function meyerDiff(seq1, seq2) {
     var N = seq1.length, M = seq2.length, MAX = N + M, furthestReaching = [], D, k, x, y, step, src = [], target = [], stepMap = [], dist = MAX, a;
-    for (; dist--;)stepMap[dist] = [];
+    for (; dist--;) {
+        stepMap[dist] = [];
+    }
     furthestReaching[MAX + 1] = 0;
     for (D = 0; D <= MAX && dist === -1; D++) {
         for (k = -D, x, y, step; k <= D && dist === -1; k += 2) {
-            if (k === -D || (k !== D && furthestReaching[k - 1 + MAX] < furthestReaching[k + 1 + MAX])) x = furthestReaching[k + 1 + MAX], step = 3;
-            else x = furthestReaching[k - 1 + MAX] + 1, step = 2;
+            if (k === -D || (k !== D && furthestReaching[k - 1 + MAX] < furthestReaching[k + 1 + MAX])) {
+                x = furthestReaching[k + 1 + MAX];
+                step = 3;
+            } else {
+                x = furthestReaching[k - 1 + MAX] + 1;
+                step = 2;
+            }
             y = x - k;
             stepMap[x][y] = step;
-            while (x < N && y < M && seq1[x] === seq2[y]) x++, y++, stepMap[x][y] = 0;
+            while (x < N && y < M && seq1[x] === seq2[y]) {
+                x++;
+                y++;
+                stepMap[x][y] = 0;
+            }
             furthestReaching[k + MAX] = x;
-            if (x >= N && y >= M) dist = D;
+            if (x >= N && y >= M) {
+                dist = D;
+            }
         }
     }
     for (; N || M;) {
-        a = stepMap[N][M]; src.unshift(a > 2 ? -1 : seq1[N - 1]); target.unshift(a == 2 ? -1 : seq2[M - 1]); a < 3 && N--; a != 2 && M--;
+        a = stepMap[N][M];
+        src.unshift(a > 2 ? -1 : seq1[N - 1]);
+        target.unshift(a == 2 ? -1 : seq2[M - 1]);
+        a < 3 && N--;
+        a != 2 && M--;
     }
     return [src, target]
 }
