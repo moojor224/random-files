@@ -8,3 +8,66 @@ l[n+c]=o,o>=s&&e>=a&&(j=t)}for(;s||a;)d.unshift((g=b[s][a])>2?-1:f[s-1]),v.unshi
 r=(_,I="innerHTML",a=A.value.split("\n"),b=B.value.split("\n"),c=D(a,b))=>(C[I]="",/*L(...c),*/c[0].map((e,i)=>C[I]+=(p=>`<div class=${p[0]}>${p[1]} ${p[2]
 .replaceAll("<","&lt;")}</div>`)(c[1][i]==-1?["r","-",e]:c[0][i]==-1?["g","+",c[1][i]]:[""," ",`${e}`])))
 c=100,s=.75,onkeydown=oninput=(_=>c=100),setInterval(_=>c?(c--,!c?r():0):0,s*10);</script>
+<script src="../js/vscdiff.js">
+    var Grid = class {
+    cursor = [0, 0];
+    constructor(x, y) {
+        this.grid = new Array(x).fill(0).map(e => new Array(y).fill("0"));
+        this.x = x;
+        this.y = y;
+        this.log();
+    }
+    subtract(val) {
+        return Math.abs(val) / val;
+    }
+    #move(x, y) {
+        console.log(x, y);
+        let counter = 0;
+        while (Math.abs(x) > 0 && this.cursor[0] >= 0 && this.cursor[0] < this.x - 1 && counter < 100) {
+            this.cursor[0] += this.subtract(x);
+            x -= this.subtract(x);
+            counter++;
+        }
+        if (counter >= 90) {
+            throw new Error("recursion");
+        }
+        counter = 0;
+        while (Math.abs(y) > 0 && this.cursor[1] >= 0 && this.cursor[1] < this.y - 1 && counter < 100) {
+            this.cursor[1] += this.subtract(y);
+            y -= this.subtract(y);
+            counter++;
+        }
+        if (counter >= 90) {
+            throw new Error("recursion");
+        }
+        this.log();
+    }
+    get moveDown() {
+        this.#move(1, 0);
+        return null;
+    }
+    get moveLeft() {
+        this.#move(0, -1);
+        return null;
+    }
+    get moveRight() {
+        console.log("move right");
+        this.#move(0, 1);
+        return null;
+    }
+    get moveUp() {
+        this.#move(-1, 0);
+        return null;
+    }
+    log() {
+        this.grid[this.cursor[0]][this.cursor[1]] = "x";
+        let t = this;
+        console.clear();
+//         setTimeout(function() {
+            console.log(t.grid.map(e => e.join("")).join("\n"));
+            console.log(t);
+//         }, 100);
+    }
+}
+new Grid(7, 10);
+</script>
