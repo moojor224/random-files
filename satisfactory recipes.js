@@ -1,17 +1,4 @@
 function createElement(tag, data = {}) {
-    if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) { // if tag is a string and string includes non alphanumeric characters, parse as emmet string
-        let div = createElement("div"); // create temporary parent node
-        if (expandAbbreviation && typeof expandAbbreviation == "function") { // if expandAbbreviation is defined
-            div.innerHTML = expandAbbreviation(tag); // expand abbreviation
-        } else if (emmet && emmet.expandAbbreviation && typeof emmet.expandAbbreviation == "function") { // if emmet.expandAbbreviation is defined
-            div.innerHTML = emmet.expandAbbreviation(tag); // expand abbreviation
-        }
-        /**
-         * @type {HTMLElement[]}
-         */
-        let arr = Array.from(div.children);
-        return arr.length == 1 ? arr[0] : arr; // if only 1 top-level element was generated, return it, else return whole array
-    }
     tag = typeof tag === "string" ? document.createElement(tag) : tag; // convert string to HTMLElement
     Object.keys(data).forEach((e) => { // loop through object properties
         if (typeof data[e] === "object") { // if value is object, recurse
