@@ -1516,20 +1516,17 @@ export function logFormatted(object, options = {}) {
     while (styles.length > 0) finalStyles.push(styles.shift()); // push all remaining styles
 
     final = final.join(""); // join array into one message
-    if (raw) return { logs: final, styles: finalStyles, html: element.outerHTML } // return raw results without logging to console
-    else {
-        if (collapsed) { // if console log should be inside collapsed console group
-            console.groupCollapsed(label); // create collapsed group
-            console.log(final, ...finalStyles); // log formatted message
-            console.groupEnd(); // end group
-        } else console.log(final, ...finalStyles); // log formatted message
+    if(raw)return{logs:final,styles:finalStyles,html:element.outerHTML}
+    else{
+        if(collapsed){
+            console.groupCollapsed(label);
+            console.log(final,...finalStyles);
+            console.groupEnd();
+        }else console.log(final,...finalStyles);
     }
 }
 
-window.logFormatted = logFormatted; // make function globally available
-
-// JSF*ck
-// library that converts javascript to code that only uses the following characters: []()!+
+window.logFormatted = logFormatted;
 
 (function () {
     const MIN = 32, MAX = 126;
@@ -1732,25 +1729,19 @@ window.logFormatted = logFormatted; // make function globally available
     window.JSFuck = { encode };
 })();
 
-/**
- * diffs the two strings
- * @param {String|String[]} seq1 version 1 of file
- * @param {String|String[]} seq2 version 2 of file
- * @returns {Object[]}
- */
 function meyerDiff(seq1, seq2) {
-    var N = seq1.length, M = seq2.length, MAX = N + M, furthestReaching = [], D, k, x, y, step, src = [], target = [], stepMap = [], dist = MAX, a;
+    var N = seq1.length, M = seq2.length, X = N + M, furthestReaching = [], D, k, x, y, step, src = [], target = [], stepMap = [], dist = X, a;
     for (; dist--;) {
         stepMap[dist] = [];
     }
-    furthestReaching[MAX + 1] = 0;
-    for (D = 0; D <= MAX && dist === -1; D++) {
+    furthestReaching[X + 1] = 0;
+    for (D = 0; D <= X && dist === -1; D++) {
         for (k = -D, x, y, step; k <= D && dist === -1; k += 2) {
-            if (k === -D || (k !== D && furthestReaching[k - 1 + MAX] < furthestReaching[k + 1 + MAX])) {
-                x = furthestReaching[k + 1 + MAX];
+            if (k === -D || (k !== D && furthestReaching[k - 1 + X] < furthestReaching[k + 1 + X])) {
+                x = furthestReaching[k + 1 + X];
                 step = 3;
             } else {
-                x = furthestReaching[k - 1 + MAX] + 1;
+                x = furthestReaching[k - 1 + X] + 1;
                 step = 2;
             }
             y = x - k;
@@ -1760,13 +1751,13 @@ function meyerDiff(seq1, seq2) {
                 y++;
                 stepMap[x][y] = 0;
             }
-            furthestReaching[k + MAX] = x;
+            furthestReaching[k + X] = x;
             if (x >= N && y >= M) {
                 dist = D;
             }
         }
     }
-    for (; N || M;) {
+    for (;N||M;) {
         a = stepMap[N][M];
         src.unshift(a > 2 ? -1 : seq1[N - 1]);
         target.unshift(a == 2 ? -1 : seq2[M - 1]);
@@ -1775,3 +1766,5 @@ function meyerDiff(seq1, seq2) {
     }
     return [src, target]
 }
+export let logAndReturn=(arg)=>(console.log(arg),arg)
+export let timeConversions=(_=>(s=t=>t*1000,m=t=>t*s(60),h=t=>t*m(60),d=t=>t*h(24),w=t=>t*d(7),y=t=>t*d(365),{seconds:s,minutes:m,hours:h,days:d,weeks:w,years:y}))();
