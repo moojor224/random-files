@@ -1,73 +1,9 @@
 <style>*{box-sizing:border-box}body{margin:0;height:100vh}textarea{width:50%;height:40%;margin:0;resize:none}pre{height:60%;overflow:auto;margin:0}
-.g{background:#9b53}.r{background:#f003}</style><textarea id=A></textarea><textarea id=B></textarea><pre id=C><script>N=console
+.g{background:rgba(8, 160, 0, 0.509)}.r{background:rgba(255, 0, 0, 0.386)}</style><textarea id=A></textarea><textarea id=B></textarea><pre id=C><script>N=console
 D=(f,r,t,n,o,e,h,g,s=f.length,a=r.length,c=s+a,l=[],d=[],v=[],b=[],j=c)=>{for(;j--;)b[j]=[];for(l[c+1]=0,t=0;t<=c&&-1===j;t++)for(n=-t;n<=t&&-1===j;n+=2){
-for(n===-t||n!==t&&l[n-1+c]<l[n+1+c]?(o=l[n+1+c],h=3):(o=l[n-1+c]+1,h=2),b[o][e=o-n]=h;o<s&&e<a&&f[o]===r[e];)b[++o][++e]=0;
-l[n+c]=o,o>=s&&e>=a&&(j=t)}for(;s||a;)d.unshift((g=b[s][a])>2?-1:f[s-1]),v.unshift([0,h=r[a-1],-1,h][g]),g<3&&s--,2!=g&&a--;return[d,v]}
-// L=(o,c,b="background:",l=[],s=[],g="padding:2px;display:block",d=b+"#f003;"+g,a=b+"#9b53;"+g,v)=>(c.map((e,n)=>{(l.push(`%c${e==-1?(v=!0,"-"):o[n]==-1?
-// (v=!1,"+"):(v=!0," ")}${(v?o:c)[n]}%c`),s.push(v?e==-1?d:g:a,""))}),N.groupCollapsed("diff"),N.log(l.join(""),...s),N.groupEnd())
-r=(_,I="innerHTML",a=A.value.split("\n"),b=B.value.split("\n"),c=D(a,b))=>(C[I]="",/*L(...c),*/c[0].map((e,i)=>C[I]+=(p=>`<div class=${p[0]}>${p[1]} ${p[2]
-.replaceAll("<","&lt;")}</div>`)(c[1][i]==-1?["r","-",e]:c[0][i]==-1?["g","+",c[1][i]]:[""," ",`${e}`])))
+for(n===-t||n!==t&&l[n-1+c]<l[n+1+c]?(o=l[n+1+c],h=3):(o=l[n-1+c]+1,h=2),b[o][e=o-n]=h;o<s&&e<a&&f[o]===r[e];)b[++o][++e]=0;l[n+c]=o,o>=s&&e>=a&&(j=t)}
+for(;s||a;)d.unshift((g=b[s][a])>2?-1:f[s-1]),v.unshift([0,h=r[a-1],-1,h][g]),g<3&&s--,2!=g&&a--;return[d,v]}//L=(o,c,b="background:",l=[],s=[],g="padding:2px;display:block",
+//d=b+"#f003;"+g,a=b+"#9b53;"+g,v)=>(c.map((e,n)=>{(l.push(`%c${e==-1?(v=!0,"-"):o[n]==-1?(v=!1,"+"):(v=!0," ")}${(v?o:c)[n]}%c`),s.push(v?e==-1?d:g:a,""))}),
+/*N.groupCollapsed("diff"),N.log(l.join(""),...s),N.groupEnd())*/r=(_,I="innerHTML",a=A.value.split(""),b=B.value.split(""),c=D(a,b))=>(C[I]="",//L(...c),
+c[0].map((e,i)=>C[I]+=(p=>`<span class=${p[0]}>${p[1]}${p[2].replaceAll("<","&lt;")}</span>`)(c[1][i]==-1?["r","",e]:c[0][i]==-1?["g","",c[1][i]]:["","",`${e}`])))
 c=100,s=.75,onkeydown=oninput=(_=>c=100),setInterval(_=>c?(c--,!c?r():0):0,s*10);</script>
-<script src="../js/vscdiff.js">
-    var Grid = class {
-    cursor = [0, 0];
-    constructor(x, y) {
-        this.grid = new Array(x).fill(0).map(e => new Array(y).fill("0"));
-        this.x = x;
-        this.y = y;
-        this.log();
-    }
-    subtract(val) {
-        return Math.abs(val) / val;
-    }
-    #move(x, y) {
-        console.log(x, y);
-        let counter = 0;
-        while (Math.abs(x) > 0 && this.cursor[0] >= 0 && this.cursor[0] < this.x - 1 && counter < 100) {
-            this.cursor[0] += this.subtract(x);
-            x -= this.subtract(x);
-            counter++;
-        }
-        if (counter >= 90) {
-            throw new Error("recursion");
-        }
-        counter = 0;
-        while (Math.abs(y) > 0 && this.cursor[1] >= 0 && this.cursor[1] < this.y - 1 && counter < 100) {
-            this.cursor[1] += this.subtract(y);
-            y -= this.subtract(y);
-            counter++;
-        }
-        if (counter >= 90) {
-            throw new Error("recursion");
-        }
-        this.log();
-    }
-    get moveDown() {
-        this.#move(1, 0);
-        return null;
-    }
-    get moveLeft() {
-        this.#move(0, -1);
-        return null;
-    }
-    get moveRight() {
-        console.log("move right");
-        this.#move(0, 1);
-        return null;
-    }
-    get moveUp() {
-        this.#move(-1, 0);
-        return null;
-    }
-    log() {
-        this.grid[this.cursor[0]][this.cursor[1]] = "x";
-        let t = this;
-        console.clear();
-//         setTimeout(function() {
-            console.log(t.grid.map(e => e.join("")).join("\n"));
-            console.log(t);
-//         }, 100);
-    }
-}
-new Grid(7, 10);
-</script>
