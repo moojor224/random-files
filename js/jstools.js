@@ -1966,8 +1966,22 @@ function meyerDiff(seq1, seq2) {
         a = stepMap[N][M];
         src.unshift(a > 2 ? -1 : seq1[N - 1]);
         target.unshift(a == 2 ? -1 : seq2[M - 1]);
-        a < 3 && N--;
-        a != 2 && M--;
+        a < 3 && N--; // this functions like a ternary operator with no false case
+        a != 2 && M--; // if a==2, logic short-circuits and does not continue to second half
+        /* ternary equivalent
+        a < 3 ? N-- : 0;
+        a != 2 ? M-- : 0;
+        */
     }
     return [src, target]
+}
+
+/**
+ * logs and returns an object
+ * @param {any} arg
+ * @returns {typeof arg}
+ */
+export function logAndReturn(arg) {
+    console.log(arg);
+    return arg;
 }
