@@ -1985,3 +1985,49 @@ export function logAndReturn(arg) {
     console.log(arg);
     return arg;
 }
+
+/**
+ * a set of utility functions to convert times to milliseconds
+ */
+export let timeConversions = (function () {
+    let seconds = t => t * 1000;
+    let minutes = t => t * seconds(60);
+    let hours = t => t * minutes(60);
+    let days = t => t * hours(24);
+    let weeks = t => t * days(7);
+    let years = t => t * days(365);
+    return { seconds, minutes, hours, days, weeks, years };
+})();
+
+export let WIP = (function () {
+    var byteLength = 16;
+
+    function encode(str) {
+        let bits = str.split("").map(char => char.codePointAt(0).toString(2).padStart(8, 0));
+        let bytes = bits.join("").match(new RegExp(`.{1,${byteLength}}`, "g"));
+        let ints = bytes.map(e => parseInt(e, 2));
+        let lastLength = bytes[bytes.length - 1].length;
+        return String.fromCodePoint(lastLength) + ints.map(e => String.fromCodePoint(e)).join("");
+    }
+
+    function decode(str) {
+        let split = str.split("");
+        let lastLength = split.shift().codePointAt(0);
+        let points = split.map(e => e.codePointAt(0));
+        console.log("points", points);
+        let longBytes = points.map((e, n) => e.toString(2).padStart(n == points.length - 1 ? lastLength : byteLength, 0));
+        let bytes = longBytes.join("").match(/.{1,8}/g);
+        let chars = bytes.map(e => String.fromCodePoint(parseInt(e, 2) + 0));
+        return chars.join("");
+    }
+
+    var tobe = "abcdefghijklmnopqrstuvqxyz[]\",";
+    var encoded = encode(tobe);
+    var decoded = decode(encoded);
+
+    console.log(tobe);
+    console.log(encoded);
+    console.log(decoded);
+    console.log("ratio:", encoded.length / tobe.length);
+    console.log(tobe == decoded);
+})();
