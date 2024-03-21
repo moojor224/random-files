@@ -62,7 +62,7 @@ String.prototype.replaceIndex = function (start, end, replacer) {
 let stringBefore = (await fetch("/js/jstools.js").then(e => e.text())).replaceAll("<", "&lt;"),
     stringAfter = (await fetch("/js/jstools.golfed.js").then(e => e.text())).replaceAll("<", "&lt;");
 let stringDiff = vscdiff.stringDiff(stringBefore, stringAfter).sort(advancedDynamicSort("-originalStart"));
-console.log("stringDiff", stringDiff);
+// console.log("stringDiff", stringDiff);
 let finalBefore = [], finalAfter = [];
 let final = stringBefore;
 
@@ -89,14 +89,15 @@ stringDiff.forEach(diff => {
 // finalBefore.push(stringBefore.substring(stringDiff[stringDiff.length - 1].originalStart + stringDiff[stringDiff.length - 1].originalLength));
 // finalAfter.push(stringAfter.substring(stringDiff[stringDiff.length - 1].modifiedStart + stringDiff[stringDiff.length - 1].modifiedLength));
 
-console.log("string diff", JSON.stringify(stringDiff, null, 2));
-console.log(finalBefore, finalAfter);
+// console.log("string diff", JSON.stringify(stringDiff, null, 2));
+// console.log(finalBefore, finalAfter);
 
 let result = createElement("div").add(
     createElement("pre", { innerHTML: final }),
 );
 
-logAndReturn(flattenChildNodes(result)).forEach(node => {
+// logAndReturn
+(flattenChildNodes(result)).forEach(node => {
     if (node.nodeName.toLowerCase() == "#text") {
         node.textContent = node.textContent;
     }
