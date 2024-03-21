@@ -17,3 +17,10 @@ typeof e=="bigint"         t(e)[1]=="i"
 typeof e=="string"         t(e)[1]=="t"
 typeof e=="symbol"         t(e)[1]=="y"
 typeof e=="object"         t(e)[0]=="o"
+
+
+convert if/else to ternary or short-circuit boolean comparison
+
+if(a==0)b++        if(a==0)b++;else c++
+a==0?b++:0         a==0?b++:c++
+a==0&&b++          a==0&&b++||c++  // this is bad (only works if b!=-1, and more chars)
