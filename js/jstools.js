@@ -399,13 +399,13 @@ export function dynamicSort(prop) {
  * [
  *     {a: 1, b: 2},
  *     {a: 0, b: 3},
- *     {a: 1: b: 1},
+ *     {a: 1, b: 1},
  *     {a: 0, b: 1},
  * ].sort(func);
  * result = [
  *     {a: 0, b: 1},
  *     {a: 0, b: 3},
- *     {a: 1: b: 1},
+ *     {a: 1, b: 1},
  *     {a: 1, b: 2},
  * ];
  */
@@ -467,7 +467,7 @@ export function rgbGradient(
             let color1 = colors[i], color2 = colors[i - 1]; // get left/right colors for sub-gradient
             let result = [];
             Object.keys(colors[0]).forEach((e) => {
-                result.push(Math.floor((color1[e] * percent + color2[e] * (1 - percent)) * 100) / 100); // blend colors according to wher p is within the sub-gradient
+                result.push(Math.floor((color1[e] * percent + color2[e] * (1 - percent)) * 100) / 100); // blend colors according to where p is within the sub-gradient
             });
             return "rgb(" + result.join(",") + ")"; // return result
         }
