@@ -1,7 +1,8 @@
 import { devlog } from "./dev-helper.js";
 import { Prism } from "./prism.js";
 import { js_beautify } from "./beautify.js";
-p=e=>typeof e
+let p=e=>typeof e
+Math.roundf=(v,t)=>Math.round(v*t)/t;
 export function waitForKeyElements(qu,cb,st,el){let o,r;(o=void(0)===el?$(qu):$(el).contents().find(qu))&&o.length>0?((r=!0),o.each(function(){let e=$(this);e.data("alreadyFound")||false||(cb(e)?(r=false):e.data("alreadyFound",true));})):(r=false);let l=waitForKeyElements.controlObj||{},i=qu.replace(/[^\w]/g,"_"),c=l[i];r&&st&&c?(clearInterval(c),delete l[i]):c||((c=setInterval(function(){waitForKeyElements(qu,cb,st,el);},1000)),(l[i]=c));waitForKeyElements.controlObj=l;}
 let createElement = window.createElement;
 if(createElement===undefined)c="createElement",createElement=(j,d={},t=p(j)[1]=="t"?document[c](j):j)=>(Object.keys(d).map(e=>(p(d[e])[0]=="o")?window[c](t[e]||(t[e]={}),d[e]):(t instanceof Element?((e.startsWith("on")&&p(d[e])[0]=="f")?t.addEventListener(e.substring(2),d[e]):t[e]=d[e]):t[e]=d[e])),t)
@@ -48,60 +49,47 @@ export function clearWarn(...sels) {
         }
     });
 }
-export function error(str, ...selectors) {
+export function error(str, ...selectors){
     clearWarn(...selectors);
     let w=createElement("error",{innerHTML:str});
-    selectors.forEach(s => {
-        let el = s;
-        if (p(s) === "string") {
-            el = document.querySelector(s);
-        }
+    selectors.forEach(s=>{
+        let el=s;
+        if(p(s)[1]=="t")el=document.querySelector(s);
         el.append(w.cloneNode(true));
     });
 }
-export function clearError(...selectors) {
-    selectors.forEach(s => {
-        let el = s;
-        if (p(s) === "string") {
-            el = document.querySelector(s);
-        }
-        for (let e of el.children) {
-            if (e.tagName.toLowerCase() == "error") {
-                e.remove();
-            }
-        }
+export function clearError(...selectors){
+    selectors.map(s=>{
+        let el=s;
+        if(p(s)[1]=="t")el=document.querySelector(s);
+        for(let e of el.children)if(e.tagName.toLowerCase() =="error")e.remove()
     });
 }
-export function hide(...selectors) {
-    for (let s of selectors) (p(s) == "string" ? document.querySelector(s) : s).classList.add("hidden");
+export function hide(...selectors){
+    for(let s of selectors)(p(s)[1]=="t"?document.querySelector(s):s).classList.add("hidden");
 }
-
-export function show(...selectors) {
-    for (let s of selectors) (p(s) == "string" ? document.querySelector(s) : s).classList.remove("hidden");
+export function show(...selectors){
+    for(let s of selectors)(p(s)[1]=="t"?document.querySelector(s):s).classList.remove("hidden");
 }
-
-export function clear(...selectors) {
+export function clear(...selectors){
     for(let s of selectors){
         s=p(s)=="string"?document.querySelector(s):s;
         let arr=flattenChildNodes(s);
-        if(arr.includes(s))arr.splice(arr.indexOf(s), 1);
-        while(arr.length>0) {
+        if(arr.includes(s))arr.splice(arr.indexOf(s),1);
+        while(arr.length>0){
             let el=arr.pop();
             if(el.remove)el.remove();
         }
         s.innerHTML="";
     }
 }
-
-export function disable(message, ...selectors) {
+export function disable(message, ...selectors){
     for(s of selectors)(p(s)[1]=="t"?document.querySelector(s):s).setAttribute("disabled",message);
 }
-
-export function enable(...selectors) {
+export function enable(...selectors){
     for(s of selectors)(p(s)[1]=="t"?document.querySelector(s):s).removeAttribute("disabled");
 }
-
-export function tabColor(color) {
+export function tabColor(color){
     function valid(c) {
         if(["unset","initial","inherit"].includes(c))return false;
         const s=createElement("div").style;
@@ -114,7 +102,6 @@ export function tabColor(color) {
     ctx.fillRect(0,0,1,1);
     document.head.append(createElement(document.querySelector("link[rel=icon]")||"link",{href:c.toDataURL(),rel:"icon"}));
 }
-
 export function parseCookies(cookies = document.cookie) {
     console.log(cookies);
     let reading=!1,escaped=!1,quoted=NaN,key="",value="",map=new Map();
@@ -140,59 +127,33 @@ export function parseCookies(cookies = document.cookie) {
     }
     return map;
 }
-dynamicSort=(P)=>(sO=(p(P)[1]=="t"&&P[0]=="-")?(P=P.substring(1),-1):1,(a,b)=>(a[P]<b[P]?-1:a[P]>b[P]?1:0)*sO);
-export{dynamicSort}
-
+// dynamicSort=(P)=>(sO=(p(P)[1]=="t"&&P[0]=="-")?(P=P.substring(1),-1):1,(a,b)=>(a[P]<b[P]?-1:a[P]>b[P]?1:0)*sO);
+// export{dynamicSort}
 export function advancedDynamicSort(...P){
-    let D=(P,c=(a,b,chain)=>{
-            let p=chain[0].trim(),sO=(p[0]=="-"?(p=p.substring(1),-1):1);
-            if([a[p],b[p]].includes(undefined)||chain.length==1)return sO*(a[p]<b[p]?-1:a[p]>b[p]?1:0)
-            if(chain.length>1)return c(a[p],b[p],chain.slice(1))
-        })=>{
-        P=P.split(".")
-        return(a,b)=>c(a,b,P)
-    }
+    let D=(P,c=(a,b,chain,p=chain[0].trim(),sO=(p[0]=="-"?(p=p.substring(1),-1):1))=>([a[p],b[p]].includes(undefined)||chain.length==1)?sO*(a[p]<b[p]?-1:a[p]>b[p]?1:0):(chain.length>1?c(a[p],b[p],chain.slice(1)):undefined))=>(P=P.split("."),(a,b)=>c(a,b,P))
     P=P.map(e=>D(e))
     return(a,b,funcs=[...P],result)=>(r=_=>result=funcs.shift()(a,b),w=_=>(result==0&&funcs.length>0)?w(r()):0,w(r()),result)
 }
-
 export function rgbGradient(P,colors=[{r:255,g:0,b:0},{r:255,g:0x7f,b:0},{r:255,g:127,b:0},{r:0,g:255,b:0},{r:0,g:0,b:255},{r:255,g:0,b:255}]){
-    let numChunks = colors.length - 1;
-    let chunkSize = 100 / numChunks;
+    let numChunks=colors.length-1,chunkSize=100/numChunks;
     for (let i = 1; i <= numChunks; i++) {
         if (P <= chunkSize * i) {
             let percent = ((P + (1 - i) * chunkSize) * numChunks) / 100;
             let c1 = colors[i], c2 = colors[i - 1];
             let result = [];
-            Object.keys(colors[0]).forEach((e) => {
-                result.push(Math.floor((c1[e] * percent + c2[e] * (1 - percent)) * 100) / 100);
-            });
-            return "rgb(" + result.join(",") + ")";
+            Object.keys(colors[0]).map((e)=>result.push(Math.roundf((c1[e]*percent+c2[e]*(1-percent)),100)));
+            return `rgb(${result.join(",")})`;
         }
     }
 }
-
-export function map(x, inmin, inmax, outmin, outmax, cmp = false) {
-    return ((cmp ? clamp(x, inmin, inmax) : x) - inmin) * (outmax - outmin) / (inmax - inmin) + outmin;
-}
-
-export function gradient(count, colors = [
-    { r: 0xff, g: 0, b: 0 },
-    { r: 0xff, g: 0x7f, b: 0 },
-    { r: 0xff, g: 0xff, b: 0 },
-    { r: 0, g: 0xff, b: 0 },
-    { r: 0, g: 0, b: 0xff },
-    { r: 0xff, g: 0, b: 0xff },
-]) {
+export let map=(v,n,x,N,X,c=!1)=>((c?clamp(v,n,x):v)-n)*(X-N)/(x-n)+N;
+export function gradient(count,colors=[{r:255,g:0,b:0},{r:255,g:0x7f,b:0},{r:255,g:127,b:0},{r:0,g:255,b:0},{r:0,g:0,b:255},{r:255,g:0,b:255}]){
     if (count == 1) {
-        let { r, g, b } = colors[0];
+        let{r,g,b}=colors[0];
         return [`rgb(${r},${g},${b})`];
     }
-    let arr = new Array(count).fill("");
-    arr = arr.map((e, n) => rgbGradient(map(n, 0, count - 1, 0, 100), colors));
-    return arr;
+    return new Array(count).fill("").map((e, n) => rgbGradient(map(n, 0, count - 1, 0, 100), colors));
 }
-
 export function interleaveArrays(fill, ...arrays) {
     if (fill) {
         let max = Math.max(...arrays.map(e => e.length));
@@ -200,15 +161,12 @@ export function interleaveArrays(fill, ...arrays) {
     }
     let result = [];
     while (arrays.filter(e => e.length > 0).length > 0) {
-        arrays.forEach(arr => {
-            if (arr.length > 0) result.push(arr.shift());
-        });
+        arrays.map(arr=>arr.length>0?result.push(arr.shift()):0);
     }
     return result;
 }
-
 export function captureConsole() {
-    if (console.everything === undefined) {
+    if (console.everything===undefined) {
         console.everything = [];
         function TS() {
             return (new Date).toLocaleString("sv", { timeZone: 'UTC' }) + "Z"
@@ -245,37 +203,22 @@ export function captureConsole() {
         });
     }
 }
-
 export function flattenChildren(arr) {
     return [arr, ...(arr.children?.flatMap((e) => flattenChildren(e)) || [])];
 }
-
 export function flattenChildNodes(el) {
     return [el, ...([...el.childNodes].flatMap((e) => flattenChildNodes(e)) || [])];
 }
-
 function convertTime(b) {
     b.setHours(b.getHours() + new Date().getTimezoneOffset() / 60);
     return b.toISOString();
 }
-
-export function getColor(varname, ...append) {
+export function getColor(varname,...append) {
     let color = getComputedStyle(document.querySelector(":root")).getPropertyValue(varname);
-    if (color.match(/^#[a-zA-Z0-9]{3}$/g)) {
-        color = "#" + color.substring(1).split("").map(e => e.padStart(e, 2)).join("") + append.join("");
-    }
-    return color + append.join("");
+    if(color.match(/^#[a-zA-Z0-9]{3}$/g))color="#"+color.substring(1).split("").map(e=>e.padStart(e,2)).join("")+append.join("");
+    return color+append.join("");
 }
-
-export function lockValue(callback, ...args) {
-    return class {
-        constructor(){}
-        static valueOf(){
-            return callback(...args);
-        }
-    }
-}
-
+export let lockValue=(callback,...args)=>class{constructor(){}static valueOf=_=>callback(...args)}
 export function listAllColorsOnPage() {
     function hexToRgb(color) {
         if (color.match(/#?([a-zA-Z0-9]{8}|[a-zA-Z0-9]{6}|[a-zA-Z0-9]{3,4})/g)?.at(0) === color) {
@@ -290,16 +233,12 @@ export function listAllColorsOnPage() {
             return `rgb${a ? "a" : ""}(${split.map((e, n) => parseInt(e.padStart(2, e), 16) / (n == 3 ? 255 : 1)).join(", ")})`;
         }
     }
-
     rgbToHex=rgb=>"#"+rgb.replaceAll(/[^0-9\.,]/g,"").split(",").map((e,n)=>parseInt(e*(n==3?255:1)).toString(16).padStart(2,e)).join("");
-
     getColor=rgb=>{
         let [r,g,b] = rgb.replaceAll(/[^0-9 ]/g, "").split(" ");
         return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
     }
-
     let colorProps = ["backgroundColor", "color"];
-
     function displayResults(array) {
         array.forEach(e => {
             console.groupCollapsed(`%c${rgbToHex(e.value)} (${(e.varName)})`, `color:${getColor(e.value)};background-color:${e.value};padding:20px;line-height:60px;font-size:20px`);
@@ -313,7 +252,6 @@ export function listAllColorsOnPage() {
             console.groupEnd();
         });
     }
-
     let arr=[...new Array(106).fill(0).map((e, n)=>"--color"+(n + 1)),...new Array(10).fill(1).map((e,n)=>"--transparent"+(n+1))],root=getComputedStyle(document.querySelector(":root")),els=flattenChildren(document.body).map(e=>[e,getComputedStyle(e)]);
     arr=arr.map(c=>{
         let color=root.getPropertyValue(c);
@@ -325,11 +263,9 @@ export function listAllColorsOnPage() {
     console.log(arr);
     displayResults(arr);
 }
-
 export let clamp=(v,n,x)=>(((n>x)?([n,x]=[x,n]):0),(v<n?n:v>x?x:v));
 export let getValueOrDefault=(val,def)=>(val===undefined||val===null)?def:val;
 export let extend=(t,s)=>(Object.keys(s).forEach(k=>{t[k]=s[k]}),t);
-
 function convertBase(str, fromBase, toBase) {
     const DIGITS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
     function add(x, y, base) {
@@ -391,13 +327,10 @@ function convertBase(str, fromBase, toBase) {
 
     return out;
 }
-
 let Settings = window.Settings;
 if (Settings === undefined) {
     Settings = class extends EventTarget {
-        config = {
-            name: "settings"
-        };
+        config={name:"settings"};
         sections = [];
         constructor(config = {}, sections) {
             super();
@@ -500,7 +433,6 @@ if (Settings === undefined) {
         }
     }
 }
-
 let Section = window.Section;
 if (Section === undefined) {
     Section = class extends EventTarget {
@@ -545,7 +477,6 @@ if (Section === undefined) {
         }
     }
 }
-
 let Option = window.Options;
 if (Option === undefined) {
     Option = class extends EventTarget {
@@ -663,10 +594,7 @@ if (Option === undefined) {
         }
     }
 }
-
 export { Settings, Section, Option };
-
-
 export let settings = new Settings({
     name: "Settings"
 }, [
@@ -718,26 +646,16 @@ export let settings = new Settings({
         })
     ])
 ]);
-
 export function copyObject(obj) {
     return clone(obj);
 }
-
 function clone(obj) {
     let result = obj;
     var type = {}.toString.call(obj).slice(8, -1);
-    if (type == 'Set') {
-        return new Set([...obj].map(value => clone(value)));
-    }
-    if (type == 'Map') {
-        return new Map([...obj].map(kv => [clone(kv[0]), clone(kv[1])]));
-    }
-    if (type == 'Date') {
-        return new Date(obj.getTime());
-    }
-    if (type == 'RegExp') {
-        return RegExp(obj.source, getRegExpFlags(obj));
-    }
+    if(type=='Set')return new Set([...obj].map(value => clone(value)));
+    if(type=='Map')return new Map([...obj].map(kv => [clone(kv[0]), clone(kv[1])]));
+    if(type=='Date')return new Date(obj.getTime());
+    if(type=='RegExp')return RegExp(obj.source, getRegExpFlags(obj));
     if (type == 'Array' || type == 'Object') {
         result = Array.isArray(obj) ? [] : {};
         for (var key in obj) {
@@ -746,113 +664,46 @@ function clone(obj) {
     }
     return result;
 }
-
-function getRegExpFlags(regExp) {
-    if (typeof regExp.source.flags == 'string') {
-        return regExp.source.flags;
-    } else if (regExp.flags) {
-        return regExp.flags;
-    } else {
-        var flags = [];
-        regExp.global && flags.push('g');
-        regExp.ignoreCase && flags.push('i');
-        regExp.multiline && flags.push('m');
-        regExp.sticky && flags.push('y');
-        regExp.unicode && flags.push('u');
-        return flags.join('');
+function getRegExpFlags(r) {
+    if(p(r.source.flags)[1]=='t')return r.source.flags;
+    else if(r.flags)return r.flags;
+    else{
+        let f=[];
+        r.global&&f.push('g');
+        r.ignoreCase&&f.push('i');
+        r.multiline&&f.push('m');
+        r.sticky&&f.push('y');
+        r.unicode&&f.push('u');
+        return f.join('');
     }
 }
-
 function parseTrace(trace) {
-    let paths = trace.trim().split("\n").map(p => {
-        const a = p.split("@");
-        const locs = a.pop().split(":");
+    let paths=trace.trim().split("\n").map(p=>{
+        const a=p.split("@");
+        const locs=a.pop().split(":");
         return {
-            func: a.join("@"),
-            char: parseInt(locs.pop()),
-            line: parseInt(locs.pop()),
-            location: locs.join(":"),
+            func:a.join("@"),
+            char:parseInt(locs.pop()),
+            line:parseInt(locs.pop()),
+            location:locs.join(":"),
         }
     });
     return paths;
 }
-
-function toHTMLEntities(str) {
-    return [...str].split("").map(e => `&#${e.charCodeAt(0)};`).join("");
-}
-
+toHTMLEntities=(str)=>[...str].split("").map(e=>`&#${e.charCodeAt(0)};`).join("");
 let svgToDataUri = (function () {
-    const shorterNames = {
-        aqua: /#00ffff(ff)?(?!\w)|#0ff(f)?(?!\w)/gi,
-        azure: /#f0ffff(ff)?(?!\w)/gi,
-        beige: /#f5f5dc(ff)?(?!\w)/gi,
-        bisque: /#ffe4c4(ff)?(?!\w)/gi,
-        black: /#000000(ff)?(?!\w)|#000(f)?(?!\w)/gi,
-        blue: /#0000ff(ff)?(?!\w)|#00f(f)?(?!\w)/gi,
-        brown: /#a52a2a(ff)?(?!\w)/gi,
-        coral: /#ff7f50(ff)?(?!\w)/gi,
-        cornsilk: /#fff8dc(ff)?(?!\w)/gi,
-        crimson: /#dc143c(ff)?(?!\w)/gi,
-        cyan: /#00ffff(ff)?(?!\w)|#0ff(f)?(?!\w)/gi,
-        darkblue: /#00008b(ff)?(?!\w)/gi,
-        darkcyan: /#008b8b(ff)?(?!\w)/gi,
-        darkgrey: /#a9a9a9(ff)?(?!\w)/gi,
-        darkred: /#8b0000(ff)?(?!\w)/gi,
-        deeppink: /#ff1493(ff)?(?!\w)/gi,
-        dimgrey: /#696969(ff)?(?!\w)/gi,
-        gold: /#ffd700(ff)?(?!\w)/gi,
-        green: /#008000(ff)?(?!\w)/gi,
-        grey: /#808080(ff)?(?!\w)/gi,
-        honeydew: /#f0fff0(ff)?(?!\w)/gi,
-        hotpink: /#ff69b4(ff)?(?!\w)/gi,
-        indigo: /#4b0082(ff)?(?!\w)/gi,
-        ivory: /#fffff0(ff)?(?!\w)/gi,
-        khaki: /#f0e68c(ff)?(?!\w)/gi,
-        lavender: /#e6e6fa(ff)?(?!\w)/gi,
-        lime: /#00ff00(ff)?(?!\w)|#0f0(f)?(?!\w)/gi,
-        linen: /#faf0e6(ff)?(?!\w)/gi,
-        maroon: /#800000(ff)?(?!\w)/gi,
-        moccasin: /#ffe4b5(ff)?(?!\w)/gi,
-        navy: /#000080(ff)?(?!\w)/gi,
-        oldlace: /#fdf5e6(ff)?(?!\w)/gi,
-        olive: /#808000(ff)?(?!\w)/gi,
-        orange: /#ffa500(ff)?(?!\w)/gi,
-        orchid: /#da70d6(ff)?(?!\w)/gi,
-        peru: /#cd853f(ff)?(?!\w)/gi,
-        pink: /#ffc0cb(ff)?(?!\w)/gi,
-        plum: /#dda0dd(ff)?(?!\w)/gi,
-        purple: /#800080(ff)?(?!\w)/gi,
-        red: /#ff0000(ff)?(?!\w)|#f00(f)?(?!\w)/gi,
-        salmon: /#fa8072(ff)?(?!\w)/gi,
-        seagreen: /#2e8b57(ff)?(?!\w)/gi,
-        seashell: /#fff5ee(ff)?(?!\w)/gi,
-        sienna: /#a0522d(ff)?(?!\w)/gi,
-        silver: /#c0c0c0(ff)?(?!\w)/gi,
-        skyblue: /#87ceeb(ff)?(?!\w)/gi,
-        snow: /#fffafa(ff)?(?!\w)/gi,
-        tan: /#d2b48c(ff)?(?!\w)/gi,
-        teal: /#008080(ff)?(?!\w)/gi,
-        thistle: /#d8bfd8(ff)?(?!\w)/gi,
-        tomato: /#ff6347(ff)?(?!\w)/gi,
-        violet: /#ee82ee(ff)?(?!\w)/gi,
-        wheat: /#f5deb3(ff)?(?!\w)/gi,
-        white: /#ffffff(ff)?(?!\w)|#fff(f)?(?!\w)/gi,
-    };
+    const shorterNames = {aqua:/#00ffff(ff)?(?!\w)|#0ff(f)?(?!\w)/gi,azure:/#f0ffff(ff)?(?!\w)/gi,beige:/#f5f5dc(ff)?(?!\w)/gi,bisque:/#ffe4c4(ff)?(?!\w)/gi,black:/#000000(ff)?(?!\w)|#000(f)?(?!\w)/gi,blue:/#0000ff(ff)?(?!\w)|#00f(f)?(?!\w)/gi,brown:/#a52a2a(ff)?(?!\w)/gi,coral:/#ff7f50(ff)?(?!\w)/gi,cornsilk:/#fff8dc(ff)?(?!\w)/gi,crimson:/#dc143c(ff)?(?!\w)/gi,cyan:/#00ffff(ff)?(?!\w)|#0ff(f)?(?!\w)/gi,darkblue:/#00008b(ff)?(?!\w)/gi,darkcyan:/#008b8b(ff)?(?!\w)/gi,darkgrey:/#a9a9a9(ff)?(?!\w)/gi,darkred:/#8b0000(ff)?(?!\w)/gi,deeppink:/#ff1493(ff)?(?!\w)/gi,dimgrey:/#696969(ff)?(?!\w)/gi,gold:/#ffd700(ff)?(?!\w)/gi,green:/#008000(ff)?(?!\w)/gi,grey:/#808080(ff)?(?!\w)/gi,honeydew:/#f0fff0(ff)?(?!\w)/gi,hotpink:/#ff69b4(ff)?(?!\w)/gi,indigo:/#4b0082(ff)?(?!\w)/gi,ivory:/#fffff0(ff)?(?!\w)/gi,khaki:/#f0e68c(ff)?(?!\w)/gi,lavender:/#e6e6fa(ff)?(?!\w)/gi,lime:/#00ff00(ff)?(?!\w)|#0f0(f)?(?!\w)/gi,linen:/#faf0e6(ff)?(?!\w)/gi,maroon:/#800000(ff)?(?!\w)/gi,moccasin:/#ffe4b5(ff)?(?!\w)/gi,navy:/#000080(ff)?(?!\w)/gi,oldlace:/#fdf5e6(ff)?(?!\w)/gi,olive:/#808000(ff)?(?!\w)/gi,orange:/#ffa500(ff)?(?!\w)/gi,orchid:/#da70d6(ff)?(?!\w)/gi,peru:/#cd853f(ff)?(?!\w)/gi,pink:/#ffc0cb(ff)?(?!\w)/gi,plum:/#dda0dd(ff)?(?!\w)/gi,purple:/#800080(ff)?(?!\w)/gi,red:/#ff0000(ff)?(?!\w)|#f00(f)?(?!\w)/gi,salmon:/#fa8072(ff)?(?!\w)/gi,seagreen:/#2e8b57(ff)?(?!\w)/gi,seashell:/#fff5ee(ff)?(?!\w)/gi,sienna:/#a0522d(ff)?(?!\w)/gi,silver:/#c0c0c0(ff)?(?!\w)/gi,skyblue:/#87ceeb(ff)?(?!\w)/gi,snow:/#fffafa(ff)?(?!\w)/gi,tan:/#d2b48c(ff)?(?!\w)/gi,teal:/#008080(ff)?(?!\w)/gi,thistle:/#d8bfd8(ff)?(?!\w)/gi,tomato:/#ff6347(ff)?(?!\w)/gi,violet:/#ee82ee(ff)?(?!\w)/gi,wheat:/#f5deb3(ff)?(?!\w)/gi,white:/#ffffff(ff)?(?!\w)|#fff(f)?(?!\w)/gi};
     const REGEX = {
         whitespace: /\s+/g,
         urlHexPairs: /%[\dA-F]{2}/g,
         quotes: /"/g,
     }
-
     function collapseWhitespace(str) {
         return str.trim().replace(REGEX.whitespace, ' ');
     }
-
     function dataURIPayload(string) {
-        return encodeURIComponent(string)
-            .replace(REGEX.urlHexPairs, specialHexEncode);
+        return encodeURIComponent(string).replace(REGEX.urlHexPairs, specialHexEncode);
     }
-
     // `#` gets converted to `%23`, so quite a few CSS named colors are shorter than
     // their equivalent URL-encoded hex codes.
     function colorCodeToShorterNames(string) {
@@ -867,10 +718,10 @@ let svgToDataUri = (function () {
 
     function specialHexEncode(match) {
         switch (match) { // Browsers tolerate these characters, and they're frequent
-            case '%20': return ' ';
-            case '%3D': return '=';
-            case '%3A': return ':';
-            case '%2F': return '/';
+            case'%20':return' ';
+            case'%3D':return'=';
+            case'%3A':return':';
+            case'%2F':return'/';
             default: return match.toLowerCase(); // compresses better
         }
     }
