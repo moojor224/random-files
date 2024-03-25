@@ -1,18 +1,15 @@
-// @ts-format-ignore-region
 import { devlog } from "./dev-helper.js";
 import { Prism } from "./prism.js";
 import { js_beautify } from "./beautify.js";
-export function waitForKeyElements(qu, cb, st, el) {
-    let o, r;
-    (o=void(0)===el?$(qu):$(el).contents().find(qu))&&o.length>0?((r=!0),o.each(function(){let e=$(this);e.data("alreadyFound")||false||(cb(e)?(r=false):e.data("alreadyFound",true));})):(r=false);let l=waitForKeyElements.controlObj||{},i=qu.replace(/[^\w]/g,"_"),c=l[i];r&&st&&c?(clearInterval(c),delete l[i]):c||((c=setInterval(function(){waitForKeyElements(qu,cb,st,el);},1000)),(l[i]=c));waitForKeyElements.controlObj=l;
-}
+p=e=>typeof e
+export function waitForKeyElements(qu,cb,st,el){let o,r;(o=void(0)===el?$(qu):$(el).contents().find(qu))&&o.length>0?((r=!0),o.each(function(){let e=$(this);e.data("alreadyFound")||false||(cb(e)?(r=false):e.data("alreadyFound",true));})):(r=false);let l=waitForKeyElements.controlObj||{},i=qu.replace(/[^\w]/g,"_"),c=l[i];r&&st&&c?(clearInterval(c),delete l[i]):c||((c=setInterval(function(){waitForKeyElements(qu,cb,st,el);},1000)),(l[i]=c));waitForKeyElements.controlObj=l;}
 let createElement = window.createElement;
-if (createElement === undefined)c="createElement",createElement=(j,d={},p=e=>typeof e,t=p(j)[1]=="t"?document[c](j):j)=>(Object.keys(d).map(e=>(p(d[e])[0]=="o")?window[c](t[e]||(t[e]={}),d[e]):(t instanceof Element?((e.startsWith("on")&&p(d[e])[0]=="f")?t.addEventListener(e.substring(2),d[e]):t[e]=d[e]):t[e]=d[e])),t)
+if(createElement===undefined)c="createElement",createElement=(j,d={},t=p(j)[1]=="t"?document[c](j):j)=>(Object.keys(d).map(e=>(p(d[e])[0]=="o")?window[c](t[e]||(t[e]={}),d[e]):(t instanceof Element?((e.startsWith("on")&&p(d[e])[0]=="f")?t.addEventListener(e.substring(2),d[e]):t[e]=d[e]):t[e]=d[e])),t)
 
 if (createElement === undefined) {
     createElement = function (tag, data = {}) {
         if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) {
-            let div = createElement("div");
+            div=createElement("div");
             if (expandAbbreviation && typeof expandAbbreviation == "function") div.innerHTML = expandAbbreviation(tag);
             else if (emmet && emmet.expandAbbreviation && typeof emmet.expandAbbreviation == "function") div.innerHTML = emmet.expandAbbreviation(tag);
             let arr = Array.from(div.children);
@@ -20,41 +17,30 @@ if (createElement === undefined) {
         }
     }
 }
-export { createElement };
+export{createElement}
 
-function add(...args) {
-    args.forEach(elem => {
-        this.append(elem);
-    });
-    return this;
-};
-window.Element.prototype.add===undefined?window.Element.prototype.add=add:0;
-
+add=(...args)=>(t=this,args.forEach(elem=>t.append(elem)),t)
+Element.prototype.add===undefined?Element.prototype.add=add:0;
 Object.getOwnPropertyNames(window).filter(e=>e.startsWith("HTML")&&e.endsWith("Element")).forEach(e=>window[e].prototype.add!==add?window[e].prototype.add=add:0);
 
 window.Element.prototype.error=text=>(this.clearError(),this.add(createElement("error",{innerHTML:text||"!"})))
-
-
 window.Element.prototype.clearError = function () {
     for (let e of this.childNodes)if(e.tagName.toLowerCase()=="error")return(e.remove(),true)
     return false;
 }
-
-export function warn(str, ...selectors) {
-    clearWarn(...selectors);
-    let w=createElement("warn",{innerHTML: str});
-    selectors.forEach(s => {
-        let el = s;
-        if(typeof s==="string")el = document.querySelector(s);
+export function warn(str, ...sels) {
+    clearWarn(...sels)
+    let w=createElement("warn",{innerHTML: str})
+    sels.forEach(s=>{
+        el=s;
+        if(p(s)==="string")el=document.querySelector(s);
         el.append(w.cloneNode(true));
     });
 }
-export function clearWarn(...selectors) {
-    selectors.forEach(s => {
-        let el = s;
-        if (typeof s === "string") {
-            el = document.querySelector(s);
-        }
+export function clearWarn(...sels) {
+    sels.forEach(s => {
+        el=s;
+        if (p(s)==="string")el=document.querySelector(s);
         for (let e of el.children) {
             if (e.tagName.toLowerCase() == "warn") {
                 e.remove();
@@ -62,13 +48,12 @@ export function clearWarn(...selectors) {
         }
     });
 }
-
 export function error(str, ...selectors) {
     clearWarn(...selectors);
     let w=createElement("error",{innerHTML:str});
     selectors.forEach(s => {
         let el = s;
-        if (typeof s === "string") {
+        if (p(s) === "string") {
             el = document.querySelector(s);
         }
         el.append(w.cloneNode(true));
@@ -77,7 +62,7 @@ export function error(str, ...selectors) {
 export function clearError(...selectors) {
     selectors.forEach(s => {
         let el = s;
-        if (typeof s === "string") {
+        if (p(s) === "string") {
             el = document.querySelector(s);
         }
         for (let e of el.children) {
@@ -88,16 +73,16 @@ export function clearError(...selectors) {
     });
 }
 export function hide(...selectors) {
-    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).classList.add("hidden");
+    for (let s of selectors) (p(s) == "string" ? document.querySelector(s) : s).classList.add("hidden");
 }
 
 export function show(...selectors) {
-    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).classList.remove("hidden");
+    for (let s of selectors) (p(s) == "string" ? document.querySelector(s) : s).classList.remove("hidden");
 }
 
 export function clear(...selectors) {
     for(let s of selectors){
-        s=typeof s=="string"?document.querySelector(s):s;
+        s=p(s)=="string"?document.querySelector(s):s;
         let arr=flattenChildNodes(s);
         if(arr.includes(s))arr.splice(arr.indexOf(s), 1);
         while(arr.length>0) {
@@ -109,21 +94,21 @@ export function clear(...selectors) {
 }
 
 export function disable(message, ...selectors) {
-    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).setAttribute("disabled", message);
+    for(s of selectors)(p(s)[1]=="t"?document.querySelector(s):s).setAttribute("disabled",message);
 }
 
 export function enable(...selectors) {
-    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).removeAttribute("disabled");
+    for(s of selectors)(p(s)[1]=="t"?document.querySelector(s):s).removeAttribute("disabled");
 }
 
 export function tabColor(color) {
-    function isValidCSSColor(color2) {
-        if(["unset","initial","inherit"].includes(color2))return false;
+    function valid(c) {
+        if(["unset","initial","inherit"].includes(c))return false;
         const s=createElement("div").style;
-        s.color=color2;
+        s.color=c;
         return s.color!=="";
     }
-    if(!isValidCSSColor(color))return;
+    if(!valid(color))return;
     let c=createElement("canvas",{width:1,height:1}),ctx=c.getContext("2d");
     ctx.fillStyle=color;
     ctx.fillRect(0,0,1,1);
@@ -132,205 +117,103 @@ export function tabColor(color) {
 
 export function parseCookies(cookies = document.cookie) {
     console.log(cookies);
-    let reading = !1;
-    let escaped = !1;
-    let quoted = NaN;
-    let key = "";
-    let value = "";
-    let map = new Map();
+    let reading=!1,escaped=!1,quoted=NaN,key="",value="",map=new Map();
     cookies.trim().split("").forEach((e) => {
         if (escaped) {
             value += e;
             escaped = false;
         } else if (reading) {
-            if (quoted == NaN) {
-                quoted = e == '"';
-                if (!quoted) {
-                    value += e;
-                }
-            } else if ((e == '"' && quoted) || (e == ";" && !quoted)) {
-                quoted = NaN;
-                map.set(key.trim(), value);
-                reading = false;
-                value = "";
-                key = "";
-            } else {
-                value += e;
-            }
-        } else if (e == "=") {
-            reading = true;
-        } else {
-            key += e;
+            if(quoted==NaN){
+                quoted=e=='"';
+                if(!quoted)value+=e;
+            }else if((e=='"'&&quoted)||(e==";"&&!quoted))(quoted=NaN,map.set(key.trim(),value),reading=false,value="",key="")
+            else value+=e;
+            
+        }else if(e=="=") {
+            reading=true;
+        }else{
+            key+=e;
         }
     });
-    if (key != "") {
-        map.set(key.trim(), value);
+    if(key!=""){
+        map.set(key.trim(),value);
     }
     return map;
 }
+dynamicSort=(P)=>(sO=(p(P)[1]=="t"&&P[0]=="-")?(P=P.substring(1),-1):1,(a,b)=>(a[P]<b[P]?-1:a[P]>b[P]?1:0)*sO);
+export{dynamicSort}
 
-/**
- * generates a array sort function that sorts an array of objects by a specified property name
- * @param {string} prop name of the property to sort by
- * @returns {function} the sort function
- * @example 
- * 
- * let array = [
- *     { a: 1, b: { c: 4 } },
- *     { a: 2, b: { c: 1 } },
- *     { a: 2, b: { c: 0 }, d: { e: { f: 2 } } },
- *     { a: 1, b: { c: 0 }, d: { e: { f: 1 } } },
- * ];
- * array.sort(dynamicSort("a"));
- * array.sort(dynamicSort("-a"));
- * array.sort(dynamicSort("b"));
- * array.sort(dynamicSort("-b"));
- */
-export function dynamicSort(prop) {
-    let sortOrder = 1; // normal sort order
-    if (typeof prop === "string" && prop.startsWith("-")) { // if property name starts with a -
-        sortOrder = -1; // reversed sort order
-        prop = prop.substring(1); // remove minus from property name
+export function advancedDynamicSort(...P){
+    let D=(P,c=(a,b,chain)=>{
+            let p=chain[0].trim(),sO=(p[0]=="-"?(p=p.substring(1),-1):1);
+            if([a[p],b[p]].includes(undefined)||chain.length==1)return sO*(a[p]<b[p]?-1:a[p]>b[p]?1:0)
+            if(chain.length>1)return c(a[p],b[p],chain.slice(1))
+        })=>{
+        P=P.split(".")
+        return(a,b)=>c(a,b,P)
     }
-    return function (a, b) { // use this function in array.sort(func); to sort it by the given  property name
-        let result = a[prop] < b[prop] ? -1 : a[prop] > b[prop] ? 1 : 0;  // run comparison and set result to -1,0,1
-        return result * sortOrder; // if sortOrder is reversed, this will return 1,0,-1
-    };
+    P=P.map(e=>D(e))
+    return(a,b,funcs=[...P],result)=>(r=_=>result=funcs.shift()(a,b),w=_=>(result==0&&funcs.length>0)?w(r()):0,w(r()),result)
 }
 
-
-export function dynamicSort(...properties) {
-    let w = (d, b) => d() ? (b(), w(d, b)) : 0;
-    function dSort(property) {
-        property = property.split(".");
-        function compare(a, b, chain) {
-            let p = chain[0].trim(),
-                sortOrder = 1;
-            if (p[0] == "-") {
-                sortOrder = -1;
-                p = p.substring(1);
-            }
-            if (a[p] === undefined || b[p] === undefined || chain.length == 1) return sortOrder * (a[p] < b[p] ? -1 : a[p] > b[p] ? 1 : 0);
-            if (chain.length > 1) return compare(a[p], b[p], chain.slice(1));
-        }
-        return (a, b) => compare(a, b, property);
-    }
-    properties = properties.map(e => dSort(e));
-    console.log(properties);
-    return function (a, b) {
-        let funcs = [...properties],
-            result;
-        // result = funcs.shift()(a, b);
-        // w(_ => result == 0 && funcs.length > 0, _ => result = funcs.shift()(a, b));
-        do {
-            result = funcs.shift()(a, b);
-        }
-        while (result == 0 && funcs.length > 0);
-        return result;
-    };
-}
-
-/**
- * returns css rgb string based off of a percent value of a gradient
- * @param {number} p number in range from 0-100
- * @param {Object[]} colors array of rgb colors
- * @returns {string}
- */
-export function rgbGradient(
-    p,
-    colors = [
-        { r: 0xff, g: 0, b: 0 }, // 0% red
-        { r: 0xff, g: 0x7f, b: 0 }, // 20% orange
-        { r: 0xff, g: 0xff, b: 0 }, // 40% yellow
-        { r: 0, g: 0xff, b: 0 }, // 60% green
-        { r: 0, g: 0, b: 0xff }, // 80% blue
-        { r: 0xff, g: 0, b: 0xff }, // 100% purple
-    ]
-) {
-    p = typeof p === "string" ? parseInt(p) : p; // convert p to a number if it is a string
-    let numChunks = colors.length - 1; // get number of sub-gradients
-    let chunkSize = 100 / numChunks; // get what percent each sub-gradient represents out of the whole gradient
-    for (let i = 1; i <= numChunks; i++) { // loop through sub-gradients and find if p is within that gradient
-        if (p <= chunkSize * i) {
-            let percent = ((p + (1 - i) * chunkSize) * numChunks) / 100; // get percent relative to the sub-gradient
-            let color1 = colors[i], color2 = colors[i - 1]; // get left/right colors for sub-gradient
+export function rgbGradient(P,colors=[{r:255,g:0,b:0},{r:255,g:0x7f,b:0},{r:255,g:127,b:0},{r:0,g:255,b:0},{r:0,g:0,b:255},{r:255,g:0,b:255}]){
+    let numChunks = colors.length - 1;
+    let chunkSize = 100 / numChunks;
+    for (let i = 1; i <= numChunks; i++) {
+        if (P <= chunkSize * i) {
+            let percent = ((P + (1 - i) * chunkSize) * numChunks) / 100;
+            let c1 = colors[i], c2 = colors[i - 1];
             let result = [];
             Object.keys(colors[0]).forEach((e) => {
-                result.push(Math.floor((color1[e] * percent + color2[e] * (1 - percent)) * 100) / 100); // blend colors according to wher p is within the sub-gradient
+                result.push(Math.floor((c1[e] * percent + c2[e] * (1 - percent)) * 100) / 100);
             });
-            return "rgb(" + result.join(",") + ")"; // return result
+            return "rgb(" + result.join(",") + ")";
         }
     }
 }
 
-/**
- * proportionately maps a number from an input range to an output range
- * @param {Number} x value
- * @param {Number} inmin input range lower bound
- * @param {Number} inmax input range upper bound
- * @param {Number} outmin output range lower bound
- * @param {Number} outmax output range upper bound
- * @param {Boolean} cmp whether to clamp the input value to the input range
- * @returns {Number}
- */
 export function map(x, inmin, inmax, outmin, outmax, cmp = false) {
     return ((cmp ? clamp(x, inmin, inmax) : x) - inmin) * (outmax - outmin) / (inmax - inmin) + outmin;
 }
 
-/**
- * generates a gradient of colors from the specified array
- * @param {Number} count number of colors to generate
- * @param {Object[]} colors array of colors in gradient
- * @returns {String[]} array of colors generated
- */
 export function gradient(count, colors = [
-    { r: 0xff, g: 0, b: 0 }, // 0% red
-    { r: 0xff, g: 0x7f, b: 0 }, // 20% orange
-    { r: 0xff, g: 0xff, b: 0 }, // 40% yellow
-    { r: 0, g: 0xff, b: 0 }, // 60% green
-    { r: 0, g: 0, b: 0xff }, // 80% blue
-    { r: 0xff, g: 0, b: 0xff }, // 100% purple
+    { r: 0xff, g: 0, b: 0 },
+    { r: 0xff, g: 0x7f, b: 0 },
+    { r: 0xff, g: 0xff, b: 0 },
+    { r: 0, g: 0xff, b: 0 },
+    { r: 0, g: 0, b: 0xff },
+    { r: 0xff, g: 0, b: 0xff },
 ]) {
-    if (count == 1) { // only one color needed, so just return the first color in the gradient range
+    if (count == 1) {
         let { r, g, b } = colors[0];
         return [`rgb(${r},${g},${b})`];
     }
-    let arr = new Array(count).fill(""); // make array of how many colors you need
-    arr = arr.map((e, n) => rgbGradient(map(n, 0, count - 1, 0, 100), colors)); // fill array with colors
+    let arr = new Array(count).fill("");
+    arr = arr.map((e, n) => rgbGradient(map(n, 0, count - 1, 0, 100), colors));
     return arr;
 }
 
-/**
- * interleaves arrays
- * @param {Boolean} fill whther to fill arrays with null to match longest array's length
- * @param  {...any} arrays arrays to interleave
- * @returns {any[]} interleaved arrays
- */
 export function interleaveArrays(fill, ...arrays) {
     if (fill) {
-        let max = Math.max(...arrays.map(e => e.length)); // get max length of all arrays
-        arrays = arrays.map(arr => [...arr, ...new Array(max - arr.length).fill(null)]); // fill all arrays with null so that they're all the same length
+        let max = Math.max(...arrays.map(e => e.length));
+        arrays = arrays.map(arr => [...arr, ...new Array(max - arr.length).fill(null)]);
     }
     let result = [];
-    while (arrays.filter(e => e.length > 0).length > 0) { // while at least one array still has at least one item in it
-        arrays.forEach(arr => { // loop through each array
-            if (arr.length > 0) result.push(arr.shift()); // remove first element from array and add it to result array
+    while (arrays.filter(e => e.length > 0).length > 0) {
+        arrays.forEach(arr => {
+            if (arr.length > 0) result.push(arr.shift());
         });
     }
     return result;
 }
 
-/**
- * sets `console.everything` to an array of the console's history\
- * run this before using any console logging functions in order to capture everything
- */
 export function captureConsole() {
     if (console.everything === undefined) {
         console.everything = [];
-        function TS() { // timestamp function
+        function TS() {
             return (new Date).toLocaleString("sv", { timeZone: 'UTC' }) + "Z"
         }
-        window.onerror = function (error, url, line) { // catches all console errors, includes those not made by console.error
+        window.onerror = function (error, url, line) {
             console.everything.push({
                 type: "exception",
                 timeStamp: TS(),
@@ -338,7 +221,7 @@ export function captureConsole() {
             })
             return false;
         }
-        window.onunhandledrejection = function (e) { // catch some other things, idk
+        window.onunhandledrejection = function (e) {
             console.everything.push({
                 type: "promiseRejection",
                 timeStamp: TS(),
@@ -346,56 +229,36 @@ export function captureConsole() {
             });
         }
         function hookLogType(logType) {
-            const original = console[logType].bind(console); // save orginal function
+            const original = console[logType].bind(console);
             return function (...args) {
-                console.everything.push({ // add object to console.everything
+                console.everything.push({
                     type: logType,
                     timeStamp: TS(),
                     value: Array.from(args)
                 });
-                original.apply(console, args); // log message to console
+                original.apply(console, args);
             }
         }
 
-        ['log', 'error', 'warn', 'debug'].forEach(logType => { // hook  each log type
+        ['log', 'error', 'warn', 'debug'].forEach(logType => {
             console[logType] = hookLogType(logType)
         });
     }
 }
 
-/**
- * takes in an object and returns a flattened array of all it's children
- * @param {object} arr object to flatten
- * @returns {object[]} array of all children
- */
 export function flattenChildren(arr) {
     return [arr, ...(arr.children?.flatMap((e) => flattenChildren(e)) || [])];
 }
 
-/**
- * takes in an HTMLElement and returns an array of all it's descendants
- * @param {HTMLElement} el element to flatten
- * @returns {HTMLElement[]} array of all children
- */
 export function flattenChildNodes(el) {
     return [el, ...([...el.childNodes].flatMap((e) => flattenChildNodes(e)) || [])];
 }
 
-/**
- * internally-used function to convert local times to UTC
- * @param {Date} b 
- * @returns {string}
- */
 function convertTime(b) {
     b.setHours(b.getHours() + new Date().getTimezoneOffset() / 60);
     return b.toISOString();
 }
 
-/**
- * returns the value of the given css variable name
- * @param {string} varname css variable name
- * @returns {string} value of css variable
- */
 export function getColor(varname, ...append) {
     let color = getComputedStyle(document.querySelector(":root")).getPropertyValue(varname);
     if (color.match(/^#[a-zA-Z0-9]{3}$/g)) {
@@ -404,64 +267,34 @@ export function getColor(varname, ...append) {
     return color + append.join("");
 }
 
-/**
- * returns an object whose valueof result will always be synced with the return value of the function
- * @param {Function} callback function to call
- * @param  {...any} args arguments to pass to function
- * @example
- * let val = lockValue(function(){
- *     return Math.floor(Math.random() * 10);
- * });
- * console.log(+val);
- * console.log(+val);
- * console.log(+val);
- * console.log(+val);
- * // logs 4 random numbers
- */
 export function lockValue(callback, ...args) {
     return class {
-        constructor() { }
-        static valueOf() {
+        constructor(){}
+        static valueOf(){
             return callback(...args);
         }
     }
 }
 
-/**
- * logs all colors on the page to console, grouped by text color and background color
- * 
- * show each individual element in each group
- */
 export function listAllColorsOnPage() {
     function hexToRgb(color) {
         if (color.match(/#?([a-zA-Z0-9]{8}|[a-zA-Z0-9]{6}|[a-zA-Z0-9]{3,4})/g)?.at(0) === color) {
             color = color.replace("#", "");
             let split, a;
             switch (color.length) {
-                case 4: a = true; // short rgba
-                case 3: // short rgb
-                    split = color.split(""); // get color channels
-                    break;
-                case 8: a = true; // long rgba
-                case 6: // long rgb
-                    split = color.match(/.{1,2}/g); // get color channels
-                    break;
+                case 4:a=true;
+                case 3:split=color.split("");break
+                case 8:a=true;
+                case 6:split=color.match(/.{1,2}/g);break
             }
-            return `rgb${a ? "a" : ""}(${split.map((e, n) => parseInt(e.padStart(2, e), 16) / (n == 3 ? 255 : 1)).join(", ")})`; // convert base16 to base10, join with comma and put into rgba()
+            return `rgb${a ? "a" : ""}(${split.map((e, n) => parseInt(e.padStart(2, e), 16) / (n == 3 ? 255 : 1)).join(", ")})`;
         }
     }
 
-    function rgbToHex(rgb) {
-        return "#" + rgb.replaceAll(/[^0-9\.,]/g, "").split(",").map((e, n) => parseInt(e * (n == 3 ? 255 : 1)).toString(16).padStart(2, e)).join("");
-    }
-    rgbToHex("rgba(255, 255, 255, 0.5)");
+    rgbToHex=rgb=>"#"+rgb.replaceAll(/[^0-9\.,]/g,"").split(",").map((e,n)=>parseInt(e*(n==3?255:1)).toString(16).padStart(2,e)).join("");
 
-    function flattenChildren(item) {
-        return [item, ...([...item.children]?.flatMap((e) => flattenChildren(e)) || [])];
-    }
-
-    function getColor(rgb) {
-        let [r, g, b] = rgb.replaceAll(/[^0-9 ]/g, "").split(" ");
+    getColor=rgb=>{
+        let [r,g,b] = rgb.replaceAll(/[^0-9 ]/g, "").split(" ");
         return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
     }
 
@@ -469,19 +302,11 @@ export function listAllColorsOnPage() {
 
     function displayResults(array) {
         array.forEach(e => {
-            console.groupCollapsed(`%c${rgbToHex(e.value)} (${(e.varName)})`, `
-    color: ${getColor(e.value)};
-    background-color: ${e.value};
-    padding: 20px;
-    line-height: 60px;
-    font-size: 20px;
-    `);
-            colorProps.forEach(prop => {
-                if (e[prop].length > 0) {
-                    console.groupCollapsed("%c " + prop, "font-size: 20px;");
-                    e[prop].forEach(v => {
-                        console.log(v[0]);
-                    });
+            console.groupCollapsed(`%c${rgbToHex(e.value)} (${(e.varName)})`, `color:${getColor(e.value)};background-color:${e.value};padding:20px;line-height:60px;font-size:20px`);
+            colorProps.forEach(prop=>{
+                if (e[prop].length>0) {
+                    console.groupCollapsed("%c "+prop,"font-size: 20px;");
+                    e[prop].forEach(v=>console.log(v[0]));
                     console.groupEnd();
                 }
             })
@@ -489,70 +314,22 @@ export function listAllColorsOnPage() {
         });
     }
 
-    let arr = [...new Array(106).fill(0).map((e, n) => "--color" + (n + 1)), ...new Array(10).fill(1).map((e, n) => "--transparent" + (n + 1))];
-    let root = getComputedStyle(document.querySelector(":root"));
-    let els = flattenChildren(document.body).map(e => [e, getComputedStyle(e)]);
-    arr = arr.map(c => {
-        let color = root.getPropertyValue(c);
-        color = hexToRgb(color);
-        let obj = {
-            value: color,
-            varName: c
-        };
-        colorProps.forEach(e => {
-            obj[e] = els.filter(r => r[1][e] === color);
-        });
-        //     console.log(obj);
+    let arr=[...new Array(106).fill(0).map((e, n)=>"--color"+(n + 1)),...new Array(10).fill(1).map((e,n)=>"--transparent"+(n+1))],root=getComputedStyle(document.querySelector(":root")),els=flattenChildren(document.body).map(e=>[e,getComputedStyle(e)]);
+    arr=arr.map(c=>{
+        let color=root.getPropertyValue(c);
+        color=hexToRgb(color);
+        let obj={value:color,varName:c};
+        colorProps.forEach(e=>obj[e]=els.filter(r=>r[1][e]===color));
         return obj;
-    }).filter(e => colorProps.map(p => e[p].length > 0).includes(true));
-
+    }).filter(e=>colorProps.map(p=>e[p].length>0).includes(true));
     console.log(arr);
     displayResults(arr);
 }
 
-/**
- * clamps a number to a range\
- * \
- * if the number is outside the range, move it to the\
- * closest position inside the range, else do nothing
- * @param {Number} val value
- * @param {Number} min minimum of range
- * @param {Number} max maximum of range
- * @returns {Number} number clamped to range
- */
-export function clamp(val, min, max) {
-    return (((min > max) ? ([min, max] = [max, min]) : 0), (val < min ? min : val > max ? max : val));
-}
+export let clamp=(v,n,x)=>(((n>x)?([n,x]=[x,n]):0),(v<n?n:v>x?x:v));
+export let getValueOrDefault=(val,def)=>(val===undefined||val===null)?def:val;
+export let extend=(t,s)=>(Object.keys(s).forEach(k=>{t[k]=s[k]}),t);
 
-/**
- * @param {any | undefined} val 
- * @param {any} def 
- * @returns {any | undefined}
- */
-export function getValueOrDefault(val, def) {
-    if (val === undefined || val === null) return def;
-    return val;
-}
-
-/**
- * puts the properties from source onto target
- * @param {Object} target 
- * @param {Object} source 
- */
-function extend(target, source) {
-    Object.keys(source).forEach(key => {
-        target[key] = source[key];
-    });
-    return target;
-}
-
-/**
- * converts a number stored in string format from into a different base
- * @param {String} str string containing to number to convert
- * @param {Number} fromBase base of the passed string
- * @param {Number} toBase base to convert to
- * @returns {String} string containing the converted number
- */
 function convertBase(str, fromBase, toBase) {
     const DIGITS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
     function add(x, y, base) {
@@ -615,9 +392,6 @@ function convertBase(str, fromBase, toBase) {
     return out;
 }
 
-// get settings not loading settings
-// ^honestly don't know what ths means, but it's funny, so I'm leaving it
-
 let Settings = window.Settings;
 if (Settings === undefined) {
     Settings = class extends EventTarget {
@@ -625,50 +399,34 @@ if (Settings === undefined) {
             name: "settings"
         };
         sections = [];
-        /**
-         * creates a new Settings object
-         * @param {Object} config config options
-         * @param {Section[]} sections array of sections to add to the settings
-         */
         constructor(config = {}, sections) {
-            super(); // initialize EventTarget object
-            extend(this.config, config); // apply config to this
-            if (!Array.isArray(sections)) { // turn sections into array if it isn't already
+            super();
+            extend(this.config, config);
+            if (!Array.isArray(sections)) {
                 sections = [sections];
             }
-            this.sections = sections.filter(e => e instanceof Section); // filter all non-Section elements out of sections array
+            this.sections = sections.filter(e => e instanceof Section);
             sections.forEach(section => {
-                section.settings_obj = this; // set parent object of each section
+                section.settings_obj = this;
             });
         }
 
         render() {
             devlog("render settings");
-            let div = createElement("div", { // main settings div
+            let div = createElement("div", {
                 classList: "settings"
             }).add(
                 createElement("h2", { innerHTML: this.config.name })
             );
-            div.add(...this.sections.map(s => s.render())); // render all subsections and add them to the settings div
+            div.add(...this.sections.map(s => s.render()));
             return div;
         }
-
-        /**
-         * 
-         * @param {String} id
-         * @returns {Section}
-         */
-        getSection(id) { // returns the section object with the given id
+        getSection(id) {
             return this.sections.find(e => e.config.id == id);
         }
-
-        /**
-         * converts the settings object to a stringified JSON object cabable of being imported through the Settings.fromJson() method
-         * @returns {String}
-         */
         export() {
             let data = JSON.parse(JSON.stringify(this, function (key, value) {
-                if (key.includes("_obj")) { // exclude parent objects to avoid recursion
+                if (key.includes("_obj")) {
                     return undefined;
                 }
                 return value;
@@ -679,53 +437,24 @@ if (Settings === undefined) {
             console.log(data);
             return JSON.stringify(data);
         }
-
-        /**
-         * dispatches an event on the Settings object
-         * @param {Event} event event
-         */
         dispatchEvent(event) {
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]) // call original dispatchEvent function
+            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this);
+            originalDispatch.apply(this, [event])
             return !event.defaultPrevented || !event.cancelable;
         }
-
-        /**
-         * listens for an event\
-         * wrapper function for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
         on(type, callback) {
-            // console.log("on", this.#listeners);
             this.addEventListener(type, callback);
         }
-
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper function for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
         off(type, callback) {
-            // console.log("off", this.#listeners);
             this.removeEventListener(type, callback);
         }
-
-        /**
-         * converts stringified json data into a settings object\
-         * json data can be generated from the export method
-         * @static
-         * @param {String} jsontext stringified json data
-         * @returns {Settings}
-         */
         static fromJson(jsontext) {
             if (jsontext.length == 0) {
                 return null;
             }
             try {
                 let json = JSON.parse(jsontext);
-                let validate = Joi.object({ // validate object to make sure it's in the correct format
+                let validate = Joi.object({
                     config: Joi.object({
                         name: Joi.string().required()
                     }).required(),
@@ -745,11 +474,11 @@ if (Settings === undefined) {
                         })).required()
                     })).required()
                 }).validate(json);
-                if (validate.error) { // object isn't in the correct format
+                if (validate.error) {
                     console.error("invalid json data");
                     throw new Error(validate.error);
                 }
-                return new Settings(json.config, json.sections.map(sec => { // parse object into settings, sections, and options
+                return new Settings(json.config, json.sections.map(sec => {
                     return new Section(sec.config, sec.options.map(opt => {
                         return new Option(opt.config);
                     }));
@@ -762,15 +491,12 @@ if (Settings === undefined) {
 
         replaceWith(settings) {
             devlog("replacing", Object.assign({}, this), "with", Object.assign({}, settings));
-            // replaces this settings object with another one by overriding sections array and config.
-            // because this object was exported, it can't be assigned in other modules,
-            // so a custom function had to be made
-            if (!(settings instanceof Settings)) { // only override if provided object is a Setting object
+            if (!(settings instanceof Settings)) {
                 devlog("settings object is not an instance of the Settings class", settings);
                 return;
             }
-            this.config = settings.config; // override config
-            this.sections = settings.sections; // override sections
+            this.config = settings.config;
+            this.sections = settings.sections;
         }
     }
 }
@@ -778,85 +504,43 @@ if (Settings === undefined) {
 let Section = window.Section;
 if (Section === undefined) {
     Section = class extends EventTarget {
-        /**
-         * @type {Settings}
-         */
         settings_obj = null;
         config = {
             name: "section"
         }
         options = [];
-
-        /**
-         * makes a new Section object
-         * @param {Object} config config options
-         * @param {Options[]} options array of Options to add to the section
-         */
         constructor(config, options) {
-            super(); // initialize EventTarget
-            extend(this.config, config); // apply config to this
-            if (!Array.isArray(options)) { // turn options into array if it isn't one already
+            super();
+            extend(this.config, config);
+            if (!Array.isArray(options)) {
                 options = [options];
             }
-            this.options = options.filter(e => e instanceof Option); // remove all non-Option items from array
+            this.options = options.filter(e => e instanceof Option);
             options.forEach(option => {
-                option.section_obj = this; // set parent object for each option
+                option.section_obj = this;
             });
         }
-
-        /**
-         * 
-         * @param {String} name
-         * @returns {Option}
-         */
-        getOption(name) { // returns the section object with the given id
+        getOption(name) {
             return this.options.find(e => e.config.id == name);
         }
-
-        /**
-         * renders the section object as HTML
-         * @returns {HTMLElement}
-         */
         render() {
             devlog("render section");
             let section = createElement("section").add(
-                createElement("h2", { innerHTML: this.config.name }) // section title
+                createElement("h2", { innerHTML: this.config.name })
             );
-            section.add(...this.options.map(o => o.render())); // render all options in this section
+            section.add(...this.options.map(o => o.render()));
             return section;
         }
-
-        /**
-         * dispatches an event on the Section object
-         * @param {String} type event type
-         * @param {Object} config event options/data
-         */
         dispatchEvent(event) {
-            this.settings_obj.dispatchEvent(event); // bubble event to parent element
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]); // call original dispatchEvent function
+            this.settings_obj.dispatchEvent(event);
+            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this);
+            originalDispatch.apply(this, [event]);
             return !event.defaultPrevented || !event.cancelable;
         }
-
-        /**
-         * listens for an event\
-         * wrapper for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
         on(type, callback) {
-            // console.log("on", this.#listeners);
             this.addEventListener(type, callback);
         }
-
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
         off(type, callback) {
-            // console.log("off", this.#listeners);
             this.removeEventListener(type, callback);
         }
     }
@@ -865,29 +549,17 @@ if (Section === undefined) {
 let Option = window.Options;
 if (Option === undefined) {
     Option = class extends EventTarget {
-        /**
-         * @type {HTMLElement}
-         */
         input = null;
-
-        /**
-         * @type {Section}
-         */
         section_obj = null;
         config = {
             name: "option",
             type: "toggle",
             value: false
         }
-
-        /**
-         * creates a new Option object
-         * @param {Object} config Option options
-         */
         constructor(config) {
-            super(); // initialize EventTarget object
-            extend(this.config, config); // apply config to this
-            if (config.value == undefined && config.values) { // if value is not specified, set value to first value in values
+            super();
+            extend(this.config, config);
+            if (config.value == undefined && config.values) {
                 this.config.value = config.values[0];
             }
         }
@@ -898,22 +570,22 @@ if (Option === undefined) {
 
         set value(val) {
             devlog("set value to", val);
-            show("#loadingModal"); // show the loading modal
+            show("#loadingModal");
             let option = this;
             let previousVal = this.config.value;
             this.config.value = val;
-            fetch("/Reports/Report/SaveSettings", { // fetch request to server to save user settings
+            fetch("/Reports/Report/SaveSettings", {
                 method: "POST",
                 body: this.section_obj.settings_obj.export(),
                 headers: {
-                    "X-CSRF-TOKEN": Cookies.get("CSRF-TOKEN") // auth token
+                    "X-CSRF-TOKEN": Cookies.get("CSRF-TOKEN")
                 }
             }).then(e => {
                 e.text().then(t => {
-                    if (t.includes("error")) { // settings could not save
+                    if (t.includes("error")) {
                         devlog("error saving settings");
-                        this.config.value = previousVal; // revert option change in config object
-                        if (this.input.checked != undefined) { // revert option change in input element
+                        this.config.value = previousVal;
+                        if (this.input.checked != undefined) {
                             this.input.checked = previousVal;
                         } else {
                             this.input = previousVal;
@@ -921,16 +593,11 @@ if (Option === undefined) {
                     } else {
                         devlog("successfully saved settings");
                     }
-                    option.dispatchEvent(new Event("change")); // forward event from html element to option object
-                    hide("#loadingModal"); // hide the loading modal
+                    option.dispatchEvent(new Event("change"));
+                    hide("#loadingModal");
                 });
             });
         }
-
-        /**
-         * renders the option object as HTML
-         * @returns {HTMLLabelElement}
-         */
         render() {
             devlog("render option");
             let label = createElement("label");
@@ -938,48 +605,42 @@ if (Option === undefined) {
                 innerHTML: this.config.name
             });
             let input = this.createInput();
-            label.add(span, input); // clicking a label will activate the first <input> inside it, so the 'for' attribute isn't required
+            label.add(span, input);
             return label;
         }
-
-        /**
-         * creates the input method specified by the option config
-         * @returns {HTMLSelectElement|HTMLInputElement}
-         */
         createInput() {
-            let input; // initialize variable
-            let option = this; // save reference to this
-            if (this.config.type == "toggle") { // standard on/off toggle
+            let input;
+            let option = this;
+            if (this.config.type == "toggle") {
                 input = createElement("input", {
                     type: "checkbox",
-                    classList: "slider", // pure css toggle switch
+                    classList: "slider",
                     checked: option.config.value
                 });
             } else if (this.config.type == "dropdown") {
                 input = createElement("select");
                 let values = [];
-                if (this.config.values || (!["undefined", "null"].includes(typeof this.config.values))) { // if list of values is defined
-                    if (!Array.isArray(this.config.values)) { // if values is not an array, make it one
+                if (this.config.values || (!["undefined", "null"].includes(typeof this.config.values))) {
+                    if (!Array.isArray(this.config.values)) {
                         this.config.values = [this.config.values];
                     }
-                    values.push(...this.config.values); // add defined values to list
+                    values.push(...this.config.values);
                 }
-                values = Array.from(new Set(values)); // remove duplicates
+                values = Array.from(new Set(values));
                 input.add(...values.map(v => createElement("option", {
                     innerHTML: v
                 })));
-                // if specified value is not in the list of predefined values, add it as a placeholder
                 if (this.config.value && !this.config.values.includes(this.config.value)) {
-                    input.insertAdjacentElement("afterBegin", createElement("option", { // insert option element at beginning of select list
+                    input.insertAdjacentElement("afterBegin", createElement("option", {
                         innerHTML: this.config.value,
                         value: this.config.value,
-                        hidden: true, // visually hide placeholder from dropdown
-                        disabled: true // prevent user from selecting it
+                        hidden: true,
+                        disabled: true
                     }));
                 }
                 input.value = this.config.value || this.config.values[0];
             }
-            input.addEventListener("input", function () { // when setting is changed, dispatch change event on the potions object
+            input.addEventListener("input", function () {
                 if (input.checked != undefined) {
                     option.value = input.checked;
                 } else {
@@ -988,38 +649,16 @@ if (Option === undefined) {
             });
             return input;
         }
-
-        /**
-         * dispatches an event on the Option object
-         * @param {String} type event type
-         * @param {Object} config event options/data
-         */
         dispatchEvent(event) {
-            this.section_obj.dispatchEvent(event); // bubble event to parent section
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // save copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]); // call original dispatchEvent function
+            this.section_obj.dispatchEvent(event);
+            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this);
+            originalDispatch.apply(this, [event]);
             return !event.defaultPrevented || !event.cancelable;
         }
-
-        /**
-         * listens for an event\
-         * wrapper function for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
         on(type, callback) {
-            // console.log("option on", this.#listeners);
             this.addEventListener(type, callback);
         }
-
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper function for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
         off(type, callback) {
-            // console.log("option off", this.#listeners);
             this.removeEventListener(type, callback);
         }
     }
@@ -1080,25 +719,8 @@ export let settings = new Settings({
     ])
 ]);
 
-/**
- * uses JSON.stringify and JSON.parse to copy an object and return the copy\
- * WARNING: do not use on objects that contain recursive references, or an error will be thrown
- * @param {Object} obj object to copy
- * @returns {Object}
- * @example
- * let obj1 = {
- *     a: 1,
- *     b: 2,
- *     c: 3
- * }
- * let obj2 = copyObject(obj1) // {a: 1, b: 2, c: 3}
- * obj1.a = 4;
- * // obj1 == {a: 4, b: 2, c: 3}
- * // obj2 == {a: 1, b: 2, c: 3}
- */
 export function copyObject(obj) {
     return clone(obj);
-    // return JSON.parse(JSON.stringify(obj));
 }
 
 function clone(obj) {
@@ -1122,7 +744,6 @@ function clone(obj) {
             result[key] = clone(obj[key]);
         }
     }
-    // primitives and non-supported objects (e.g. functions) land here
     return result;
 }
 
@@ -1142,12 +763,7 @@ function getRegExpFlags(regExp) {
     }
 }
 
-/**
- * parses a stack trace string into an array of objects
- * @param {String} trace stack trace
- * @returns {Object[]}
- */
-export function parseTrace(trace) {
+function parseTrace(trace) {
     let paths = trace.trim().split("\n").map(p => {
         const a = p.split("@");
         const locs = a.pop().split(":");
@@ -1161,11 +777,6 @@ export function parseTrace(trace) {
     return paths;
 }
 
-/**
- * converts an entire string to html entities
- * @param {String} str string to convert
- * @returns {String} convertet string
- */
 function toHTMLEntities(str) {
     return [...str].split("").map(e => `&#${e.charCodeAt(0)};`).join("");
 }
@@ -1282,12 +893,6 @@ let svgToDataUri = (function () {
     return svgToTinyDataUri.toSrcset;
 })();
 
-/**
- * stringifies and syntax highlights almost any javascript object and logs it to the console
- * @param {HTMLElement|String} element element or HTML string to log
- * @param {Boolean} raw whether to return the raw result or just console.log it
- * @returns {Object[]}
- */
 export function logFormatted(object, options = {}) {
     let { embedObjects, raw, collapsed, maxDepth, label } = (function () {
         let defaults = {
@@ -1329,100 +934,100 @@ export function logFormatted(object, options = {}) {
             while (splitFunc[1].length == 0) {
                 splitFunc.splice(1, 1);// remove first line of function body if it's blank (optional)
             }
-            let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) + e : e + " ")); // indent all lines after first to match current indent amount and add space to end of first line
-            embedIndex += padded[0].length; // length of first line
+            let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) + e : e + " "));
+            embedIndex += padded[0].length;
             indexes.push(embedIndex);
-            embedIndex += (padded.slice(1).join("\n").length + 1); // length of all lines after first line + newline between 1st and 2nd line
-            return padded.join("\n"); // rejoin function lines and return
+            embedIndex += (padded.slice(1).join("\n").length + 1);
+            return padded.join("\n");
         } else if (type == "string") {
             let quote;
-            if (!obj.includes('"')) { // if there are no '"', wrap with '"'
+            if (!obj.includes('"')) {
                 quote = '"';
-            } else if (!obj.includes("'")) { // otherwise, if no "'", wrap with "'"
+            } else if (!obj.includes("'")) {
                 quote = "'";
             } else {
-                quote = '"'; // otherwise, wrap with '"'
+                quote = '"';
             }
             [
                 ["\n", "\\n"],
                 ["\r", "\\r"],
                 ["\t", "\\t"],
-                (quote == '"') ? ['"', '\\"'] : ["'", "\\'"], // only escape the quotes that are the same as what the string is wrapped with
+                (quote == '"') ? ['"', '\\"'] : ["'", "\\'"],
             ].forEach(e => {
-                obj = obj.replaceAll(e[0], e[1]); // escape quotes and all escape characters
+                obj = obj.replaceAll(e[0], e[1]);
             });
-            let str = `${quote}${obj}${quote}`; // wrap string with quotes
-            embedIndex += str.length; // add to stringified character count
+            let str = `${quote}${obj}${quote}`;
+            embedIndex += str.length;
             return str;
         } else if (type == "object") {
-            if (objects.includes(obj)) { // prevent recursion by checking objects that have already been stringified
-                let str = "<already stringified (recursion prevention)>"; // return plain string
-                embedIndex += str.length; // add to character count
-                indexes.push(embedIndex); // save index
+            if (objects.includes(obj)) {
+                let str = "<already stringified (recursion prevention)>";
+                embedIndex += str.length;
+                indexes.push(embedIndex);
                 return str;
             }
-            objects.push(obj); // add to list of objects
-            let arr = []; // make array that stores all of this object's properties
-            indentAmount++; // increment indent amount
-            depth++; // increment depth
+            objects.push(obj);
+            let arr = [];
+            indentAmount++;
+            depth++;
 
-            embedIndex += 2; // opening brace/bracket+space
-            indexes.push(embedIndex); // embed object after opening brace/bracket
-            embedIndex += (1 + // newline after opening brace/bracket
-                pad.length); // first line pad
+            embedIndex += 2;
+            indexes.push(embedIndex);
+            embedIndex += (1 +
+                pad.length);
 
-            if (Array.isArray(obj)) { // object is an array
-                obj.forEach((item, index) => { // loop through array items
+            if (Array.isArray(obj)) {
+                obj.forEach((item, index) => {
                     let str = stringify(item);
                     arr.push(str);
                     if (index < obj.length - 1) {
-                        embedIndex += 2 + // comma+newline
-                            pad.length; // next line pad
+                        embedIndex += 2 +
+                            pad.length;
                     }
                 });
-                indentAmount--; // decrement indent amount
-                depth--; // decrement depth
-                embedIndex += (1 + // newline before closing bracket
-                    (pad.length - 4) + // end pad
-                    1); // closing bracket
+                indentAmount--;
+                depth--;
+                embedIndex += (1 +
+                    (pad.length - 4) +
+                    1);
                 return `[ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}]`;
             } else {
-                if (!obj) { // typeof null === "object"
+                if (!obj) {
                     embedIndex += 4;
                     return "null";
                 }
                 let entries = Object.entries(obj);
                 entries.forEach(function (kvp, index) {
                     let [key, value] = kvp;
-                    embedIndex += key.length + // key length
-                        2; // colon+space
-                    let str = stringify(value); // convert value to string
-                    str = `${key}: ${str}`; // create stringified kvp
-                    arr.push(str); // add to array
-                    if (index < entries.length - 1) { // only increment for comma/newlines between lines (1 less than the number of entries)
-                        embedIndex += 2 + // comma+newline
-                            pad.length; // next line pad
+                    embedIndex += key.length +
+                        2;
+                    let str = stringify(value);
+                    str = `${key}: ${str}`;
+                    arr.push(str);
+                    if (index < entries.length - 1) {
+                        embedIndex += 2 +
+                            pad.length;
                     }
                 });
-                indentAmount--; // decrement indent amount
-                depth--; // decrement depth
+                indentAmount--;
+                depth--;
                 let returnVal = `{ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}}`;
-                embedIndex += 1 + // newline before closing brace
-                    (pad.length - 4) +  // end pad
-                    1; // closing brace
+                embedIndex += 1 +
+                    (pad.length - 4) +
+                    1;
                 return returnVal;
             }
         } else {
-            let str = "" + obj; // convert to string
-            embedIndex += str.length; // add string length to character count
+            let str = "" + obj;
+            embedIndex += str.length;
             return str;
         }
     }
 
-    let element = createElement("div", { innerHTML: Prism.highlight(stringify(object), Prism.languages.javascript).replaceAll("%", "%%") }); // syntax-highlight stringified code and put the result into a div
+    let element = createElement("div", { innerHTML: Prism.highlight(stringify(object), Prism.languages.javascript).replaceAll("%", "%%") });
 
-    const regex = /(?<!%)(%%)*%[co]/g; // regex for matching [co] with odd number of 5 before it
-    const PRISM_CLASSES = [ // list of prism.js classes and their corresponding colors
+    const regex = /(?<!%)(%%)*%[co]/g;
+    const PRISM_CLASSES = [
         [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
         [["boolean", "constant", "number", "property", "symbol", "tag"], "#4fc1ff"],
         [["attr-name", "builtin", "char", "inserted", "selector", "string"], "#ce9178"],
@@ -1437,11 +1042,11 @@ export function logFormatted(object, options = {}) {
         [["class-name"], "#4ec9b0"]
     ];
 
-    function calcStyle(element) { // get calculated color of a text node based off of the classes it has
-        if (!element.style) return; // if element isa text node, return
-        let classList = [...element.classList]; // convert class list to array
-        classList.forEach(clss => { // loop through element classes
-            PRISM_CLASSES.forEach(pclass => { // check against each prism.js class
+    function calcStyle(element) {
+        if (!element.style) return;
+        let classList = [...element.classList];
+        classList.forEach(clss => {
+            PRISM_CLASSES.forEach(pclass => {
                 if (pclass[0].includes(clss)) element.style.color = pclass[1];
             });
         });
@@ -1449,73 +1054,73 @@ export function logFormatted(object, options = {}) {
 
     let logs = [];
     let styles = [];
-    const flattened = flattenChildNodes(element); // get list of all nodes in element
-    flattened.forEach(calcStyle); // manually set style.color for each element based off of its classes
-    if (embedObjects) { // objects will be embedd into the console.log statement for better inspection
-        let index = 0; // current character index
-        let lastPercent = false; // whether the last character was a % (functions as an escape character)
-        function count(node) { // count through each character of the node's textContent and inject a %o
-            let text = ""; // processed text
+    const flattened = flattenChildNodes(element);
+    flattened.forEach(calcStyle);
+    if (embedObjects) {
+        let index = 0;
+        let lastPercent = false;
+        function count(node) {
+            let text = "";
             node.textContent.split("").forEach(function (char) {
-                if (char == "\r") return; // completely ignore carriage returns
-                if (index == indexes[0]) { // if current character count is where a %o needs to be injected
-                    indexes.shift(); // remove the inject index
-                    text += "%o"; // inject
+                if (char == "\r") return;
+                if (index == indexes[0]) {
+                    indexes.shift();
+                    text += "%o";
                 }
-                if (char == "%" && !lastPercent) lastPercent = true; // next character should be escaped
-                else if (lastPercent) { // if this character should be escaped
-                    lastPercent = false; // character has been escaped
-                    index++; // increment index
+                if (char == "%" && !lastPercent) lastPercent = true;
+                else if (lastPercent) {
+                    lastPercent = false;
+                    index++;
                 } else index++;
-                text += char; // add character to processed text
+                text += char;
             });
-            node.textContent = text; // set node content to processed text
+            node.textContent = text;
         }
-        flattened.forEach(e => { // loop through all nodes and count through the text nodes
+        flattened.forEach(e => {
             if (e.nodeName.includes("text")) count(e);
         });
     }
 
-    flattened.forEach(e => { // convert text nodes to console log with interleaved formatting
+    flattened.forEach(e => {
         if (e.nodeName != "#text") return;
-        logs.push(`%c${e.textContent}`); // push formatting tag and textContent
-        let color = ""; // set color to default
-        if (e.parentNode.style.color) color = `color:${e.parentNode.style.color};`; // if parent node has color, set it
-        styles.push(color); // add style to list
+        logs.push(`%c${e.textContent}`);
+        let color = "";
+        if (e.parentNode.style.color) color = `color:${e.parentNode.style.color};`;
+        styles.push(color);
     });
-    logs = logs.join(""); // join all text nodes into one message
+    logs = logs.join("");
 
-    function regexSplit(string) { // splits a string along REGEX and returns both the matches and split string
+    function regexSplit(string) {
         let str = [], reg = [], match, lastindex = 0, index;
-        while (match = regex.exec(string)) { // while string has match to the regex
+        while (match = regex.exec(string)) {
             index = match.index;
-            let kind = match[0], mod = 0; // kind is the string that was matched
-            if (kind.length > 2) { // if match  has more than one %
-                str[str.length - 1] += kind.substring(0, kind.length - 2); // add extra % to previous split string
-                mod = kind.length - 2; // offset index by amount of extra %
+            let kind = match[0], mod = 0;
+            if (kind.length > 2) {
+                str[str.length - 1] += kind.substring(0, kind.length - 2);
+                mod = kind.length - 2;
                 kind = kind.substring(kind.length - 2);
             }
-            str.push(string.substring(((lastindex + 2) > index ? index : (lastindex + 2)), index)); // push string from (end of last match to beginning of this match) to list
-            lastindex = index + mod; // offset index
-            reg.push(kind); // push %[oc] to matches list
+            str.push(string.substring(((lastindex + 2) > index ? index : (lastindex + 2)), index));
+            lastindex = index + mod;
+            reg.push(kind);
         }
-        str.push(string.substring(lastindex + 2)); // add final chunk of string to list of splits
+        str.push(string.substring(lastindex + 2));
         return { split: str, matches: reg, };
     }
 
     let { matches, split } = regexSplit(logs), final = [], finalStyles = [];
     while (matches.length > 0) {
-        let type = matches.shift(); // get %[oc] from list
-        final.push(split.shift() || ""); // add first split string to list
-        final.push(type); // push %[oc] to list
-        if (type == "%o") finalStyles.push(objects.shift() || ""); // if %[oc] is %o, push object
-        else finalStyles.push(styles.shift() || ""); // else, push style
+        let type = matches.shift();
+        final.push(split.shift() || "");
+        final.push(type);
+        if (type == "%o") finalStyles.push(objects.shift() || "");
+        else finalStyles.push(styles.shift() || "");
     }
-    while (split.length > 0) final.push(split.shift()); // push all remaining strings
-    while (embedObjects && objects.length > 0) finalStyles.push(objects.shift()); // push all remaining objects
-    while (styles.length > 0) finalStyles.push(styles.shift()); // push all remaining styles
+    while (split.length > 0) final.push(split.shift());
+    while (embedObjects && objects.length > 0) finalStyles.push(objects.shift());
+    while (styles.length > 0) finalStyles.push(styles.shift());
 
-    final = final.join(""); // join array into one message
+    final = final.join("");
     if(raw)return{logs:final,styles:finalStyles,html:element.outerHTML}
     else{
         if(collapsed){
@@ -1530,7 +1135,7 @@ window.logFormatted = logFormatted;
 
 (function () {
     const MIN = 32, MAX = 126;
-    const SIMPLE = { false: '![]', true: '!![]', undefined: '[][[]]', NaN: '+[![]]', Infinity: '+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])'/* +"1e1000" */ };
+    const SIMPLE = { false: '![]', true: '!![]', undefined: '[][[]]', NaN: '+[![]]', Infinity: '+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])' };
     const CONSTRUCTORS = { Array: '[]', Number: '(+[])', String: '([]+[])', Boolean: '(![])', Function: '[]["flat"]', RegExp: 'Function("return/"+false+"/")()', Object: '[]["entries"]()' };
     const MAPPING = {
         'a': '(false+"")[1]',
