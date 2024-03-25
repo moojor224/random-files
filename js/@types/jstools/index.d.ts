@@ -10,8 +10,6 @@ type Without<T, K> = {
     [L in Exclude<keyof T, K>]: T[L];
 }
 
-type CreateElementOptions = {} & Element;
-
 type SettingsConfig = {
     name?: String
 }
@@ -82,13 +80,15 @@ declare class Tab extends EventTarget {
     off(type: String, callback: Function): void;
 }
 
+// type CreateElementOptions<T> = {} & T;
+
 interface Window {
     /**
      * creates an element
      * @param tagName tag name of the element
      * @param options properties to set
      */
-    createElement<Tag extends keyof HTMLElementTagNameMap>(tagName: Tag, options?: CreateElementOptions): HTMLElementTagNameMap[Tag];
+    createElement<Tag extends keyof HTMLElementTagNameMap>(tagName: Tag, options?: {} & HTMLElementTagNameMap[Tag]): HTMLElementTagNameMap[Tag];
     Settings: Settings;
     Section: Section;
     Options: Options;
