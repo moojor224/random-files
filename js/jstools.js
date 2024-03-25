@@ -2,6 +2,8 @@ import { devlog } from "./dev-helper.js";
 import { Prism } from "./prism.js";
 import { js_beautify } from "./beautify.js";
 
+Math.roundf=(v,t)=>Math.round(v*t)/t;
+
 /**
  * accepts a css selector and a callback function\
  * waits for an element that matches the css selector to load, then calls the callback
