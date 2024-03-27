@@ -8,6 +8,8 @@ variable length: 7, at least
 variable length: 8, at least 
 variable length: 9, at least 2 instances
 
+
+
 t=e=>typeof e              <13chars L12chars
 typeof e=="undefined"      t(e)[0]=="u"      saved 9 chars/instance      2+ instances
 typeof e=="function"       t(e)[0]=="f"      saved 8 chars/instance
@@ -19,8 +21,12 @@ typeof e=="symbol"         t(e)[1]=="y"
 typeof e=="object"         t(e)[0]=="o"
 
 
+
 convert if/else to ternary or short-circuit boolean comparison
 
 if(a==0)b++        if(a==0)b++;else c++
 a==0?b++:0         a==0?b++:c++
-a==0&&b++          a==0&&b++||c++  // this is bad (only works if b!=-1, and more chars)
+a==0?b++:0         a==0?(b++):(c++)       // if multiple statements are needed in one if
+a==0&&b++          a==0&&b++||c++         // this is bad (only works if b!=-1, and uses more chars)
+
+
