@@ -30,3 +30,14 @@ a==0?b++:0         a==0?(b++):(c++)       // if multiple statements are needed i
 a==0&&b++          a==0&&b++||c++         // this is bad (only works if b!=-1, and uses more chars)
 
 
+
+convert for in/of loop to yield (needs at least 25 instances individually)
+
+y=e=>[...(function*(){for(let i in e)yield i})()]
+for(var k in obj)
+y(obj).map(k=>)
+
+
+y=e=>[...(function*(){for(let i of e)yield i})()]
+for(var k of obj)
+y(obj).map(k=>)
