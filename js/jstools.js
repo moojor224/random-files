@@ -2,7 +2,7 @@ import { devlog } from "./dev-helper.js";
 import { Prism } from "./prism.js";
 import { js_beautify } from "./beautify.js";
 
-Math.roundf=(v,t)=>Math.round(v*t)/t;
+Math.roundf = (v, t) => Math.round(v * t) / t;
 
 /**
  * accepts a css selector and a callback function\
@@ -2033,3 +2033,13 @@ export let WIP = (function () {
     console.log("ratio:", encoded.length / tobe.length);
     console.log(tobe == decoded);
 })();
+
+function rect(num) {
+    let height = Math.ceil(Math.sqrt(num));
+    let width = height;
+    while (height * width - width > num) {
+        height--;
+    }
+    let arr = new Array(height).fill(0).map(e => new Array(width));
+    return arr;
+}
