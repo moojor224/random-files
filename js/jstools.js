@@ -1524,7 +1524,7 @@ export function logFormatted(object, options = {}) {
         let defaults = {
             embedObjects: false, // embed the objects within the console message
             raw: false, // return the raw result without logging it to the console
-            collapsed: false, // log the message inside a collapsed console group  (increases performace for larger objects)
+            collapsed: false, // log the message inside a collapsed console group (slightly increases performance before initially logging the object). Will still lag when collapsed group is initially opened
             maxDepth: Infinity, // maximum depth to stringify
             label: "formatted log", // label for collapsed console group
         }
@@ -1567,18 +1567,20 @@ export function logFormatted(object, options = {}) {
             return padded.join("\n"); // rejoin function lines and return
         } else if (type == "string") {
             let quote;
-            if (!obj.includes('"')) { // if there are no '"', wrap with '"'
+            if (!obj.includes('"')) { // if there are no ", wrap with "
                 quote = '"';
-            } else if (!obj.includes("'")) { // otherwise, if no "'", wrap with "'"
+            } else if (!obj.includes("'")) { // otherwise, if no ', wrap with '
                 quote = "'";
+            } else if (!obj.includes("`")) {
+                quote = '`'; // otherwise, if no `, wrap with `
             } else {
-                quote = '"'; // otherwise, wrap with '"'
+                quote = '"'; // otherwise, wrap with "
             }
             [
                 ["\n", "\\n"],
                 ["\r", "\\r"],
                 ["\t", "\\t"],
-                (quote == '"') ? ['"', '\\"'] : ["'", "\\'"], // only escape the quotes that are the same as what the string is wrapped with
+                [quote, "\\" + quote], // only escape the quotes that are the same as what the string is wrapped with
             ].forEach(e => {
                 obj = obj.replaceAll(e[0], e[1]); // escape quotes and all escape characters
             });
@@ -1655,16 +1657,17 @@ export function logFormatted(object, options = {}) {
     const regex = /(?<!%)(%%)*%[co]/g; // regex for matching [co] with odd number of 5 before it
     const PRISM_CLASSES = [ // list of prism.js classes and their corresponding colors
         [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
-        [["boolean", "constant", "number", "property", "symbol", "tag"], "#4fc1ff"],
+        [["constant", "property", "symbol", "tag"], "#4fc1ff"],
+        [["number"], "#b5cea8"],
         [["attr-name", "builtin", "char", "inserted", "selector", "string"], "#ce9178"],
         [["entity", "url", "variable"], "#f4b73d"],
-        [["atrule", "attr-value", "keyword"], "#569cd6"],
+        [["atrule", "attr-value", "keyword", "boolean"], "#569cd6"],
         [["important", "regex"], "#ee9900"],
         [["deleted"], "#ff0000"],
         [["function"], "#dcdcaa"],
         [["parameter"], "#9cdcfe"],
         [["template-punctuation"], "#ce9178"],
-        [["interpolation-punctuation"], "#ff8800"],
+        [["interpolation-punctuation"], "#ffff00"],// "#ff8800"],
         [["class-name"], "#4ec9b0"]
     ];
 
@@ -2034,7 +2037,7 @@ export let timeConversions = (function () {
     return { seconds, minutes, hours, days, weeks, years };
 })();
 
-export let WIP = (function () {
+let WIP = (function () {
     var byteLength = 16;
 
     function encode(str) {
@@ -2065,7 +2068,7 @@ export let WIP = (function () {
     console.log(decoded);
     console.log("ratio:", encoded.length / tobe.length);
     console.log(tobe == decoded);
-})();
+});
 
 function rect(num) {
     let height = Math.ceil(Math.sqrt(num));
