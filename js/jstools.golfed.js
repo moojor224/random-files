@@ -2,8 +2,8 @@ import {devlog}from"./dev-helper.js";
 import {Prism}from"./prism.js";
 import {js_beautify}from"./beautify.js";
 Math.roundf=(v,t)=>Math.round(v*t)/t;
-let p=e=>typeof e,w=(c,...a)=>new c(...a),four=(t,o=0,i=o)=>w(Array,t).fill(i++),OF=(a,b)=>a instanceof b,qs="querySelector";
-export let waitForKeyElements=(qu,cb,st,el)=>{let o,r;(o=void(0)===el?$(qu):$(el).contents().find(qu))&&o.length>0?((r=!0),o.each(function(){let e=$(this);e.data("alreadyFound")||false||(cb(e)?(r=false):e.data("alreadyFound",true))})):(r=false);let l=waitForKeyElements.controlObj||{},i=qu.replace(/[^\w]/g,"_"),c=l[i];r&&st&&c?(clearInterval(c),delete l[i]):c||((c=setInterval(_=>{waitForKeyElements(qu,cb,st,el)},1000)),(l[i]=c));waitForKeyElements.controlObj=l}
+let p=e=>typeof e,w=(c,...a)=>new c(...a),four=(t,o=0,i=o)=>w(Array,t).fill(i++),OF=(a,b)=>a instanceof b,qs="querySelector",y=e=>[...(function*(){for(let i in e)yield i})()];
+export let waitForKeyElements=(qu,cb,st,el)=>{let o,r;(o=void(0)===el?$(qu):$(el).contents().find(qu))&&o.length>0?((r=!0),o.each(function(){let e=$(this);e.data("alreadyFound")||!1||(cb(e)?(r=!1):e.data("alreadyFound",!0))})):(r=!1);let l=waitForKeyElements.controlObj||{},i=qu.replace(/[^\w]/g,"_"),c=l[i];r&&st&&c?(clearInterval(c),delete l[i]):c||((c=setInterval(_=>{waitForKeyElements(qu,cb,st,el)},1000)),(l[i]=c));waitForKeyElements.controlObj=l}
 let createElement=window.createElement;
 if(createElement===void(0))c="createElement",createElement=(j,d={},t=p(j)[1]=="t"?document[c](j):j)=>{
     if(p(tag)=="t"&&tag.match(/[^a-zA-Z0-9]/g)){
@@ -21,8 +21,8 @@ Element.prototype.add===void(0)?Element.prototype.add=add:0;
 Object.getOwnPropertyNames(window).filter(e=>e.startsWith("HTML")&&e.endsWith("Element")).map(e=>window[e].prototype.add!==add?window[e].prototype.add=add:0);
 window.Element.prototype.error=text=>(this.clearError(),this.add(createElement("error",{innerHTML:text||"!"})))
 window.Element.prototype.clearError=_=>{
-    for(let e of this.childNodes)if(e.tagName.toLowerCase()=="error")return(e.remove(),true)
-    return false
+    for(let e of this.childNodes)if(e.tagName.toLowerCase()=="error")return(e.remove(),!0)
+    return!1
 }
 export let warn=(str,...sels)=>(clearWarn(...sels),sels.map(s=>el=s,p(s)[1]=="t"?el=document[qs](s):0,el.append(createElement("warn",{innerHTML:str})))),
 clearWarn=(...sels)=>{
@@ -35,16 +35,16 @@ clearWarn=(...sels)=>{
 error=(str,...selectors)=>{
     clearWarn(...selectors)
     let w=createElement("error",{innerHTML:str})
-    selectors.map(s=>(el=s,p(s)[1]=="t"&&(el=document[qs](s)),el.append(w.cloneNode(true))))
+    selectors.map(s=>(el=s,p(s)[1]=="t"&&(el=document[qs](s)),el.append(w.cloneNode(!0))))
 },
-clearError=(...selectors)=>selectors.map(s=>{let el=s;p(s)[1]=="t"?el=document[qs](s):0;[...el.children].map(e=>e.tagName.toLowerCase()=="error"?e.remove():0)}),
-hide=(...selectors)=>selectors.map(s=>(p(s)[1]=="t"?document[qs](s):s).classList.add("hidden")),
-show=(...selectors)=>selectors.map(s=>(p(s)[1]=="t"?document[qs](s):s).classList.remove("hidden")),
-clear=(...selectors)=>selectors.map(s=>{s=p(s)=="string"?document[qs](s):s;let arr=flattenChildNodes(s);arr.reverse().map(e=>e.remove?.call(e)),s.innerHTML=""}),
-disable=(message,...selectors)=>selectors.map(s=>(p(s)[1]=="t"?document[qs](s):s).setAttribute("disabled",message)),
-enable=(...selectors)=>selectors.map(s=>(p(s)[1]=="t"?document[qs](s):s).removeAttribute("disabled")),
+clearError=(...S)=>S.map(s=>{let el=s;p(s)[1]=="t"?el=document[qs](s):0;[...el.children].map(e=>e.tagName.toLowerCase()=="error"?e.remove():0)}),
+hide=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).classList.add("hidden")),
+show=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).classList.remove("hidden")),
+clear=(...S)=>S.map(s=>{s=p(s)=="string"?document[qs](s):s;let arr=flattenChildNodes(s);arr.reverse().map(e=>e.remove?.call(e)),s.innerHTML=""}),
+disable=(m,...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).setAttribute("disabled",m)),
+enable=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).removeAttribute("disabled")),
 tabColor=color=>{
-    let valid=c=>c.match(/^(unset|initial|inherit)$/)?false:createElement("div",{style:{color:c}}).style.color!==""
+    let valid=c=>c.match(/^(unset|initial|inherit)$/)?!1:createElement("div",{style:{color:c}}).style.color!==""
     if(!valid(color))return;
     let c=createElement("canvas",{width:1,height:1}),ctx=c.getContext("2d");ctx.fillStyle=color;ctx.fillRect(0,0,1,1);document.head.append(createElement(document[qs]("link[rel=icon]")||"link",{href:c.toDataURL(),rel:"icon"}))
 },
@@ -53,20 +53,19 @@ parseCookies=(cookies)=>{
     cookies.trim().split("").map(e=>{
         if(escaped){
             value+=e;
-            escaped=false
+            escaped=!1
         }else if(reading){
             if(quoted==NaN){
-                quoted=e=='"';
-                if(!quoted)value+=e
-            }else if((e=='"'&&quoted)||(e==";"&&!quoted))(quoted=NaN,map.set(key.trim(),value),reading=false,value="",key="")
+                if(!(quoted=e=='"'))value+=e
+            }else if((e=='"'&&quoted)||(e==";"&&!quoted))(quoted=NaN,map.set(key.trim(),value),reading=!1,value="",key="")
             else value+=e
-        }else if(e=="=")reading=true;
+        }else if(e=="=")reading=!0;
         else key+=e
     });
     if(key!="")map.set(key.trim(),value);
     return map
 },
-// export let dynamicSort=P=>(sO=(p(P)[1]=="t"&&P[0]=="-")?(P=P.substring(1),-1):1,(a,b)=>(a[P]<b[P]?-1:a[P]>b[P]?1:0)*sO);,
+dynamicSort=P=>(sO=(p(P)[1]=="t"&&P[0]=="-")?(P=P.substring(1),-1):1,(a,b)=>(a[P]<b[P]?-1:a[P]>b[P]?1:0)*sO),
 advancedDynamicSort=(...P)=>{
     let D=(P,c=(a,b,chain,p=chain[0].trim(),sO=(p[0]=="-"?(p=p.substring(1),-1):1))=>([a[p],b[p]].includes(void(0))||chain.length==1)?sO*(a[p]<b[p]?-1:a[p]>b[p]?1:0):(chain.length>1?c(a[p],b[p],chain.slice(1)):void(0)))=>(P=P.split("."),(a,b)=>c(a,b,P))
     P=P.map(e=>D(e))
@@ -83,27 +82,18 @@ rgbGradient=(P,colors=[{r:255,g:0,b:0},{r:255,g:0x7f,b:0},{r:255,g:127,b:0},{r:0
     }
 },
 map=(v,n,x,N,X,c=!1)=>((c?clamp(v,n,x):v)-n)*(X-N)/(x-n)+N,
-gradient=(count,colors=[{r:255,g:0,b:0},{r:255,g:0x7f,b:0},{r:255,g:127,b:0},{r:0,g:255,b:0},{r:0,g:0,b:255},{r:255,g:0,b:255}])=>{
-    if (count==1) {
-        let{r,g,b}=colors[0];
-        return[`rgb(${r},${g},${b})`]
-    }
-    return w(Array,count).fill("").map((e,n)=>rgbGradient(map(n,0,count-1,0,100),colors))
-},
-interleaveArrays=(fill,...arrays)=>{
-    if(fill){
-        let max=Math.max(...arrays.map(e=>e.length));
-        arrays=arrays.map(arr=>[...arr,...w(Array,max-arr.length).fill(null)])
-    }
+gradient=(n,c=[{r:255,g:0,b:0},{r:255,g:0x7f,b:0},{r:255,g:127,b:0},{r:0,g:255,b:0},{r:0,g:0,b:255},{r:255,g:0,b:255}])=>n==1?[`rgb(${c[0].r},${c[0].g},${c[0].b})`]:w(Array,n).fill("").map((e,n)=>rgbGradient(map(n,0,n-1,0,100),c)),
+interleaveArrays=(fill,...arrs)=>{
+    if(fill)arrs=arrs.map(arr=>[...arr,...w(Array,Math.max(...arrs.map(e=>e.length))-arr.length).fill(null)]);
     let result=[];
-    while(arrays.filter(e=>e.length>0).length>0)arrays.map(arr=>arr.length>0?result.push(arr.shift()):0);
+    while(arrs.filter(e=>e.length>0).length>0)arrs.map(arr=>arr.length>0?result.push(arr.shift()):0);
     return result
 },
 captureConsole=_=>{
     if(console.everything===void(0)){
         console.everything=[];
         let TS=_=>w(Date).toLocaleString("sv",{timeZone:'UTC'})+"Z"
-        window.onerror=(error,url,line)=>(console.everything.push({type:"exception",timeStamp:TS(),value:{error,url,line}}),false)
+        window.onerror=(error,url,line)=>(console.everything.push({type:"exception",timeStamp:TS(),value:{error,url,line}}),!1)
         window.onunhandledrejection=e=>console.everything.push({type:"promiseRejection",timeStamp:TS(),value:e.reason});
         let hookLogType=logType=>{let o=console[logType].bind(console);(...args)=>(console.everything.push({type:logType,timeStamp:TS(),value:Array.from(args)}),o.apply(console,args))}
         ['log','error','warn','debug'].map(logType=>{console[logType]=hookLogType(logType)})
@@ -122,10 +112,8 @@ listAllColorsOnPage=_=>{
             color=color.replace("#","");
             let split,a;
             switch(color.length){
-                case 4:a=true;
-                case 3:split=color.split("");break
-                case 8:a=true;
-                case 6:split=color.match(/.{1,2}/g);break
+                case 4:a=!0;case 3:split=color.split("");break
+                case 8:a=!0;case 6:split=color.match(/.{1,2}/g);break
             }
             return`rgb${a?"a":""}(${split.map((e,n)=>parseInt(e.padStart(2,e),16)/(n==3?255:1)).join(", ")})`
         }
@@ -152,7 +140,7 @@ listAllColorsOnPage=_=>{
         let color=hexToRgb(root.getPropertyValue(c)),obj={value:color,varName:c};
         colorProps.map(e=>obj[e]=els.filter(r=>r[1][e]===color));
         return obj
-    }).filter(e=>colorProps.map(p=>e[p].length>0).includes(true));
+    }).filter(e=>colorProps.map(p=>e[p].length>0).includes(!0));
     displayResults(arr)
 },
 clamp=(v,n,x)=>(((n>x)?([n,x]=[x,n]):0),(v<n?n:v>x?x:v)),
@@ -172,7 +160,7 @@ convertBase=(str,fromBase,toBase)=>{
         if(num<0)return null;
         if(num==0)return[];
         let result=[],power=x;
-        while(true){
+        while(!0){
             num&1&&(result=add(result,power,base));
             num=num>>1;
             if(num===0)break;
@@ -275,7 +263,7 @@ Section=class extends EventTarget{
 Option=class extends EventTarget{
     input=null;
     section_obj=null;
-    config={name:"option",type:"toggle",value:false}
+    config={name:"option",type:"toggle",value:!1}
     constructor(config){
         super();
         extend(this.config,config);
@@ -313,7 +301,7 @@ Option=class extends EventTarget{
             }
             values=Array.from(w(Set,values));
             input.add(...values.map(v=>createElement("option",{innerHTML:v})));
-            if(this.config.value&&!this.config.values.includes(this.config.value))input.insertAdjacentElement("afterBegin",createElement("option",{innerHTML:this.config.value,value:this.config.value,hidden:true,disabled:true}));
+            if(this.config.value&&!this.config.values.includes(this.config.value))input.insertAdjacentElement("afterBegin",createElement("option",{innerHTML:this.config.value,value:this.config.value,hidden:!0,disabled:!0}));
             input.value=this.config.value||this.config.values[0]
         }
         input.addEventListener("input",_=>{
@@ -339,7 +327,7 @@ export let copyObject=obj=>{
     if(type=='RegExp')return w(RegExp,obj.source,getRegExpFlags(obj));
     if(type=='Array'||type=='Object'){
         result=Array.isArray(obj)?[]:{};
-        for(var key in obj)result[key]=clone(obj[key])
+        y(obj).map(k=>result[k]=clone(obj[k]))
     }
     return result
 },
@@ -363,7 +351,7 @@ svgToDataUri=(_=>{
     return svgToTinyDataUri.toSrcset
 })(),
 logFormatted=(object,options={})=>{
-    let {embedObjects,raw,collapsed,maxDepth,label}=extend({embedObjects:false,raw:false,collapsed:false,maxDepth:Infinity,label:"formatted log"},options),objects=[],indentAmount=1,depth=0,embedIndex=0,indexes=[],stringify=obj=>{
+    let {embedObjects,raw,collapsed,maxDepth,label}=extend({embedObjects:!1,raw:!1,collapsed:!1,maxDepth:Infinity,label:"formatted log"},options),objects=[],indentAmount=1,depth=0,embedIndex=0,indexes=[],stringify=obj=>{
         if(depth>maxDepth){
             let str="'<max depth reached>'";
             embedIndex+=str.length
@@ -443,7 +431,7 @@ logFormatted=(object,options={})=>{
         return e
     },logs=[],styles=[],flattened=flattenChildNodes(element);
     if(embedObjects){
-        let index=0,lastPercent=false,count=node=>{
+        let index=0,lastPercent=!1,count=node=>{
             let text="";
             node.textContent.split("").map(char=>{
                 if(char=="\r")return;
@@ -451,9 +439,9 @@ logFormatted=(object,options={})=>{
                     indexes.shift();
                     text+="%o"
                 }
-                if(char=="%"&&!lastPercent)lastPercent=true;
+                if(char=="%"&&!lastPercent)lastPercent=!0;
                 else if(lastPercent){
-                    lastPercent=false;
+                    lastPercent=!1;
                     index++
                 }else index++;
                 text+=char
@@ -462,13 +450,7 @@ logFormatted=(object,options={})=>{
         }
         flattened.map(e=>e.nodeName.includes("text")?count(e):0)
     }
-    flattened.map(calcStyle).map(e=>{
-        if(e.nodeName!="#text")return;
-        logs.push(`%c${e.textContent}`);
-        let color="";
-        if(e.parentNode.style.color)color=`color:${e.parentNode.style.color};`;
-        styles.push(color)
-    });
+    flattened.map(calcStyle).map(e=>e.nodeName!="#text"?void (0):logs.push(`%c${e.textContent}`),styles.push(e.parentNode.style.color?`color:${e.parentNode.style.color};`:""));
     logs=logs.join("");
     let regexSplit=string=>{
         let str=[],reg=[],match,lastindex=0,index;
@@ -508,9 +490,8 @@ logFormatted=(object,options={})=>{
     }
 },
 JSFuck=(_=>{
-    let MIN=32,MAX=126,SIM={false:'![]',true:'!![]',undefined:'[][[]]',NaN:'+[![]]',Infinity:'+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])'},CON={Array:'[]',Number:'(+[])',String:'([]+[])',Boolean:'(![])',Function:'[]["flat"]',RegExp:'Function("return/"+false+"/")()',Object:'[]["entries"]()'},MAP={a:'(false+"")[1]',b:'([]["entries"]()+"")[2]',c:'([]["flat"]+"")[3]',d:'(undefined+"")[2]',e:'(true+"")[3]',f:'(false+"")[0]',g:'(false+[0]+String)[20]',h:'(+(101))["to"+String["name"]](21)[1]',i:'([false]+undefined)[10]',j:'([]["entries"]()+"")[3]',k:'(+(20))["to"+String["name"]](21)',l:'(false+"")[2]',m:'(Number+"")[11]',n:'(undefined+"")[1]',o:'(true+[]["flat"])[10]',p:'(+(211))["to"+String["name"]](31)[1]',q:'("")["fontcolor"]([0]+false+")[20]',r:'(true+"")[1]',s:'(false+"")[3]',t:'(true+"")[0]',u:'(undefined+"")[0]',v:'(+(31))["to"+String["name"]](32)',w:'(+(32))["to"+String["name"]](33)',x:'(+(101))["to"+String["name"]](34)[1]',y:'(NaN+[Infinity])[10]',z:'(+(35))["to"+String["name"]](36)',A:'(NaN+[]["entries"]())[11]',B:'(+[]+Boolean)[10]',C:'Function("return escape")()(("")["italics"]())[2]',D:'Function("return escape")()([]["flat"])["slice"]("-1")',E:'(RegExp+"")[12]',F:'(+[]+Function)[10]',G:'(false+Function("return Date")()())[30]',H:null,I:'(Infinity+"")[0]',J:null,K:null,L:null,M:'(true+Function("return Date")()())[30]',N:'(NaN+"")[0]',O:'(+[]+Object)[10]',P:null,Q:null,R:'(+[]+RegExp)[10]',S:'(+[]+String)[10]',T:'(NaN+Function("return Date")()())[30]',U:'(NaN+Object()["to"+String["name"]]["call"]())[11]',V:null,W:null,X:null,Y:null,Z:null,' ':'(NaN+[]["flat"])[11]','!':null,'"':'("")["fontcolor"]()[12]','#':null,$:null,'%':'Function("return escape")()([]["flat"])[21]','&':'("")["fontcolor"](")[13]','\'':null,'(':'([]["flat"]+"")[13]',')':'([0]+false+[]["flat"])[20]','*':null,'+':'(+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]])+[])[2]',',':'[[]]["concat"]([[]])+""','-':'(+(.+[0000001])+"")[2]','.':'(+(+!+[]+[+!+[]]+(!![]+[])[!+[]+!+[]+!+[]]+[!+[]+!+[]]+[+[]])+[])[+!+[]]','/':'(false+[0])["italics"]()[10]',':':'(RegExp()+"")[3]',';':'("")["fontcolor"](NaN+")[21]','<':'("")["italics"]()[0]','=':'("")["fontcolor"]()[11]','>':'("")["italics"]()[2]','?':'(RegExp()+"")[2]','@':null,'[':'([]["entries"]()+"")[0]','\\':'(RegExp("/")+"")[1]',']':'([]["entries"]()+"")[22]','^':null,'_':null,'`':null,'{':'(true+[]["flat"])[20]','|':null,'}':'([]["flat"]+"")["slice"]("-1")','~':null},GLOBAL='Function("return this")()',fillMissingDigits=_=>{
-        let o;
-        four(10).map(n=>(o="+[]",n>0&&(o="+!"+o),four(n-1,1).map(e=>o="+!+[]"+o),n>1&&(o=o.substring(1)),MAP[n]=`[${o}]`))
+    let NU=null,MIN=32,MAX=126,SIM={false:'![]',true:'!![]',undefined:'[][[]]',NaN:'+[![]]',Infinity:'+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])'},CON={Array:'[]',Number:'(+[])',String:'([]+[])',Boolean:'(![])',Function:'[]["flat"]',RegExp:'Function("return/"+false+"/")()',Object:'[]["entries"]()'},MAP={a:'(false+"")[1]',b:'([]["entries"]()+"")[2]',c:'([]["flat"]+"")[3]',d:'(undefined+"")[2]',e:'(true+"")[3]',f:'(false+"")[0]',g:'(false+[0]+String)[20]',h:'(+(101))["to"+String["name"]](21)[1]',i:'([false]+undefined)[10]',j:'([]["entries"]()+"")[3]',k:'(+(20))["to"+String["name"]](21)',l:'(false+"")[2]',m:'(Number+"")[11]',n:'(undefined+"")[1]',o:'(true+[]["flat"])[10]',p:'(+(211))["to"+String["name"]](31)[1]',q:'("")["fontcolor"]([0]+false+")[20]',r:'(true+"")[1]',s:'(false+"")[3]',t:'(true+"")[0]',u:'(undefined+"")[0]',v:'(+(31))["to"+String["name"]](32)',w:'(+(32))["to"+String["name"]](33)',x:'(+(101))["to"+String["name"]](34)[1]',y:'(NaN+[Infinity])[10]',z:'(+(35))["to"+String["name"]](36)',A:'(NaN+[]["entries"]())[11]',B:'(+[]+Boolean)[10]',C:'Function("return escape")()(("")["italics"]())[2]',D:'Function("return escape")()([]["flat"])["slice"]("-1")',E:'(RegExp+"")[12]',F:'(+[]+Function)[10]',G:'(false+Function("return Date")()())[30]',H:NU,I:'(Infinity+"")[0]',J:NU,K:NU,L:NU,M:'(true+Function("return Date")()())[30]',N:'(NaN+"")[0]',O:'(+[]+Object)[10]',P:NU,Q:NU,R:'(+[]+RegExp)[10]',S:'(+[]+String)[10]',T:'(NaN+Function("return Date")()())[30]',U:'(NaN+Object()["to"+String["name"]]["call"]())[11]',V:NU,W:NU,X:NU,Y:NU,Z:NU,' ':'(NaN+[]["flat"])[11]','!':NU,'"':'("")["fontcolor"]()[12]','#':NU,$:NU,'%':'Function("return escape")()([]["flat"])[21]','&':'("")["fontcolor"](")[13]','\'':NU,'(':'([]["flat"]+"")[13]',')':'([0]+false+[]["flat"])[20]','*':NU,'+':'(+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]])+[])[2]',',':'[[]]["concat"]([[]])+""','-':'(+(.+[0000001])+"")[2]','.':'(+(+!+[]+[+!+[]]+(!![]+[])[!+[]+!+[]+!+[]]+[!+[]+!+[]]+[+[]])+[])[+!+[]]','/':'(false+[0])["italics"]()[10]',':':'(RegExp()+"")[3]',';':'("")["fontcolor"](NaN+")[21]','<':'("")["italics"]()[0]','=':'("")["fontcolor"]()[11]','>':'("")["italics"]()[2]','?':'(RegExp()+"")[2]','@':NU,'[':'([]["entries"]()+"")[0]','\\':'(RegExp("/")+"")[1]',']':'([]["entries"]()+"")[22]','^':NU,'_':NU,'`':NU,'{':'(true+[]["flat"])[20]','|':NU,'}':'([]["flat"]+"")["slice"]("-1")','~':NU},GLOBAL='Function("return this")()',fillMissingDigits=_=>{
+        let o;four(10).map(n=>(o="+[]",n>0&&(o="+!"+o),four(n-1,1).map(e=>o="+!+[]"+o),n>1&&(o=o.substring(1)),MAP[n]=`[${o}]`))
     },replaceMap=_=>{
         let character="",value,i,key,replace=(pattern,replacement)=>value=value.replace(w(RegExp,pattern,"gi"),replacement),digitReplacer=(_,x)=>MAP[x],numberReplacer=(_,y)=>{
             let values=y.split(""),head=(+values.shift()),output="+[]";
@@ -527,15 +508,12 @@ JSFuck=(_=>{
         })
     },replaceStrings=_=>{
         let regEx=/[^\[\]\(\)\!\+]{1}/g,all,value,missing,count=MAX-MIN,findMissing=_=>{
-            let all,value,done=false;
+            let value,done=!1;
             missing={};
-            for(all in MAP){
-                value=MAP[all];
-                value&&value.match(regEx)?(missing[all]=value,done=true):0
-            }
+            y(MAP).map(e=>(value=MAP[e],value&&value.match(regEx)?(missing[e]=value,done=!0):0))
             return done
         },mappingReplacer=(a,b)=>b.split("").join("+"),valueReplacer=c=>missing[c]?c:MAP[c];
-        for(all in MAP)if(MAP[all])MAP[all]=MAP[all].replace(/\"([^\"]+)\"/gi,mappingReplacer);
+        y(MAP).map(e=>MAP[all]?MAP[all]=MAP[all].replace(/\"([^\"]+)\"/gi,mappingReplacer):0)
         while(findMissing()){
             for(all in missing){
                 value=MAP[all];
@@ -543,16 +521,10 @@ JSFuck=(_=>{
                 MAP[all]=value;
                 missing[all]=value
             }
-            if(count--===0)console.error("Could not compile the following chars:",missing)
+            if(count--===0)console.error("Couldn't compile the following chars:",missing)
         }
-    },eS=c=>{
-        let cc=c.charCodeAt(0);
-        if(cc<256)return'\\'+cc.toString(8);
-        else{
-            let cc16=cc.toString(16);
-            return'\\u'+('0000'+cc16).substring(cc16.length)
-        }
-    },eSFR=c=>eS(c).replace('\\','t'),encode=(input,wrapWithEval,runInParentScope,unmappped='',output=[],r="")=>{
+    },eS=(c,cc=c.charCodeAt(0))=>'\\'+(cc<256?cc.toString(8):'u'+cc.toString(16).padStart(4,0)),
+    eSFR=c=>eS(c).replace('\\','t'),encode=(input,wrapWithEval,runInParentScope,unmappped='',output=[],r="")=>{
         if(!input)return"";
         for(let k in MAP)if(MAP[k])unmappped+=k;
         unmappped=w(RegExp,'[^'+unmappped.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+']','g');
@@ -610,7 +582,7 @@ meyerDiff=(seq1,seq2)=>{
     return[src,target]
 },
 logAndReturn=arg=>(console.log(arg),arg),
-timeConversions=(_=>{let s=t=>t*1000,m=t=>t*s(60),h=t=>t*m(60),d=t=>t*h(24),k=t=>t*d(7),y=t=>t*d(365);return {seconds:s,minutes:m,hours:h,days:d,weeks:k,years:y}})(),
+timeConversions=(_=>{let s=t=>t*1000,m=t=>t*s(60),h=t=>t*m(60),d=t=>t*h(24),k=t=>t*d(7),y=t=>t*d(365);return{seconds:s,minutes:m,hours:h,days:d,weeks:k,years:y}})(),
 rect=n=>{let h=Math.ceil(Math.sqrt(n)),t=h;while(h*t-t>=n){h--}return w(Array,h).fill(0).map(e=>w(Array,t))};
 export {Settings,Section,Option,createElement};
 window.logFormatted=logFormatted;
