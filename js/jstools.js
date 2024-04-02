@@ -136,6 +136,39 @@ Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWit
     }
 });
 
+/**
+ * HTMLElement.isVisible will return true if the element is currently on screen
+ */
+Object.defineProperty(HTMLElement.prototype, "isVisible", {
+    get: function () {
+        if (this === document.documentElement) {
+            return true;
+        }
+        if (!this.parentNode) {
+            return false;
+        }
+        let style = window.getComputedStyle ? window.getComputedStyle(this) : this.currentStyle;
+        return !(
+            style.display === "none" ||
+            style.visibility === "hidden" ||
+            style.opacity == "0"
+        ) &&
+            this.parentNode.isVisible &&
+            (function () {
+                let bounds = this.getBoundingClientRect();
+                let html = document.documentElement, body = document.body;
+                let viewport = {
+                    width: Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth),
+                    height: Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight)
+                };
+                return bounds.left >= 0 &&
+                    bounds.top >= 0 &&
+                    bounds.right <= viewport.width &&
+                    bounds.bottom <= viewport.height;
+            }).bind(this)();
+    }
+});
+
 // window.HTMLSelectElement.prototype.add = add;
 
 /**
