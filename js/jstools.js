@@ -2079,3 +2079,16 @@ export function rectangle(num) {
     let arr = new Array(height).fill(0).map(e => new Array(width));
     return arr;
 }
+
+export function reshape(arr, length, width) {
+    arr = [...arr];
+    let result = [];
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < length; y++) {
+            if (result[x] == undefined) {
+                result[x] = [];
+            }
+            result[x].push(arr.shift());
+        }
+    }
+}
