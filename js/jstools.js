@@ -2070,7 +2070,7 @@ let WIP = (function () {
     console.log(tobe == decoded);
 });
 
-function rect(num) {
+export function rectangle(num) {
     let height = Math.ceil(Math.sqrt(num));
     let width = height;
     while (height * width - width > num) {
