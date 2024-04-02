@@ -2081,14 +2081,14 @@ export function rectangle(num) {
 }
 
 export function reshape(arr, length, width) {
-    arr = [...arr];
+    arr = [...arr]; // clone array
     let result = [];
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < length; y++) {
             if (result[x] == undefined) {
                 result[x] = [];
             }
-            result[x].push(arr.shift());
+            result[x].push(arr.shift());  // change to pop to rotate array by 180°
         }
     }
 }
