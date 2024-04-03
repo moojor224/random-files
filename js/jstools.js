@@ -172,30 +172,6 @@ Object.defineProperty(HTMLElement.prototype, "isVisible", {
 // window.HTMLSelectElement.prototype.add = add;
 
 /**
- * appends an &lt;error> element to {this}
- * @param {String} text error message
- */
-window.Element.prototype.error = function (text = "!") {
-    this.clearError(); // remove error element if it exists
-    this.add(createElement("error", { innerHTML: text })); // add error element
-}
-
-/**
- * clears the error message from {this}
- * @returns {Boolean} whether an element was cleared or not
- */
-window.Element.prototype.clearError = function () {
-    // this.querySelector("error")?.remove();
-    for (let e of this.childNodes) { // loop through child nodes
-        if (e.tagName.toLowerCase() == "error") { // if element is an error element
-            e.remove(); // remove
-            return true; // success
-        }
-    }
-    return false; // fail
-}
-
-/**
  * adds a warning message to the specified elements
  * @param {String} str message to display
  * @param  {...any} selectors elements to add warning message to
@@ -399,7 +375,7 @@ export function parseCookies(cookies = document.cookie) {
 
 /**
  * generates a array sort function that sorts an array of objects by a specified property name
- * @param {string} prop name of the property to sort by
+ * @param {string} key name of the property to sort by
  * @returns {function} the sort function
  * @example
  * let People = [
@@ -411,14 +387,14 @@ export function parseCookies(cookies = document.cookie) {
  * People.sort(dynamicSort("Surname"));
  * People.sort(dynamicSort("-Surname"));
  */
-export function dynamicSort(prop) {
+export function dynamicSort(key) {
     let sortOrder = 1; // normal sort order
-    if (typeof prop === "string" && prop.startsWith("-")) { // if property name starts with a -
+    if (typeof key === "string" && key.startsWith("-")) { // if key starts with a -
         sortOrder = -1; // reversed sort order
-        prop = prop.substring(1); // remove minus from property name
+        key = key.substring(1); // remove minus from key
     }
-    return function (a, b) { // use this function in array.sort(func); to sort it by the given  property name
-        let result = a[prop] < b[prop] ? -1 : a[prop] > b[prop] ? 1 : 0;  // run comparison and set result to -1,0,1
+    return function (a, b) { // use this function in array.sort(func); to sort it by the given key
+        let result = a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0;  // run comparison and set result to -1,0,1
         return result * sortOrder; // if sortOrder is reversed, this will return 1,0,-1
     };
 }
@@ -445,6 +421,7 @@ export function dynamicSort(prop) {
  * ];
  */
 export function advancedDynamicSort(...properties) {
+    if (properties.length < 1) return;
     // let w = (d, b) => d() ? (b(), w(d, b)) : 0;
     function dSort(property) {
         property = property.split(".");

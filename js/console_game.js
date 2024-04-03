@@ -43,7 +43,7 @@ class Grid {
         console.clear();
         console.log(t.grid.map(e => e.join("")).join("\n"));
         console.log(t);
-        debugger; // debugger call is needed for node to not exit the program after logging the game
+        debugger; // debugger call is needed for nodejs to not exit the program after logging the game
     }
 }
 new Grid(7, 10);
