@@ -276,7 +276,7 @@ console.log("sum:", loaded(...new Array(20).fill(0).map(e => Math.floor(Math.ran
     }
     let sb = new StringBuilder();
     sb << add("abc") << add("def") << add("ghi") << add("jkl") << add("mno") << add("pqr") << add("stu") << add("vwx") << add("yz");
-    console.log(sb.toString()); // abcdefghijklmnopqr
+    console.log(sb.toString()); // abcdefghijklmnopqrstuvwxyz
 
     let p = new Point();
     p._ = new Point(1, 2) + new Point(3, 4) + new Point(5, 6);
