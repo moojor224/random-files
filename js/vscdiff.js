@@ -67,25 +67,25 @@ let finalBefore = [], finalAfter = [];
 let final = stringBefore;
 
 let lastBeforeIndex = 0, lastAfterIndex = 0;
-stringDiff.forEach(diff => {
-    final = final.replaceIndex(diff.originalStart, diff.originalStart + diff.originalLength, function (str) {
-        if (diff.originalLength == 0) { // add
-            return createElement("span", { classList: "add", innerHTML: stringAfter.substring(diff.modifiedStart, diff.modifiedStart + diff.modifiedLength) }).outerHTML;
-        } else if (diff.modifiedLength == 0) { // delete
-            return createElement("span", { classList: "delete", innerHTML: str }).outerHTML;
-        }
-    });
-    // finalAfter.push(stringAfter.substring(lastAfterIndex, diff.modifiedStart));
-    // finalBefore.push(stringBefore.substring(lastBeforeIndex, diff.originalStart));
-    // final.push(stringBefore.substring(lastBeforeIndex, diff.originalStart));
-    // if (diff.originalLength == 0) { // add
-    //     // finalAfter.push(createElement("span", { classList: "add", innerHTML: stringAfter.substring(diff.modifiedStart, diff.modifiedStart + diff.modifiedLength) }).outerHTML);
-    //     final.push(createElement("span", { classList: "add", innerHTML: stringAfter.substring(diff.modifiedStart, diff.modifiedStart + diff.modifiedLength) }).outerHTML)
-    // } else if (diff.modifiedLength == 0) { // delete
-    //     // finalBefore.push(createElement("span", { classList: "delete", innerHTML: stringBefore.substring(diff.originalStart, diff.originalStart + diff.originalLength) }).outerHTML);
-    //     final.push(createElement("span", { classList: "delete", innerHTML: stringBefore.substring(diff.originalStart, diff.originalStart + diff.originalLength) }).outerHTML)
-    // }
-});
+// stringDiff.forEach(diff => {
+//     final = final.replaceIndex(diff.originalStart, diff.originalStart + diff.originalLength, function (str) {
+//         if (diff.originalLength == 0) { // add
+//             return createElement("span", { classList: "add", innerHTML: stringAfter.substring(diff.modifiedStart, diff.modifiedStart + diff.modifiedLength) }).outerHTML;
+//         } else if (diff.modifiedLength == 0) { // delete
+//             return createElement("span", { classList: "delete", innerHTML: str }).outerHTML;
+//         }
+//     });
+//     // finalAfter.push(stringAfter.substring(lastAfterIndex, diff.modifiedStart));
+//     // finalBefore.push(stringBefore.substring(lastBeforeIndex, diff.originalStart));
+//     // final.push(stringBefore.substring(lastBeforeIndex, diff.originalStart));
+//     // if (diff.originalLength == 0) { // add
+//     //     // finalAfter.push(createElement("span", { classList: "add", innerHTML: stringAfter.substring(diff.modifiedStart, diff.modifiedStart + diff.modifiedLength) }).outerHTML);
+//     //     final.push(createElement("span", { classList: "add", innerHTML: stringAfter.substring(diff.modifiedStart, diff.modifiedStart + diff.modifiedLength) }).outerHTML)
+//     // } else if (diff.modifiedLength == 0) { // delete
+//     //     // finalBefore.push(createElement("span", { classList: "delete", innerHTML: stringBefore.substring(diff.originalStart, diff.originalStart + diff.originalLength) }).outerHTML);
+//     //     final.push(createElement("span", { classList: "delete", innerHTML: stringBefore.substring(diff.originalStart, diff.originalStart + diff.originalLength) }).outerHTML)
+//     // }
+// });
 // finalBefore.push(stringBefore.substring(stringDiff[stringDiff.length - 1].originalStart + stringDiff[stringDiff.length - 1].originalLength));
 // finalAfter.push(stringAfter.substring(stringDiff[stringDiff.length - 1].modifiedStart + stringDiff[stringDiff.length - 1].modifiedLength));
 
