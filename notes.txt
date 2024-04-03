@@ -7,3 +7,16 @@ fs.writeFile(path + "Main.py", "file contents", function () {
 
 // get info about object's property, such as whether it has a getter/setter
 Object.getOwnPropertyDescriptor(obj, "key");
+
+// prevent value from being changed
+class cls {
+    constructor() { }
+
+    set lockedProperty(val) {
+        return val;
+    }
+
+    get lockedProperty() {
+        return this.#lockedProperty
+    }
+}
