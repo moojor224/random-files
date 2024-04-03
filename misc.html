@@ -2,6 +2,59 @@
 <html lang="en">
 
 <head>
+    <script>
+        function captureConsole() {
+            if (console.everything === undefined) {
+                console.everything = [];
+                let TS = _ => new Date().toLocaleString("sv", { timeZone: 'UTC' }) + "Z"; // timestamp function
+                window.onerror = function (error, url, line) { // catches all console errors, includes those not made by console.error
+                    console.everything.push({ type: "exception", timeStamp: TS(), value: { error, url, line } });
+                    return false;
+                }
+                window.onunhandledrejection = function (e) { // catch some other things, idk
+                    console.everything.push({ type: "promiseRejection", timeStamp: TS(), value: e.reason });
+                }
+                function hookLogType(logType) {
+                    const original = console[logType].bind(console); // save orginal function
+                    console["original" + logType] = original;
+                    return function (...args) {
+                        let info = new Error();
+                        // original.apply(console, [{ info }]);
+                        console.everything.push({
+                            type: logType,
+                            timeStamp: TS(),
+                            args: Array.from(args),
+                            trace: info.stack.trim().split("\n").pop(),
+                        }); // add object to console.everything
+                        original.apply(console, args); // log message to console
+                    }
+                }
+                ['log', 'error', 'warn', 'debug', "group", "groupEnd", "groupCollapsed"].forEach(logType => { // hook each log type
+                    console[logType] = hookLogType(logType)
+                });
+                console.saveState = function saveState() {
+                    let everything = [...console.everything];
+                    console.savedState = {
+                        everything
+                    };
+                }
+                console.restore = function restore() {
+                    let { everything } = console.savedState;
+                    console.everything = [...everything];
+                    console.clear();
+                    let max = Math.max(...console.everything.map(e => e.trace.length))
+                    console.everything.forEach(function (log) {
+                        if (original = console["original" + log.type]) {
+                            original.apply(console, [...log.args, log.trace.padStart(max + 10, " ") + ", ", log.timeStamp]);
+                        } else {
+                            console.originalerror.apply(console, [...log.args]);
+                        }
+                    });
+                }
+            }
+        }
+        captureConsole();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
@@ -31,11 +84,13 @@
             box-sizing: border-box;
             padding: 10px;
         }
-        span.add{
+
+        span.add {
             background-color: green;
             color: white;
         }
-        span.delete{
+
+        span.delete {
             background-color: red;
         }
     </style>
@@ -49,8 +104,7 @@
         onkeydown = oninput = (_ => counter = 100);
         setInterval(_ => counter ? (counter--, !counter ? r() : 0) : 0, seconds * 10);
     </script>
-    <script type="module" src="./js/vscdiff.js"></script>
-
+    <!-- <script type="module" src="./js/vscdiff.js"></script> -->
 </body>
 
 </html>
