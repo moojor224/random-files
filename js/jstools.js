@@ -125,8 +125,8 @@ function add(...args) {
     });
     return this;
 };
-if (window.Element.prototype.add === undefined) {
-    window.Element.prototype.add = add;
+if (window.HTMLElement.prototype.add === undefined) {
+    window.HTMLElement.prototype.add = add;
 }
 
 // loop through all HTML...Element prototypes and add the add function

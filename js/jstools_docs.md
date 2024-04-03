@@ -4,6 +4,7 @@
 
 [waitForKeyElements](#waitForKeyElements)\
 [createElement](#createElement)\
+[HTMLElement.prototype.add](#HTMLElement.prototype.add)\
 
 
 [advancedDynamicSort](#advancedDynamicSort)\
@@ -63,6 +64,20 @@ result:
 <details>
     <summary><h3>waitForKeyElements</h3></summary>
     waits for the element specified by the given css selector
+
+usage
+```js
+waitForKeyElements("bdoy>main#content", function (el) {
+    console.log(el);
+});
+```
+result:
+```html
+<!-- logs the following element to the console whenever it is loaded onto the page -->
+<body>
+    <main id="content"></main> <--- this one
+</body>
+```
 </details>
 <br>
 
@@ -89,6 +104,19 @@ returns the following html element
 ```html
 <div class="cls1 cls2 cls3" style="color: red; font-size: 20px;" data-info="this is some info" data-number="2">Hello World</div>
 
+```
+</details>
+<br>
+
+<details>
+    <summary><h3>HTMLElement.prototype.add</h3></summary>
+    DESCRIPTION
+    
+usage
+```js
+```
+result:
+```html
 ```
 </details>
 <br>
