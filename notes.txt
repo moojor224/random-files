@@ -4,3 +4,6 @@ https://www.reddit.com/r/firefox/comments/107ha5g/how_do_i_get_icons_back_for_pa
 fs.writeFile(path + "Main.py", "file contents", function () {
     // runs upon file write completion
 });
+
+// get info about object's property, such as whether it has a getter/setter
+Object.getOwnPropertyDescriptor(obj, "key");
