@@ -5,25 +5,31 @@
 [waitForKeyElements](#waitForKeyElements)\
 [createElement](#createElement)\
 [HTMLElement.prototype.add](#HTMLElement.prototype.add)\
+[HTMLElement.prototype.isVisible](#HTMLElement.prototype.isVisible)\
 
-
+[warn](#warn)\
+[clearWarn](#clearWarn)\
+[error](#error)\
+[clearError](#clearError)\
+[hide](#hide)\
+[show](#show)\
+[clear](#clear)\
+[disable](#disable)\
+[enable](#enable)\
+[tabColor](#tabColor)\
+[parseCookies](#parseCookies)\
+[dynamicSort](#dynamicSort)\
 [advancedDynamicSort](#advancedDynamicSort)\
+
+
 [captureConsole](#captureConsole)\
 [clamp](#clamp)\
-[clear](#clear)\
-[clearError](#clearError)\
-[clearWarn](#clearWarn)\
 [copyObject](#copyObject)\
-[disable](#disable)\
-[dynamicSort](#dynamicSort)\
-[enable](#enable)\
-[error](#error)\
 [flattenChildNodes](#flattenChildNodes)\
 [flattenChildren](#flattenChildren)\
 [getColor](#getColor)\
 [getValueOrDefault](#getValueOrDefault)\
 [gradient](#gradient)\
-[hide](#hide)\
 [interleaveArrays](#interleaveArrays)\
 [listAllColorsOnPage](#listAllColorsOnPage)\
 [lockValue](#lockValue)\
@@ -31,22 +37,19 @@
 [logFormatted](#logFormatted)\
 [map](#map)\
 [Option](#Option)\
-[parseCookies](#parseCookies)\
 [parseTrace](#parseTrace)\
 [rgbGradient](#rgbGradient)\
 [Section](#Section)\
 [settings](#settings)\
 [Settings](#Settings)\
-[show](#show)\
-[tabColor](#tabColor)\
 [timeConversions](#timeConversions)\
-[warn](#warn)
 
 ## detailed breakdown
 
 listed below are all the functions provided by jstools.js and detailed descriptions of what they do
 
-<style>h3{display:inline}</style>
+<!-- <style>h3{display:inline}</style> -->
+
 <!--
 <details>
     <summary><h3>TITLE</h3></summary>
@@ -110,8 +113,56 @@ returns the following html element
 
 <details>
     <summary><h3>HTMLElement.prototype.add</h3></summary>
-    DESCRIPTION
+    appends the given html elements to the element the method was called on. Returns  a reference to <code>this</code>
     
+usage
+```js
+let div1 = document.createElement("div");
+let div2 = document.createElement("div");
+let span1 = document.createElement("span");
+let span2 = document.createElement("span");
+let result = document.body.add(
+    div1,
+    div2,
+    span1,
+    span2
+);
+```
+result:
+```html
+<body>
+    <div></div>
+    <div></div>
+    <span></span>
+    <span></span>
+</body>
+```
+```js
+result === document.body;
+```
+</details>
+<br>
+
+<details>
+    <summary><h3>HTMLElement.prototype.isVisible</h3></summary>
+    returns true if the element is visible on the screen
+
+usage
+```js
+document.querySelector("body").isVisible
+```
+result:
+```js
+true
+// (the html body element is always visible, unless it is hidden through css)
+```
+</details>
+<br>
+
+<details>
+    <summary><h3>TITLE</h3></summary>
+    DESCRIPTION
+
 usage
 ```js
 ```
@@ -120,3 +171,6 @@ result:
 ```
 </details>
 <br>
+
+
+
