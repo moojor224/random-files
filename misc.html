@@ -98,6 +98,21 @@
 
 <body>
     <details>
+        <summary>autosave</summary>
+        <div id="autosave" style="border:1px solid black;width:100px;height:10px;">
+            <div class="bar" style="background-color:red;height:100%"></div>
+        </div>
+        <div id="autosavestatus"></div>
+        <textarea name="" id="" cols="30" rows="10"></textarea>
+        <script>
+            r = _ => console.log(document.querySelector("#autosavestatus").innerHTML = "autosave");
+            let counter = 100;
+            let seconds = 1;
+            onkeydown = oninput = (_ => counter = 100);
+            setInterval(_ => counter ? (counter--, document.querySelector("#autosavestatus").innerHTML = "", document.querySelector("#autosave .bar").style.width = counter + "%", !counter ? r() : 0) : 0, seconds * 10);
+        </script>
+    </details>
+    <details>
         <summary>passthrough hovering/clicking</summary>
         <style>
             div.hovering {
