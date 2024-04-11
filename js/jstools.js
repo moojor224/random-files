@@ -1393,7 +1393,7 @@ export function parseTrace(trace) {
  * @param {String} str string to convert
  * @returns {String} converted string
  */
-function toHTMLEntities(str) {
+export function toHTMLEntities(str) {
     return [...str].split("").map(e => `&#${e.charCodeAt(0)};`).join("");
 }
 
