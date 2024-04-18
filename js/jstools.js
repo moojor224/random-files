@@ -434,7 +434,7 @@ export function advancedDynamicSort(...properties) {
             }
             // if anything is undefined, or no more properties left in the chain
             if (a[p] === undefined || b[p] === undefined || chain.length == 1) return sortOrder * (a[p] < b[p] ? -1 : a[p] > b[p] ? 1 : 0);
-            // if there are more than one properties left in the chain
+            // if there is more than one property left in the chain
             if (chain.length > 1) return compare(a[p], b[p], chain.slice(1));
         }
         return (a, b) => compare(a, b, property); // return callable compare function
