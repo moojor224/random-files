@@ -216,6 +216,47 @@
         }
     </style>
     <div id="root"></div>
+    <style>
+        div.settings {
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            color: white;
+            flex-wrap: wrap;
+            height: 100%;
+        }
+
+        div.settings h2 {
+            padding: 0px 10px;
+        }
+
+        div.settings>section {
+            border: 1px solid black;
+            border-radius: 9px;
+            padding-top: 10px;
+            background-color: #454d55;
+            width: 300px;
+        }
+
+        div.settings>section {
+            display: none;
+        }
+
+        div.settings>section:has(label) {
+            display: unset;
+        }
+
+        div.settings>section>label {
+            border-top: 1px solid black;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+    </style>
     <script type="text/babel">
 
         function convert(amount, type) {
@@ -359,6 +400,8 @@
                 </>
             );
         }
+
+
         var a = new Date();
         // console.log("today plus a day", a.add(1, "day").toLocaleString());
         // console.log("today plus a week", a.add(1, "week").toLocaleString());
@@ -373,7 +416,68 @@
         // console.log("today minus a year", a.subtract(1, "year").toLocaleString());
         let monthToRender = new Date();
         let calendar = <Calendar month={monthToRender} />;
-        ReactDOM.createRoot(document.getElementById('root')).render(calendar);
+        ReactDOM.createRoot(document.getElementById('root')).render(<>
+            <Calendar month={monthToRender} />
+
+        </>);
+    </script>
+    <button id="notification-button">send notification</button>
+    <button id="notification-cancel">cancel notification</button>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./js/service-worker.js');
+        }
+        document.querySelector('#notification-button').onclick = async () => {
+            const reg = await navigator.serviceWorker.getRegistration();
+            console.log(navigator.serviceWorker.getRegistration);
+            Notification.requestPermission().then((permission) => {
+                console.log(permission);
+                if (permission !== 'granted') {
+                    alert('you need to allow push notifications');
+                } else {
+                    navigator.serviceWorker.getRegistration().then(async (reg) => {
+                        if (reg === undefined) {
+                            reg = await navigator.serviceWorker.register('./js/service-worker.js');
+                        }
+                        const timestamp = new Date().getTime() + 5000; // now plus 5000ms
+                        reg.showNotification(
+                            'Demo Push Notification',
+                            {
+                                tag: timestamp, // a unique ID
+                                body: 'Hello World', // content of the push notification
+                                timestamp: timestamp, // set the time for the push notification
+                                data: {
+                                    url: window.location.href, // pass the current url to the notification
+                                },
+                                badge: '/favicon.ico',
+                                icon: '/favicon.ico',
+                                actions: [
+                                    {
+                                        action: 'markasread',
+                                        title: 'Mark as Read'
+                                    },
+                                    {
+                                        action: 'close',
+                                        title: 'Dismiss',
+                                    }
+                                ],
+                            }
+                        );
+                    })
+                    // let n = reg.getNotifications().then(ns => {
+                    // });
+                }
+            });
+        };
+        document.querySelector('#notification-cancel').onclick = async () => {
+            const reg = await navigator.serviceWorker.getRegistration();
+            const notifications = await reg.getNotifications({
+                includeTriggered: true
+            });
+            notifications.forEach(notification => notification.close());
+            alert(`${notifications.length} notification(s) cancelled`);
+        };
+        navigator.serviceWorker.addEventListener('message', event => console.log(event.data));
     </script>
 </body>
 
