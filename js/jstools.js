@@ -1206,7 +1206,7 @@ if (Option === undefined) {
                 }
                 input.value = this.config.value || this.config.values[0];
             }
-            input.addEventListener("input", function () { // when setting is changed, dispatch change event on the potions object
+            input.addEventListener("input", function () { // when setting is changed, dispatch change event on the options object
                 if (input.checked != undefined) {
                     option.value = input.checked;
                 } else {
@@ -2093,4 +2093,5 @@ export function reshape(arr, length, width) {
             result[x].push(arr.shift());  // change to pop to rotate array by 180°
         }
     }
+    return result;
 }
