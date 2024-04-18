@@ -568,20 +568,19 @@ export function captureConsole() {
         ['log', 'error', 'warn', 'debug'].forEach(logType => { // hook  each log type
             console[logType] = hookLogType(logType)
         });
-        console.saveState = function saveState() {
+        let states = new Map();
+        console.saveState = function saveState(id = 0) {
             let everything = [...console.everything];
-            console.savedState = {
-                everything
-            };
+            states.set(id, everything);
         }
-        console.restore = function restore() {
-            let { everything } = console.savedState;
+        console.restore = function restore(id = 0) {
+            let everything = states.get(id) || [];
             console.everything = [...everything];
             console.clear();
             let max = Math.max(...console.everything.map(e => e.trace.length))
             console.everything.forEach(function (log) {
                 if (original = console["original" + log.type]) {
-                    original.apply(console, [...log.args, log.trace.padStart(max + 10, " ") + ", ", log.timeStamp]);
+                    original.apply(console, [...log.args/* , log.trace.padStart(max + 10, " ") + ", ", log.timeStamp */]);
                 } else {
                     console.originalerror.apply(console, [...log.args]);
                 }
