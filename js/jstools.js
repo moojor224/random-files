@@ -560,8 +560,16 @@ export function captureConsole() {
         }
         function hookLogType(logType) {
             const original = console[logType].bind(console); // save orginal function
+            console["original" + logType] = original;
             return function (...args) {
-                console.everything.push({ type: logType, timeStamp: TS(), value: Array.from(args) }); // add object to console.everything
+                let info = new Error();
+                // original.apply(console, [{ info }]);
+                console.everything.push({
+                    type: logType,
+                    timeStamp: TS(),
+                    args: Array.from(args),
+                    trace: info.stack.trim().split("\n").pop(),
+                }); // add object to console.everything
                 original.apply(console, args); // log message to console
             }
         }
@@ -577,7 +585,7 @@ export function captureConsole() {
             let everything = states.get(id) || [];
             console.everything = [...everything];
             console.clear();
-            let max = Math.max(...console.everything.map(e => e.trace.length))
+            // let max = Math.max(...console.everything.map(e => e.trace.length));
             console.everything.forEach(function (log) {
                 if (original = console["original" + log.type]) {
                     original.apply(console, [...log.args/* , log.trace.padStart(max + 10, " ") + ", ", log.timeStamp */]);
