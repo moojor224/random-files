@@ -1516,13 +1516,14 @@ let svgToDataUri = (function () {
  * @returns {Object[]}
  */
 export function logFormatted(object, options = {}) {
-    let { embedObjects, raw, collapsed, maxDepth, label } = (function () {
+    let { embedObjects, raw, collapsed, maxDepth, label, extra_logs } = (function () {
         let defaults = {
             embedObjects: false, // embed the objects within the console message
             raw: false, // return the raw result without logging it to the console
             collapsed: false, // log the message inside a collapsed console group (slightly increases performance before initially logging the object). Will still lag when collapsed group is initially opened
             maxDepth: Infinity, // maximum depth to stringify
-            label: "formatted log", // label for collapsed console group
+            label: "formatted log", // label for collapsed console group,
+            extra_logs: []
         }
         let opt = extend(defaults, options); // replace the default values with user-specified options
         return opt;
@@ -1744,12 +1745,17 @@ export function logFormatted(object, options = {}) {
     while (split.length > 0) final.push(split.shift()); // push all remaining strings
     while (embedObjects && objects.length > 0) finalStyles.push(objects.shift()); // push all remaining objects
     while (styles.length > 0) finalStyles.push(styles.shift()); // push all remaining styles
-
+    function checkExtraLogs() {
+        if (extra_logs.length > 0) {
+            extra_logs.forEach(e => console.log(e));
+        }
+    }
     final = final.join(""); // join array into one message
     if (raw) return { logs: final, styles: finalStyles, html: element.outerHTML } // return raw results without logging to console
     else {
         if (collapsed) { // if console log should be inside collapsed console group
             console.groupCollapsed(label); // create collapsed group
+            checkExtraLogs(); // log any extra messages
             console.log(final, ...finalStyles); // log formatted message
             console.groupEnd(); // end group
         } else console.log(final, ...finalStyles); // log formatted message
