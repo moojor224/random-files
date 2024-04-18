@@ -1,7 +1,7 @@
 https://github.com/greeny/SatisfactoryTools
 https://www.reddit.com/r/firefox/comments/107ha5g/how_do_i_get_icons_back_for_pages_they_have_been/?rdt=50877
 
-fs.writeFile(path + "Main.py", "file contents", function () {
+fs.writeFile(path.join(path, "Main.py"), "file contents", function () {
     // runs upon file write completion
 });
 
