@@ -349,11 +349,8 @@
             let arr = [];
             let firstWeekStart = month.startOf("month").startOf("week");
             let lastWeekEnd = month.endOf("month").endOf("week");
-            console.log("first week start", firstWeekStart);
-            console.log("last week end", lastWeekEnd);
             let count = 0;
             let curDate = firstWeekStart;
-            console.log(arr);
             while (count < 100) {
                 if (curDate.getTime() > lastWeekEnd.getTime()) {
                     break;
@@ -362,7 +359,6 @@
                 curDate = curDate.add(1, "week");
                 count++;
             }
-            console.log(arr);
             return (
                 <>
                     <style>
@@ -469,6 +465,10 @@
             alert(`${notifications.length} notification(s) cancelled`);
         };
         navigator.serviceWorker.addEventListener('message', event => console.log(event.data));
+    </script>
+    <script type="module">
+        import { settings } from "./js/jstools.js";
+        console.log(settings);
     </script>
 </body>
 
