@@ -872,8 +872,37 @@ if (Settings === undefined) {
             }
             this.sections = sections.filter(e => e instanceof Section); // filter all non-Section elements out of sections array
             sections.forEach(section => {
-                section.settings_obj = this; // set parent object of each section
+                if (section instanceof Section) {
+                    section.settings_obj = this; // set parent object of each section
+                }
             });
+            let formatter = {
+                header: function (obj) {
+                    if (obj instanceof Settings) {
+                        return ['div', { style: 'font-weight: bold' }, `Settings: ${obj.config.name}`];
+                    }
+                    return null;
+                },
+                hasBody: function (obj) {
+                    return obj instanceof Settings;
+                },
+                body: function (obj) {
+                    if (obj instanceof Settings) {
+                        return ["div", {}, ...obj.sections.map(section => {
+                            return ["object", {
+                                object: section
+                            }]
+                        })];
+                    }
+                    return null;
+                }
+            }
+            if (!Array.isArray(window.devtoolsFormatters)) {
+                window.devtoolsFormatters = [];
+            }
+            if (!window.devtoolsFormatters.includes(formatter)) {
+                window.devtoolsFormatters.push(formatter);
+            }
         }
 
         render() {
@@ -1034,8 +1063,38 @@ if (Section === undefined) {
             }
             this.options = options.filter(e => e instanceof Option); // remove all non-Option items from array
             options.forEach(option => {
-                option.section_obj = this; // set parent object for each option
+                if (option instanceof Option) {
+                    option.section_obj = this; // set parent object for each option
+                }
             });
+            let formatter = {
+                header: function (obj) {
+                    if (obj instanceof Section) {
+                        return ["div", {
+                            style: "border:1px solid #000;border-radius:9px;padding-top:10px;background-color:#454d55;width:300px;display:inline-block;color:white"
+                        }, ["div", { style: "padding:0 10px;display: block;font-size:1.5em;font-weight:bold;margin-block-start:.83em;margin-block-end:.83em" }, obj.config.name],
+                            ...obj.options.map(option => {
+                                return [
+                                    "label",
+                                    { style: "border-top:1px solid #000;width:100%;display:flex;justify-content:space-between;padding:10px;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;" },
+                                    ["span", {}, option.config.name],
+                                    ["div", {}, ["span", { style: "float:right" }, option.config.value]]
+                                ];
+                            })
+                        ];
+                    }
+                    return null;
+                },
+                hasBody: function (obj) {
+                    return false;
+                }
+            }
+            if (!Array.isArray(window.devtoolsFormatters)) {
+                window.devtoolsFormatters = [];
+            }
+            if (!window.devtoolsFormatters.includes(formatter)) {
+                window.devtoolsFormatters.push(formatter);
+            }
         }
 
         /**
