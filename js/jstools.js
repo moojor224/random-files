@@ -941,7 +941,6 @@ if (Settings === undefined) {
             data.sections.forEach(sec => {
                 sec.options.forEach(e => delete e.input)
             });
-            console.log(data);
             return JSON.stringify(data);
         }
 
