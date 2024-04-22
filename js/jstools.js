@@ -852,6 +852,10 @@ function convertBase(str, fromBase, toBase) {
 // get settings not loading settings
 // ^honestly don't know what ths means, but it's funny, so I'm leaving it
 
+if (!Array.isArray(window.devtoolsFormatters)) {
+    window.devtoolsFormatters = [];
+}
+
 let settingsFormatter = {
     label: "settings formatter",
     header: function (obj) {
@@ -874,6 +878,9 @@ let settingsFormatter = {
         return null;
     }
 };
+if (!window.devtoolsFormatters.includes(settingsFormatter)) {
+    window.devtoolsFormatters.push(settingsFormatter);
+}
 let Settings = window.Settings;
 if (Settings === undefined) {
     Settings = class extends EventTarget {
@@ -898,12 +905,6 @@ if (Settings === undefined) {
                     section.settings_obj = this; // set parent object of each section
                 }
             });
-            if (!Array.isArray(window.devtoolsFormatters)) {
-                window.devtoolsFormatters = [];
-            }
-            if (!window.devtoolsFormatters.includes(settingsFormatter)) {
-                window.devtoolsFormatters.push(settingsFormatter);
-            }
         }
 
         render() {
@@ -1085,6 +1086,9 @@ let sectionFormatter = {
         }
     }
 };
+if (!window.devtoolsFormatters.includes(sectionFormatter)) {
+    window.devtoolsFormatters.push(sectionFormatter);
+}
 let Section = window.Section;
 if (Section === undefined) {
     Section = class extends EventTarget {
@@ -1114,13 +1118,6 @@ if (Section === undefined) {
                     option.section_obj = this; // set parent object for each option
                 }
             });
-
-            if (!Array.isArray(window.devtoolsFormatters)) {
-                window.devtoolsFormatters = [];
-            }
-            if (!window.devtoolsFormatters.includes(sectionFormatter)) {
-                window.devtoolsFormatters.push(sectionFormatter);
-            }
         }
 
         /**
