@@ -1051,15 +1051,38 @@ let sectionFormatter = {
                         "div",
                         { style: "border-top:1px solid #000;width:100%;display:flex;justify-content:space-between;padding:10px;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;" },
                         ["span", {}, option.config.name],
-                        ["div", {}, ["span", { style: "float:right" }, option.config.value]]
+                        ["div", {}, ["span", { style: "float:right" }, (function () {
+                            if (Array.isArray(option.config.values)) {
+                                return ["object", {
+                                    object: {
+                                        __expandable: true,
+                                        title: option.config.value,
+                                        contents: [
+                                            ...option.config.values.map(e => ["div", {}, e])
+                                        ]
+                                    }
+                                }];
+                            }
+                            return option.config.value;
+                        })()]]
                     ];
                 })
             ];
+        } else if (obj.__expandable) {
+            return ["div", {}, obj.title || "custom object"];
         }
         return null;
     },
     hasBody: function (obj) {
+        if (obj.__expandable) {
+            return true;
+        }
         return false;
+    },
+    body: function (obj) {
+        if (obj.__expandable) {
+            return ["div", {}, ...obj.contents]
+        }
     }
 };
 let Section = window.Section;
