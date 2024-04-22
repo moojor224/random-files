@@ -908,7 +908,7 @@ if (Settings === undefined) {
         }
 
         render() {
-            devlog("render settings");
+            // devlog("render settings");
             let div = createElement("div", { // main settings div
                 classList: "settings"
             }).add(
@@ -1134,7 +1134,7 @@ if (Section === undefined) {
          * @returns {HTMLElement}
          */
         render() {
-            devlog("render section");
+            // devlog("render section");
             let section = createElement("section").add(
                 createElement("h2", { innerHTML: this.config.name }) // section title
             );
@@ -1248,7 +1248,7 @@ if (Option === undefined) {
          * @returns {HTMLLabelElement}
          */
         render() {
-            devlog("render option");
+            // devlog("render option");
             let label = createElement("label");
             let span = createElement("span", {
                 innerHTML: this.config.name
