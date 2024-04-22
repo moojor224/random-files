@@ -852,6 +852,28 @@ function convertBase(str, fromBase, toBase) {
 // get settings not loading settings
 // ^honestly don't know what ths means, but it's funny, so I'm leaving it
 
+let settingsFormatter = {
+    label: "settings formatter",
+    header: function (obj) {
+        if (obj instanceof Settings) {
+            return ['div', { style: 'font-weight: bold' }, `Settings: ${obj.config.name}`];
+        }
+        return null;
+    },
+    hasBody: function (obj) {
+        return obj instanceof Settings;
+    },
+    body: function (obj) {
+        if (obj instanceof Settings) {
+            return ["div", {}, ...obj.sections.map(section => {
+                return ["object", {
+                    object: section
+                }]
+            })];
+        }
+        return null;
+    }
+};
 let Settings = window.Settings;
 if (Settings === undefined) {
     Settings = class extends EventTarget {
@@ -876,32 +898,11 @@ if (Settings === undefined) {
                     section.settings_obj = this; // set parent object of each section
                 }
             });
-            let formatter = {
-                header: function (obj) {
-                    if (obj instanceof Settings) {
-                        return ['div', { style: 'font-weight: bold' }, `Settings: ${obj.config.name}`];
-                    }
-                    return null;
-                },
-                hasBody: function (obj) {
-                    return obj instanceof Settings;
-                },
-                body: function (obj) {
-                    if (obj instanceof Settings) {
-                        return ["div", {}, ...obj.sections.map(section => {
-                            return ["object", {
-                                object: section
-                            }]
-                        })];
-                    }
-                    return null;
-                }
-            }
             if (!Array.isArray(window.devtoolsFormatters)) {
                 window.devtoolsFormatters = [];
             }
-            if (!window.devtoolsFormatters.includes(formatter)) {
-                window.devtoolsFormatters.push(formatter);
+            if (!window.devtoolsFormatters.includes(settingsFormatter)) {
+                window.devtoolsFormatters.push(settingsFormatter);
             }
         }
 
@@ -1038,6 +1039,29 @@ if (Settings === undefined) {
     }
 }
 
+let sectionFormatter = {
+    label: "section formatter",
+    header: function (obj) {
+        if (obj instanceof Section) {
+            return ["div", {
+                style: "border:1px solid #000;border-radius:9px;padding-top:10px;background-color:#454d55;width:300px;display:inline-block;color:white"
+            }, ["div", { style: "padding:0 10px;display: block;font-size:1.5em;font-weight:bold;margin-block-start:.83em;margin-block-end:.83em" }, obj.config.name],
+                ...obj.options.map(option => {
+                    return [
+                        "div",
+                        { style: "border-top:1px solid #000;width:100%;display:flex;justify-content:space-between;padding:10px;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;" },
+                        ["span", {}, option.config.name],
+                        ["div", {}, ["span", { style: "float:right" }, option.config.value]]
+                    ];
+                })
+            ];
+        }
+        return null;
+    },
+    hasBody: function (obj) {
+        return false;
+    }
+};
 let Section = window.Section;
 if (Section === undefined) {
     Section = class extends EventTarget {
@@ -1067,33 +1091,12 @@ if (Section === undefined) {
                     option.section_obj = this; // set parent object for each option
                 }
             });
-            let formatter = {
-                header: function (obj) {
-                    if (obj instanceof Section) {
-                        return ["div", {
-                            style: "border:1px solid #000;border-radius:9px;padding-top:10px;background-color:#454d55;width:300px;display:inline-block;color:white"
-                        }, ["div", { style: "padding:0 10px;display: block;font-size:1.5em;font-weight:bold;margin-block-start:.83em;margin-block-end:.83em" }, obj.config.name],
-                            ...obj.options.map(option => {
-                                return [
-                                    "label",
-                                    { style: "border-top:1px solid #000;width:100%;display:flex;justify-content:space-between;padding:10px;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;" },
-                                    ["span", {}, option.config.name],
-                                    ["div", {}, ["span", { style: "float:right" }, option.config.value]]
-                                ];
-                            })
-                        ];
-                    }
-                    return null;
-                },
-                hasBody: function (obj) {
-                    return false;
-                }
-            }
+
             if (!Array.isArray(window.devtoolsFormatters)) {
                 window.devtoolsFormatters = [];
             }
-            if (!window.devtoolsFormatters.includes(formatter)) {
-                window.devtoolsFormatters.push(formatter);
+            if (!window.devtoolsFormatters.includes(sectionFormatter)) {
+                window.devtoolsFormatters.push(sectionFormatter);
             }
         }
 
