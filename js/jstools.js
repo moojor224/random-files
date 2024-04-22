@@ -1064,7 +1064,7 @@ let sectionFormatter = {
                                     }
                                 }];
                             }
-                            return option.config.value;
+                            return option.config.value + "";
                         })()]]
                     ];
                 })
