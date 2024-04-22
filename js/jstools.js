@@ -2184,3 +2184,13 @@ export function reshape(arr, length, width) {
     }
     return result;
 }
+
+/**
+ * checks if a functon is asynchronous
+ * @param {Function} func the function to check
+ * @returns {Boolean}
+ */
+export function isAsync(func) {
+    const AsyncFunction = (async () => { }).constructor;
+    return func instanceof AsyncFunction;
+}
