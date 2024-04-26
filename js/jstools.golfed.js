@@ -3,9 +3,16 @@ import {Prism}from"./prism.js";
 import {js_beautify}from"./beautify.js";
 Math.roundf=(v,t)=>Math.round(v*t)/t;
 let p=e=>typeof e,w=(c,...a)=>new c(...a),four=(t,o=0,i=o)=>w(Array,t).fill(i++),OF=(a,b)=>a instanceof b,qs="querySelector",y=e=>[...(function*(){for(let i in e)yield i})()];
-export let waitForKeyElements=(qu,cb,st,el)=>{let o,r;(o=void(0)===el?$(qu):$(el).contents().find(qu))&&o.length>0?((r=!0),o.each(function(){let e=$(this);e.data("alreadyFound")||!1||(cb(e)?(r=!1):e.data("alreadyFound",!0))})):(r=!1);let l=waitForKeyElements.controlObj||{},i=qu.replace(/[^\w]/g,"_"),c=l[i];r&&st&&c?(clearInterval(c),delete l[i]):c||((c=setInterval(_=>{waitForKeyElements(qu,cb,st,el)},1000)),(l[i]=c));waitForKeyElements.controlObj=l}
-let createElement=window.createElement;
-if(createElement===void(0))c="createElement",createElement=(j,d={},t=p(j)[1]=="t"?document[c](j):j)=>{
+let add=(...args)=>(t=this,args.map(elem=>t.append(elem)),t)
+Element.prototype.add===void(0)?Element.prototype.add=add:0;
+Object.getOwnPropertyNames(window).filter(e=>e.startsWith("HTML")&&e.endsWith("Element")).map(e=>window[e].prototype.add!==add?window[e].prototype.add=add:0);
+window.Element.prototype.error=text=>(this.clearError(),this.add(createElement("error",{innerHTML:text||"!"})))
+window.Element.prototype.clearError=_=>{
+    for(let e of this.childNodes)if(e.tagName.toLowerCase()=="error")return(e.remove(),!0)
+    return!1
+}
+export let waitForKeyElements=(qu,cb,st,el)=>{let o,r;(o=void(0)===el?$(qu):$(el).contents().find(qu))&&o.length>0?((r=!0),o.each(function(){let e=$(this);e.data("alreadyFound")||!1||(cb(e)?(r=!1):e.data("alreadyFound",!0))})):(r=!1);let l=waitForKeyElements.controlObj||{},i=qu.replace(/[^\w]/g,"_"),c=l[i];r&&st&&c?(clearInterval(c),delete l[i]):c||((c=setInterval(_=>{waitForKeyElements(qu,cb,st,el)},1000)),(l[i]=c));waitForKeyElements.controlObj=l},
+createElement=(j,d={},t=p(j)[1]=="t"?document[c](j):j,c="createElement")=>{
     if(p(tag)=="t"&&tag.match(/[^a-zA-Z0-9]/g)){
         d=createElement("div");
         if(emmet&&emmet.expandAbbreviation&&p(emmet.expandAbbreviation)[0]=="f")d.innerHTML=emmet.expandAbbreviation(tag);
@@ -15,16 +22,8 @@ if(createElement===void(0))c="createElement",createElement=(j,d={},t=p(j)[1]=="t
     }
     Object.keys(d).map(e=>(p(d[e])[0]=="o")?window[c](t[e]||(t[e]={}),d[e]):(OF(t,Element)?((e.startsWith("on")&&p(d[e])[0]=="f")?t.addEventListener(e.substring(2),d[e]):t[e]=d[e]):t[e]=d[e]));
     return t
-}
-let add=(...args)=>(t=this,args.map(elem=>t.append(elem)),t)
-Element.prototype.add===void(0)?Element.prototype.add=add:0;
-Object.getOwnPropertyNames(window).filter(e=>e.startsWith("HTML")&&e.endsWith("Element")).map(e=>window[e].prototype.add!==add?window[e].prototype.add=add:0);
-window.Element.prototype.error=text=>(this.clearError(),this.add(createElement("error",{innerHTML:text||"!"})))
-window.Element.prototype.clearError=_=>{
-    for(let e of this.childNodes)if(e.tagName.toLowerCase()=="error")return(e.remove(),!0)
-    return!1
-}
-export let warn=(str,...sels)=>(clearWarn(...sels),sels.map(s=>el=s,p(s)[1]=="t"?el=document[qs](s):0,el.append(createElement("warn",{innerHTML:str})))),
+},
+warn=(str,...sels)=>(clearWarn(...sels),sels.map(s=>el=s,p(s)[1]=="t"?el=document[qs](s):0,el.append(createElement("warn",{innerHTML:str})))),
 clearWarn=(...sels)=>{
     sels.map(s=>{
         el=s;
