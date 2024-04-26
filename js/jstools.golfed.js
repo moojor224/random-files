@@ -1,6 +1,7 @@
 import {devlog}from"./dev-helper.js";
 import {Prism}from"./prism.js";
 import {js_beautify}from"./beautify.js";
+const c="createElement",h="hidden",d="disabled";
 Math.roundf=(v,t)=>Math.round(v*t)/t;
 let p=e=>typeof e,w=(c,...a)=>new c(...a),four=(t,o=0,i=o)=>w(Array,t).fill(i++),OF=(a,b)=>a instanceof b,qs="querySelector",y=e=>[...(function*(){for(let i in e)yield i})()];
 let add=(...args)=>(t=this,args.map(elem=>t.append(elem)),t)
@@ -12,7 +13,7 @@ window.Element.prototype.clearError=_=>{
     return!1
 }
 export let waitForKeyElements=(qu,cb,st,el)=>{let o,r;(o=void(0)===el?$(qu):$(el).contents().find(qu))&&o.length>0?((r=!0),o.each(function(){let e=$(this);e.data("alreadyFound")||!1||(cb(e)?(r=!1):e.data("alreadyFound",!0))})):(r=!1);let l=waitForKeyElements.controlObj||{},i=qu.replace(/[^\w]/g,"_"),c=l[i];r&&st&&c?(clearInterval(c),delete l[i]):c||((c=setInterval(_=>{waitForKeyElements(qu,cb,st,el)},1000)),(l[i]=c));waitForKeyElements.controlObj=l},
-createElement=(j,d={},t=p(j)[1]=="t"?document[c](j):j,c="createElement")=>{
+createElement=(j,d={},t=p(j)[1]=="t"?document[c](j):j)=>{
     if(p(tag)=="t"&&tag.match(/[^a-zA-Z0-9]/g)){
         d=createElement("div");
         if(emmet&&emmet.expandAbbreviation&&p(emmet.expandAbbreviation)[0]=="f")d.innerHTML=emmet.expandAbbreviation(tag);
@@ -37,11 +38,11 @@ error=(str,...selectors)=>{
     selectors.map(s=>(el=s,p(s)[1]=="t"&&(el=document[qs](s)),el.append(w.cloneNode(!0))))
 },
 clearError=(...S)=>S.map(s=>{let el=s;p(s)[1]=="t"?el=document[qs](s):0;[...el.children].map(e=>e.tagName.toLowerCase()=="error"?e.remove():0)}),
-hide=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).classList.add("hidden")),
-show=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).classList.remove("hidden")),
+hide=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).classList.add(h)),
+show=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).classList.remove(h)),
 clear=(...S)=>S.map(s=>{s=p(s)=="string"?document[qs](s):s;let arr=flattenChildNodes(s);arr.reverse().map(e=>e.remove?.call(e)),s.innerHTML=""}),
-disable=(m,...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).setAttribute("disabled",m)),
-enable=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).removeAttribute("disabled")),
+disable=(m,...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).setAttribute(d,m)),
+enable=(...S)=>S.map(s=>(p(s)[1]=="t"?document[qs](s):s).removeAttribute(d)),
 tabColor=color=>{
     let valid=c=>c.match(/^(unset|initial|inherit)$/)?!1:createElement("div",{style:{color:c}}).style.color!==""
     if(!valid(color))return;
@@ -206,10 +207,10 @@ Settings=class extends EventTarget{
         data.sections.map(sec=>sec.options.map(e=>delete e.input));
         return JSON.stringify(data)
     }
-    dispatchEvent(event){
+    dispatchEvent(e){
         let originalDispatch=EventTarget.prototype.dispatchEvent.bind(this);
-        originalDispatch.apply(this,[event])
-        return!event.defaultPrevented||!event.cancelable
+        originalDispatch.apply(this,[e])
+        return!e.defaultPrevented||!e.cancelable
     }
     on=(type,callback)=>this.addEventListener(type,callback);
     off=(type,callback)=>this.removeEventListener(type,callback);
@@ -250,11 +251,11 @@ Section=class extends EventTarget{
         section.add(...this.options.map(o=>o.render()));
         return section
     }
-    dispatchEvent(event){
-        this.settings_obj.dispatchEvent(event);
+    dispatchEvent(e){
+        this.settings_obj.dispatchEvent(e);
         let originalDispatch=EventTarget.prototype.dispatchEvent.bind(this);
-        originalDispatch.apply(this,[event]);
-        return!event.defaultPrevented||!event.cancelable
+        originalDispatch.apply(this,[e]);
+        return!e.defaultPrevented||!e.cancelable
     }
     on=(type,callback)=>this.addEventListener(type,callback);
     off=(type,callback)=>this.removeEventListener(type,callback)
@@ -300,7 +301,7 @@ Option=class extends EventTarget{
             }
             values=Array.from(w(Set,values));
             input.add(...values.map(v=>createElement("option",{innerHTML:v})));
-            if(this.config.value&&!this.config.values.includes(this.config.value))input.insertAdjacentElement("afterBegin",createElement("option",{innerHTML:this.config.value,value:this.config.value,hidden:!0,disabled:!0}));
+            if(this.config.value&&!this.config.values.includes(this.config.value))input.insertAdjacentElement("afterBegin",createElement("option",{innerHTML:this.config.value,value:this.config.value,[h]:!0,[d]:!0}));
             input.value=this.config.value||this.config.values[0]
         }
         input.addEventListener("input",_=>{
@@ -309,11 +310,11 @@ Option=class extends EventTarget{
         });
         return input
     }
-    dispatchEvent(event){
-        this.section_obj.dispatchEvent(event);
+    dispatchEvent(e){
+        this.section_obj.dispatchEvent(e);
         let originalDispatch=EventTarget.prototype.dispatchEvent.bind(this);
-        originalDispatch.apply(this,[event]);
-        return!event.defaultPrevented||!event.cancelable
+        originalDispatch.apply(this,[e]);
+        return!e.defaultPrevented||!e.cancelable
     }
     on=(type,callback)=>this.addEventListener(type,callback);
     off=(type,callback)=>this.removeEventListener(type,callback)
