@@ -1,0 +1,15 @@
+Features,DDR3,DDR4,DDR5
+Release Date,2007,2014,2020
+Clock Rate,400–1066 MHz,800–1600 MHz,2400–3600 MHz
+Voltage,1.5 V,1.2 V,1.1 V
+Transfer Rate,800–2133 MT/s,1600–3200 MT/s,4800–7200 MT/s
+Bandwidth,6400–17066 MB/s,12800–25600 MB/s,38400–57600 MB/s
+Max Die Density,4 Gbit,16 Gbit,64 Gbit
+Max UDIMM Size,8 GB,32 GB,128 GB
+Max Data Rate,1.6 Gbps,3.2Gbps,6.4Gbps
+Channels,1,1,2
+Banks Per Group,8,4,4
+Bank Groups,1,44653,44777
+Burst Length,BL8,BL8,BL16
+DIMM Pins,"240 (R, LR, U); 204 (SODIMM)","288 (R, LR, U); 260 (SODIMM)","288 (R, LR, U); 260 (SODIMM)"
+DIMM Types,"RDIMM, LRDIMM, UDIMM, SODIMM"
