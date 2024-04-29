@@ -51,7 +51,6 @@
     <!-- <meta http-equiv="refresh" content="5"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <title>Hello World</title>
     <script src="./js/react.development.js"></script>
     <script src="./js/react-dom.development.js"></script>
     <script src="./js/babel.min.js"></script>
@@ -90,110 +89,67 @@
         span.delete {
             background-color: red;
         }
-    </style>
-</head>
 
-<body>
-    <details>
-        <summary>autosave</summary>
-        <div id="autosave" style="border:1px solid black;width:100px;height:10px;">
-            <div class="bar" style="background-color:red;height:100%"></div>
-        </div>
-        <div id="autosavestatus"></div>
-        <textarea name="" id="autosaveeditor" cols="30" rows="10"></textarea>
-        <script>
-            r = _ => console.log(document.querySelector("#autosavestatus").innerHTML = "Saved!");
-            let counter = 100;
-            let seconds = 1;
-            document.querySelector("#autosaveeditor").oninput = (_ => counter = 100);
-            setInterval(_ => counter ? (counter--, document.querySelector("#autosavestatus").innerHTML = "Waiting...", document.querySelector("#autosave .bar").style.width = counter + "%", !counter ? r() : 0) : 0, seconds * 10);
-        </script>
-    </details>
-    <details>
-        <summary>passthrough hovering/clicking</summary>
-        <style>
-            div.hovering {
-                position: relative;
-                height: 180px;
-            }
+        #autosave {
+            border: 1px solid black;
+            width: 100px;
+            height: 10px;
+        }
 
-            div.hovering>div.hover,
-            div.hovering>div.keep-hover {
-                border-color: red;
-            }
+        #autosave .bar {
+            background-color: red;
+            height: 100%;
+        }
 
-            div.hovering>div:nth-child(1) {
-                left: 10px;
-                top: 10px;
-            }
+        div.hovering {
+            position: relative;
+            height: 180px;
+        }
 
-            div.hovering>div:nth-child(2) {
-                left: 20px;
-                top: 20px;
-            }
+        div.hovering>div.hover,
+        div.hovering>div.keep-hover {
+            border-color: red;
+        }
 
-            div.hovering>div:nth-child(3) {
-                left: 30px;
-                top: 30px;
-            }
+        div.hovering>div:nth-child(1) {
+            left: 10px;
+            top: 10px;
+        }
 
-            div.hovering>div:nth-child(4) {
-                left: 40px;
-                top: 40px;
-            }
+        div.hovering>div:nth-child(2) {
+            left: 20px;
+            top: 20px;
+        }
 
-            div.hovering>div:nth-child(5) {
-                left: 50px;
-                top: 50px;
-            }
+        div.hovering>div:nth-child(3) {
+            left: 30px;
+            top: 30px;
+        }
 
-            div.hovering>div:nth-child(6) {
-                left: 60px;
-                top: 60px;
-            }
+        div.hovering>div:nth-child(4) {
+            left: 40px;
+            top: 40px;
+        }
 
-            div.hovering>div {
-                width: 100px;
-                height: 100px;
-                border: 2px solid green;
-                position: absolute;
-                background-color: #0002;
-                content: attr(data-value)
-            }
-        </style>
-        <div class="hovering">
-            <div data-value="1"></div>
-            <div data-value="2"></div>
-            <div data-value="3"></div>
-            <div data-value="4"></div>
-            <div data-value="5"></div>
-            <div data-value="6"></div>
-        </div>
-        <div id="value-display"></div>
-        <script>
-            function readHoveredDivs() {
-                let els = Array.from(document.querySelectorAll(".hovering>div.keep-hover,.hovering>div.hover")); // get all elements that are kept or hovered
-                let values = els.map(e => e.dataset.value); // get each element's value
-                document.getElementById("value-display").innerHTML = values.join(","); // join array of values with comma and set innerhtml
-            }
-            function captureMouse(keep, cls) { // wrapper function for ease of use
-                return function (event) {
-                    document.querySelectorAll("div.hovering>div." + cls).forEach(e => e.classList.remove(cls)); // clear class from all elements that have it
-                    if (keep && document.querySelector("div.hovering>div.keep-hover")) return; // return if keep-hover detected
-                    let { clientX, clientY } = event; // get x/y coordinates of event
-                    document.elementsFromPoint(clientX, clientY).forEach(e => { // get all elements that overlap the coordinates
-                        if (e.matches("div.hovering>div")) { // if element is a valid target element
-                            e.classList.add(cls); // add the class
-                        }
-                    });
-                    readHoveredDivs(); // update info display
-                }
-            }
-            window.onmousemove = captureMouse(true, "hover"); // highlight divs on hover
-            window.onclick = captureMouse(false, "keep-hover"); // toggle highlight divs on click
-        </script>
-    </details>
-    <style>
+        div.hovering>div:nth-child(5) {
+            left: 50px;
+            top: 50px;
+        }
+
+        div.hovering>div:nth-child(6) {
+            left: 60px;
+            top: 60px;
+        }
+
+        div.hovering>div {
+            width: 100px;
+            height: 100px;
+            border: 2px solid green;
+            position: absolute;
+            background-color: #0002;
+            content: attr(data-value)
+        }
+
         div.calendar {
             --day-size: 60px;
             border: 1px solid black;
@@ -207,9 +163,7 @@
             border: 1px solid black;
             box-sizing: border-box;
         }
-    </style>
-    <div id="root"></div>
-    <style>
+
         div.settings {
             max-width: 400px;
             display: flex;
@@ -250,6 +204,59 @@
             user-select: none;
         }
     </style>
+</head>
+
+<body>
+    <details>
+        <summary>autosave</summary>
+        <div id="autosave">
+            <div class="bar"></div>
+        </div>
+        <div id="autosavestatus"></div>
+        <textarea name="" id="autosaveeditor" cols="30" rows="10"></textarea>
+        <script>
+            r = _ => console.log(document.querySelector("#autosavestatus").innerHTML = "Saved!");
+            let counter = 100;
+            let seconds = 1;
+            document.querySelector("#autosaveeditor").oninput = (_ => counter = 100);
+            setInterval(_ => counter ? (counter--, document.querySelector("#autosavestatus").innerHTML = "Waiting...", document.querySelector("#autosave .bar").style.width = counter + "%", !counter ? r() : 0) : 0, seconds * 10);
+        </script>
+    </details>
+    <details>
+        <summary>passthrough hovering/clicking</summary>
+        <div class="hovering">
+            <div data-value="1"></div>
+            <div data-value="2"></div>
+            <div data-value="3"></div>
+            <div data-value="4"></div>
+            <div data-value="5"></div>
+            <div data-value="6"></div>
+        </div>
+        <div id="value-display"></div>
+        <script>
+            function readHoveredDivs() {
+                let els = Array.from(document.querySelectorAll(".hovering>div.keep-hover,.hovering>div.hover")); // get all elements that are kept or hovered
+                let values = els.map(e => e.dataset.value); // get each element's value
+                document.getElementById("value-display").innerHTML = values.join(","); // join array of values with comma and set innerhtml
+            }
+            function captureMouse(keep, cls) { // wrapper function for ease of use
+                return function (event) {
+                    document.querySelectorAll("div.hovering>div." + cls).forEach(e => e.classList.remove(cls)); // clear class from all elements that have it
+                    if (keep && document.querySelector("div.hovering>div.keep-hover")) return; // return if keep-hover detected
+                    let { clientX, clientY } = event; // get x/y coordinates of event
+                    document.elementsFromPoint(clientX, clientY).forEach(e => { // get all elements that overlap the coordinates
+                        if (e.matches("div.hovering>div")) { // if element is a valid target element
+                            e.classList.add(cls); // add the class
+                        }
+                    });
+                    readHoveredDivs(); // update info display
+                }
+            }
+            window.onmousemove = captureMouse(true, "hover"); // highlight divs on hover
+            window.onclick = captureMouse(false, "keep-hover"); // toggle highlight divs on click
+        </script>
+    </details>
+    <div id="root"></div>
     <script type="text/babel">
 
         function convert(amount, type) {
@@ -410,8 +417,8 @@
 
         </>);
     </script>
-    <button id="notification-button">send notification</button>
-    <button id="notification-cancel">cancel notification</button>
+    <button id="notification-button" type="button">send notification</button>
+    <button id="notification-cancel" type="button">cancel notification</button>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./js/service-worker.js');
@@ -441,20 +448,12 @@
                                 badge: '/favicon.ico',
                                 icon: '/favicon.ico',
                                 actions: [
-                                    {
-                                        action: 'markasread',
-                                        title: 'Mark as Read'
-                                    },
-                                    {
-                                        action: 'close',
-                                        title: 'Dismiss',
-                                    }
+                                    { action: 'markasread', title: 'Mark as Read' },
+                                    { action: 'close', title: 'Dismiss', }
                                 ],
                             }
                         );
-                    })
-                    // let n = reg.getNotifications().then(ns => {
-                    // });
+                    });
                 }
             });
         };
