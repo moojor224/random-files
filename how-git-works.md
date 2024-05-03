@@ -24,7 +24,7 @@ currently editing)`"]
 block-beta
 columns 1
     block:SERVER:3
-        server(("server"))
+        server[("server")]
     end
 
     block:IO:3
@@ -32,7 +32,7 @@ columns 1
     end
 
     block:CGIT:3
-        cgit["client git repo"] space
+        cgit[("client git repo")] space
     end
 
     block:QUEUE:3
@@ -51,6 +51,6 @@ currently editing)"]
     QUEUE--"revert"-->clientw
     cgq--"commit"-->cgit
     cgq--"commit"-->ochanges
-    ichanges--"pull"-->cgit
+    ichanges--"merge"-->cgit
     server--"pull"-->cgit
 ```
