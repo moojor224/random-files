@@ -2193,3 +2193,15 @@ export function isAsync(func) {
     const AsyncFunction = (async () => { }).constructor;
     return func instanceof AsyncFunction;
 }
+
+
+/**
+ * Adds polyfills for missing browser features.
+ */
+const polyfills = (function () {
+    if (!Element.prototype.computedStyleMap && window.getComputedStyle != undefined) {
+        Element.prototype.computedStyleMap = function () {
+            return window.getComputedStyle(this);
+        }
+    }
+})()
