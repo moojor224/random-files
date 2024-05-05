@@ -1,2 +1,2 @@
-mklink /J @types C:\Development\Stealthx\Websites\MCP\MCP\MCP\MCP.Web\wwwroot\Scripts\Reports\@types // makes folder link
-mklink /H jstools.js C:\Development\Stealthx\Websites\MCP\MCP\MCP\MCP.Web\wwwroot\Scripts\Reports\modules\jstools.js // makes file link
+mklink /J @types C:\Development\*******\Scripts\Reports\@types // makes folder link
+mklink /H jstools.js C:\Development\*******\jstools.js // makes file link
