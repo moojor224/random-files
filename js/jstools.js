@@ -2204,4 +2204,4 @@ const polyfills = (function () {
             return window.getComputedStyle(this);
         }
     }
-})()
+})();
