@@ -1395,6 +1395,35 @@ export let settings = new Settings({
     ])
 ]);
 
+export function consoleButton(obj, func, args = [], label = "button", width = 50, height = width) {
+    return { __button: true, obj, func, args, label, width, height };
+}
+
+let buttonFormatter = { // button formatter
+    header: function (obj) {
+        if (obj.__button) {
+            return ["div", {
+                style: `width:${obj.width}px;height:${obj.height}px;border:1px solid red;background-color:white;text-align:center;cursor:pointer;color:black;padding:5px;`
+            }, ["span", {}, obj.label]];
+        }
+        return null;
+    },
+    hasBody: function (obj) {
+        if (obj.__button) return true;
+        return null;
+    },
+    body: function (obj) {
+        if (obj.__button) {
+            try { obj.obj[obj.func](...obj.args); } catch (e) { }
+            return ["div", {}];
+        }
+        return null;
+    }
+}
+if (!window.devtoolsFormatters.includes(buttonFormatter)) {
+    window.devtoolsFormatters.push(buttonFormatter);
+}
+
 /**
  * uses JSON.stringify and JSON.parse to copy an object and return the copy\
  * WARNING: do not use on objects that contain recursive references, or an error will be thrown
