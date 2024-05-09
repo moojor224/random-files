@@ -322,6 +322,40 @@
             }]
         });
     </script>
+    <script type="module">
+        import { Grid } from "./js/console_game.js";
+        // let game = new Grid(7, 10)
+    </script>
+    <script> // convert html element to xml string without properties
+        function thisThing(element) {
+            const formatter = [];
+
+            function traverse(element, indent) {
+                const { tagName, childNodes } = element;
+                const formattedElement = `${indent}<${tagName}>`;
+                formatter.push(formattedElement);
+
+                for (let i = 0; i < childNodes.length; i++) {
+                    const child = childNodes[i];
+
+                    if (child.nodeType === Node.ELEMENT_NODE) {
+                        traverse(child, indent + " ".repeat(4)); // 4 spaces for indentation
+                    } else if (child.nodeType === Node.TEXT_NODE) {
+                        const formattedText = `${indent}  ${child.textContent}`;
+                        formatter.push(formattedText);
+                    }
+                }
+
+                const closingTag = `${indent}</${tagName}>`;
+                formatter.push(closingTag);
+            }
+
+            traverse(element, '');
+
+            return formatter.join('\n');
+        }
+        thisThing(document.body);
+    </script>
     <!--☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ 
         !"#$%&'()*+,-./0123456789:;<=>?@
         ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`
