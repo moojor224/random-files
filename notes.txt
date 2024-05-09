@@ -42,3 +42,40 @@ then
     export GIT_AUTHOR_EMAIL="$NEW_EMAIL"
 fi
 ' --tag-name-filter cat -- --branches --tags
+
+
+
+
+console.log formatting cheatsheet
+
+%o %O - object
+%d %i - integer
+    accepts number formatting:
+        %.2d will print 2 sig figs
+        1.1 becomes 01
+        12.45 becomes 12
+%s    - string
+%f    - float
+    accepts number formatting:
+        %.2d will print 2 decimal places
+        1.154 becomes 1.15
+        12.456 becomes 12.46
+%c   - apply css styling
+    background and its longhand equivalents
+    border and its longhand equivalents
+    border-radius
+    box-decoration-break
+    box-shadow
+    clear and float
+    color
+    cursor
+    display
+    font and its longhand equivalents
+    line-height
+    margin
+    outline and its longhand equivalents
+    padding
+    text-* properties such as text-transform
+    white-space
+    word-spacing and word-break
+    writing-mode
