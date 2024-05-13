@@ -1,34 +1,182 @@
 if (typeof window === "undefined") {
     globalThis.window = globalThis;
 }
-// if (!Array.isArray(window.devtoolsFormatters)) {
-window.devtoolsFormatters = [];
-// }
-function button(obj, func, args = [], label = "button", width = 50, height = width) {
-    return { __button: true, obj, func, args, label, width, height };
+if (!Array.isArray(window.devtoolsFormatters)) {
+    window.devtoolsFormatters = [];
 }
-window.devtoolsFormatters.push({ // button formatter
+function button(obj, func, args = [], label = "button", width = 50, height = width) {
+    return { __dom_node: "button", obj, func, args, label, width, height };
+}
+function details(__label, children) {
+    return { __dom_node: "details", __label, children };
+}
+function convertToDevtools(el) {
+    if (!el instanceof HTMLElement) {
+        throw new Error("el is not an html element");
+    }
+    let allowedTags = ["span", "div", "ol", "ul", "li", "table", "tr", "td"];
+    let blockedTags = ["script", "link", "meta", "head", "#comment"];
+    let customTags = {
+        details: function (node) {
+            return ["object", {
+                object: details(node.querySelector("summary").textContent, [...node.childNodes].filter(e => e.nodeName.toLowerCase() != "summary").map(e => convertToDevtools(e)))
+            }];
+        },
+        button: function (node, style) {
+            let clone = node.cloneNode(true);
+            clone.style = style;
+            return ["object", {
+                object: button({
+                    f: () => {
+                        node.dispatchEvent(new Event("click"));
+                    }
+                }, "f", [], node.innerHTML, clone.style.width, clone.style.height)
+            }];
+        }
+    };
+
+    if (blockedTags.includes(el.nodeName.toLowerCase())) {
+        return "";
+    }
+
+    function getStyle(el) {
+        let style = {};
+        let stylesheets = document.styleSheets;
+        [...stylesheets].forEach(sheet => {
+            try {
+                let rules = sheet.rules;
+                for (let i = 0; i < rules.length; i++) {
+                    let rule = rules[i];
+                    if (el.matches && el.matches(rule.selectorText)) {
+                        // console.log("adding style", Object.fromEntries([...rule.style].map(e => [e, rule.style[e]])));
+                        style = {
+                            ...style,
+                            ...Object.fromEntries([...rule.style].map(e => [e, rule.style[e]]))
+                        };
+                    }
+                }
+                style = {
+                    ...style,
+                    ...(Object.fromEntries(Object.entries(el.style||[]).map(e => e[1]).map(e => [e, el.style[e]]) || []) || {})
+                }
+            } catch (e) {
+                console.error(sheet, e);
+            }
+        });
+        // console.log("final rules", style);
+
+        let startsWithProps = [
+            "align",
+            "background",
+            "border",
+            "box",
+            "font",
+            "justify",
+            "line",
+            "margin",
+            "outline",
+            "padding",
+            "text",
+            "transition",
+            "word",
+            "writing",
+        ];
+        let exactMatches = [
+            "clear",
+            "color",
+            // "display",
+            "float",
+            "height",
+            "max-height",
+            "max-width",
+            "min-height",
+            "min-width",
+            "position",
+            "vertical-align",
+            "white-space",
+            "width",
+        ];
+        let props = Object.entries(style).map(e => e.join(":")).join(";");
+        // console.log("final string", props);
+        return props;
+    }
+    if (Object.keys(customTags).includes(el.nodeName.toLowerCase())) {
+        return customTags[el.nodeName.toLowerCase()](el, getStyle(el));
+    } else {
+        let devtool = [allowedTags.includes(el.nodeName.toLowerCase()) ? el.nodeName.toLowerCase() : "span", {
+            style: getStyle(el)
+        }];
+        let children = [...el.childNodes];
+        children.forEach(e => {
+            if (e.nodeName.toLowerCase() == "#text") {
+                devtool.push(e.textContent);
+            } else {
+                devtool.push(convertToDevtools(e));
+            }
+        });
+        return devtool;
+    }
+}
+
+let domNodeFormatter = { // dom node formatter
     header: function (obj) {
-        if (obj.__button) {
-            return ["div", {
-                style: `width:${obj.width}px;height:${obj.height}px;border:1px solid red;background-color:white;text-align:center;cursor:pointer;color:black;padding:5px;`
-            }, ["span", {}, obj.label]];
+        if (obj.__dom_node) {
+            if (obj.__dom_node == "button") {
+                return ["span", {
+                    style: `width:${obj.width}px;height:${obj.height}px;border:1px solid red;background-color:white;text-align:center;cursor:pointer;color:black;padding:5px;`
+                }, ["span", {}, obj.label]];
+            } else if (obj.__dom_node == "details") {
+                return ["div", {}, obj.__label];
+            }
         }
         return null;
     },
     hasBody: function (obj) {
-        if (obj.__button) return true;
+        if (["button", "details"].includes(obj.__dom_node)) return true;
         return null;
     },
     body: function (obj) {
-        if (obj.__button) {
-            try { obj.obj[obj.func](...obj.args); } catch (e) { }
-            return ["div", {}];
+        if (obj.__dom_node) {
+            if (obj.__dom_node == "button") {
+                try { obj.obj[obj.func](...obj.args); } catch (e) { }
+                return ["div", {}];
+            } else if (obj.__dom_node == "details") {
+                return ["div", {}, ...obj.children];
+            }
         }
         return null;
     }
-});
-window.devtoolsFormatters.push({
+};
+if (!window.devtoolsFormatters.includes(domNodeFormatter)) {
+    window.devtoolsFormatters.push(domNodeFormatter);
+}
+let domFormatter = { // dom node formatter
+    header: function (obj) {
+        if (obj.__render_as_dom) {
+            return ["div", {}, "dom node"];
+        }
+        return null;
+    },
+    hasBody: function (obj) {
+        if (obj.__render_as_dom) {
+            return true;
+        }
+        return null;
+    },
+    body: function (obj) {
+        if (obj.__render_as_dom) {
+            return ["div", {
+                style: "background-color:white;color:black;min-width:300px;"
+            }, convertToDevtools(obj.node || document.createElement("div"))];
+        }
+        return null;
+    }
+};
+if (!window.devtoolsFormatters.includes(domFormatter)) {
+    window.devtoolsFormatters.push(domFormatter);
+}
+
+let gridFormatter = { // Grid formatter
     header: obj => {
         if (obj instanceof Grid) {
             return [
@@ -58,7 +206,10 @@ window.devtoolsFormatters.push({
     hasBody: function () {
         return null;
     }
-});
+};
+if (!window.devtoolsFormatters.includes(gridFormatter)) {
+    window.devtoolsFormatters.push(gridFormatter);
+}
 
 export class Grid {
     cursor = { x: 0, y: 0 };

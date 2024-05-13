@@ -121,7 +121,11 @@ export { createElement };
  */
 function add(...args) {
     args.forEach(elem => {
-        this.append(elem);
+        if (typeof elem == "string") {
+            this.insertAdjacentHTML("beforeend", elem);
+        } else {
+            this.append(elem);
+        }
     });
     return this;
 };
@@ -1441,32 +1445,18 @@ if (!window.devtoolsFormatters.includes(buttonFormatter)) {
  * // obj2 == {a: 1, b: 2, c: 3}
  */
 export function copyObject(obj) {
-    return clone(obj);
-    // return JSON.parse(JSON.stringify(obj));
-}
-
-function clone(obj) {
     let result = obj;
     var type = {}.toString.call(obj).slice(8, -1);
-    if (type == 'Set') {
-        return new Set([...obj].map(value => clone(value)));
-    }
-    if (type == 'Map') {
-        return new Map([...obj].map(kv => [clone(kv[0]), clone(kv[1])]));
-    }
-    if (type == 'Date') {
-        return new Date(obj.getTime());
-    }
-    if (type == 'RegExp') {
-        return RegExp(obj.source, getRegExpFlags(obj));
-    }
+    if (type == 'Set') return new Set([...obj].map(value => copyObject(value)));
+    if (type == 'Map') return new Map([...obj].map(kv => [copyObject(kv[0]), copyObject(kv[1])]));
+    if (type == 'Date') return new Date(obj.getTime());
+    if (type == 'RegExp') return RegExp(obj.source, getRegExpFlags(obj));
     if (type == 'Array' || type == 'Object') {
         result = Array.isArray(obj) ? [] : {};
         for (var key in obj) {
-            result[key] = clone(obj[key]);
+            result[key] = copyObject(obj[key]);
         }
     }
-    // primitives and non-supported objects (e.g. functions) land here
     return result;
 }
 
@@ -1491,7 +1481,7 @@ function getRegExpFlags(regExp) {
  * @param {String} trace stack trace
  * @returns {Object[]}
  */
-export function parseTrace(trace) {
+function parseTrace(trace) {
     let paths = trace.trim().split("\n").map(p => {
         const a = p.split("@");
         const locs = a.pop().split(":");
@@ -1514,6 +1504,10 @@ export function toHTMLEntities(str) {
     return [...str].split("").map(e => `&#${e.charCodeAt(0)};`).join("");
 }
 
+/**
+ * converts an svg string to a data-uri conpatible string
+ * @param {String} svg svg string
+ */
 let svgToDataUri = (function () {
     const shorterNames = {
         aqua: /#00ffff(ff)?(?!\w)|#0ff(f)?(?!\w)/gi,
@@ -1620,10 +1614,9 @@ let svgToDataUri = (function () {
         return 'data:image/svg+xml,' + dataURIPayload(body);
     }
 
-    svgToTinyDataUri.toSrcset = function toSrcset(svgString) {
+    return function (svgString) {
         return svgToTinyDataUri(svgString).replace(/ /g, '%20');
-    }
-    return svgToTinyDataUri.toSrcset;
+    };
 })();
 
 /**
@@ -1880,6 +1873,90 @@ export function logFormatted(object, options = {}) {
 }
 
 window.logFormatted = logFormatted; // make function globally available
+
+/**
+ * stringifies an object
+ * @param {any} obj the object to  stringify
+ * @returns {string} the stringified object
+ */
+export function stringify(obj) {
+    let objects = []; // array that holds list of all objects
+    let indentAmount = 1; // number of spaces to indent the stringified object by (don't change this)
+    let indentWidth = 4; // width of each indent. change this to change indent width
+    let depth = 0; // current depth
+    let maxDepth = 100;
+
+    function internal_stringify(obj) {
+        if (depth > maxDepth) { // prevent stringifying objects deeper than the max depth
+            let str = "'<max depth reached>'";
+            return str;
+        }
+        const type = typeof obj; // store type of object
+        let pad = " ".repeat(indentAmount * indentWidth); // calulate number of spaces to indent
+        if (type == "number" || type == "boolean") { // primitives
+            return "" + obj;
+        } else if (type == "function") {
+            return obj.toString().replaceAll("\r", "").trim();
+        } else if (type == "string") {
+            let quote;
+            if (!obj.includes('"')) { // if there are no ", wrap with "
+                quote = '"';
+            } else if (!obj.includes("'")) { // otherwise, if no ', wrap with '
+                quote = "'";
+            } else if (!obj.includes("`")) { // otherwise, if no `, wrap with `
+                quote = '`';
+            } else { // otherwise, wrap with "
+                quote = '"';
+            }
+            [
+                ["\n", "\\n"],
+                ["\r", "\\r"],
+                ["\t", "\\t"],
+                [quote, "\\" + quote], // only escape the quotes that are the same as what the string is wrapped with
+            ].forEach(e => {
+                obj = obj.replaceAll(e[0], e[1]); // escape quotes and all escape characters
+            });
+            let str = `${quote}${obj}${quote}`; // wrap string with quotes
+            return str;
+        } else if (type == "object") {
+            if (!obj) { // typeof null === "object"
+                return "null";
+            }
+            if (objects.includes(obj)) { // prevent recursion by checking objects that have already been stringified
+                let str = "<already stringified (recursion prevention)>"; // return plain string
+                return str;
+            }
+            objects.push(obj); // add to list of objects
+            let arr = []; // make array that stores all of this object's properties
+            indentAmount++; // increment indent amount
+            depth++; // increment depth
+
+            if (Array.isArray(obj)) { // object is an array
+                obj.forEach((item, index) => { // loop through array items
+                    let str = internal_stringify(item);
+                    arr.push(str);
+                });
+                indentAmount--; // decrement indent amount
+                depth--; // decrement depth
+                return `[ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}]`;
+            } else {
+                let entries = Object.entries(obj);
+                entries.forEach(function (kvp, index) {
+                    let [key, value] = kvp;
+                    let str = internal_stringify(value); // convert value to string
+                    str = `${key}: ${str}`; // create stringified kvp
+                    arr.push(str); // add to array
+                });
+                indentAmount--; // decrement indent amount
+                depth--; // decrement depth
+                return `{\n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}}`;
+            }
+        } else {
+            return "" + obj; // just convert to string and return
+        }
+    }
+    return internal_stringify;
+}
 
 // JSF*ck
 // library that converts javascript to code that only uses the following characters: []()!+
