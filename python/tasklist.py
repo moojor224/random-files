@@ -2,12 +2,21 @@ import random
 
 class Task:
     def __init__(self, task):
-        self.task = task
+        if str(task.__annotations__["return"]) == "<class 'bool'>":
+            self.task = task
+        else:
+            raise Exception("Task function must have a return annotation of type bool")
         self.initialized = True;
 
     def __init__(self, init, task):
-        self.init = init
-        self.task = task
+        if str(init.__annotations__["return"]) == "<class 'bool'>":
+            self.init = init
+        else:
+            raise Exception("Init function must have a return annotation of type bool")
+        if str(task.__annotations__["return"]) == "<class 'bool'>":
+            self.task = task
+        else:
+            raise Exception("Task function must have a return annotation of type bool")
         self.initialized = False;
 
     def execute(self):
@@ -66,12 +75,12 @@ class ParallelTask:
         return len(self.tasks) == 0
 
 def task1(name):
-    def init():
+    def init() -> bool:
         print(name, " init")
-    def task():
+    def task() -> bool:
         num = random.random()
         print(name, " random number: ", num)
-        if num > 0.9:
+        if num > 0.1:
             print(name, " done")
             return True
         else:
