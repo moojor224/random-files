@@ -1626,249 +1626,256 @@ let svgToDataUri = (function () {
  * @returns {Object[]}
  */
 export function logFormatted(object, options = {}) {
-    let { embedObjects, raw, collapsed, maxDepth, label, extra_logs } = (function () {
+    let { embedObjects, raw, collapsed, maxDepth, label, extra_logs, enableCustomFormatters } = (function () {
         let defaults = {
             embedObjects: false, // embed the objects within the console message
             raw: false, // return the raw result without logging it to the console
             collapsed: false, // log the message inside a collapsed console group (slightly increases performance before initially logging the object). Will still lag when collapsed group is initially opened
             maxDepth: Infinity, // maximum depth to stringify
             label: "formatted log", // label for collapsed console group,
-            extra_logs: []
+            extra_logs: [],
+            enableCustomFormatters: false,
         }
         let opt = extend(defaults, options); // replace the default values with user-specified options
         return opt;
     })();
-    let objects = []; // array that holds list of all objects
-    let indentAmount = 1; // number of spaces to indent the stringified object by
-    let depth = 0; // current depth
-    let embedIndex = 0; // how many characters have been stringified
-    let indexes = []; // array of indexes where objects should be embedded
-    /**
-     * alternative to JSON.stringify that auto-formats the result and supports functions
-     * @param {any} obj object to stringify
-     * @returns {String}
-     */
-    function stringify(obj) {
-        if (depth > maxDepth) { // prevent stringifying objects deeper than the max depth
-            let str = "'<max depth reached>'";
-            embedIndex += str.length
-            return str;
-        }
-        const type = typeof obj; // store type of object
-        let pad = " ".repeat(indentAmount * 4); // calulate number of spaces to indent
-        if (type == "number" || type == "boolean") { // primitives
-            let str = "" + obj; // convert to string
-            embedIndex += str.length; // add string length to total characters stringified
-            return obj;
-        } else if (type == "function") {
-            objects.push(obj); // add to list of objects
-            let beautified = js_beautify(obj.toString().replaceAll("\r", "")); // beautify function to make tabs equal
-            let splitFunc = beautified.split("\n"); // split formatted function by lines
-            while (splitFunc[1].length == 0) {
-                splitFunc.splice(1, 1);// remove first line of function body if it's blank (optional)
-            }
-            let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) + e : e + " ")); // indent all lines after first to match current indent amount and add space to end of first line
-            embedIndex += padded[0].length; // length of first line
-            indexes.push(embedIndex);
-            embedIndex += (padded.slice(1).join("\n").length + 1); // length of all lines after first line + newline between 1st and 2nd line
-            return padded.join("\n"); // rejoin function lines and return
-        } else if (type == "string") {
-            let quote;
-            if (!obj.includes('"')) { // if there are no ", wrap with "
-                quote = '"';
-            } else if (!obj.includes("'")) { // otherwise, if no ', wrap with '
-                quote = "'";
-            } else if (!obj.includes("`")) {
-                quote = '`'; // otherwise, if no `, wrap with `
-            } else {
-                quote = '"'; // otherwise, wrap with "
-            }
-            [
-                ["\n", "\\n"],
-                ["\r", "\\r"],
-                ["\t", "\\t"],
-                [quote, "\\" + quote], // only escape the quotes that are the same as what the string is wrapped with
-            ].forEach(e => {
-                obj = obj.replaceAll(e[0], e[1]); // escape quotes and all escape characters
-            });
-            let str = `${quote}${obj}${quote}`; // wrap string with quotes
-            embedIndex += str.length; // add to stringified character count
-            return str;
-        } else if (type == "object") {
-            if (objects.includes(obj)) { // prevent recursion by checking objects that have already been stringified
-                let str = "<already stringified (recursion prevention)>"; // return plain string
-                embedIndex += str.length; // add to character count
-                indexes.push(embedIndex); // save index
+    if (enableCustomFormatters) {
+        // use custom formatters to make the object interactive
+        console.error("custom formatters not implemented yet");
+        return logFormatted(object, { embedObjects, raw, collapsed, maxDepth, label, extra_logs, enableCustomFormatters: false });
+    } else {
+        let objects = []; // array that holds list of all objects
+        let indentAmount = 1; // number of spaces to indent the stringified object by
+        let depth = 0; // current depth
+        let embedIndex = 0; // how many characters have been stringified
+        let indexes = []; // array of indexes where objects should be embedded
+        /**
+         * alternative to JSON.stringify that auto-formats the result and supports functions
+         * @param {any} obj object to stringify
+         * @returns {String}
+         */
+        function stringify(obj) {
+            if (depth > maxDepth) { // prevent stringifying objects deeper than the max depth
+                let str = "'<max depth reached>'";
+                embedIndex += str.length
                 return str;
             }
-            objects.push(obj); // add to list of objects
-            let arr = []; // make array that stores all of this object's properties
-            indentAmount++; // increment indent amount
-            depth++; // increment depth
-
-            embedIndex += 2; // opening brace/bracket+space
-            indexes.push(embedIndex); // embed object after opening brace/bracket
-            embedIndex += (1 + // newline after opening brace/bracket
-                pad.length); // first line pad
-
-            if (Array.isArray(obj)) { // object is an array
-                obj.forEach((item, index) => { // loop through array items
-                    let str = stringify(item);
-                    arr.push(str);
-                    if (index < obj.length - 1) {
-                        embedIndex += 2 + // comma+newline
-                            pad.length; // next line pad
-                    }
+            const type = typeof obj; // store type of object
+            let pad = " ".repeat(indentAmount * 4); // calulate number of spaces to indent
+            if (type == "number" || type == "boolean") { // primitives
+                let str = "" + obj; // convert to string
+                embedIndex += str.length; // add string length to total characters stringified
+                return obj;
+            } else if (type == "function") {
+                objects.push(obj); // add to list of objects
+                let beautified = js_beautify(obj.toString().replaceAll("\r", "")); // beautify function to make tabs equal
+                let splitFunc = beautified.split("\n"); // split formatted function by lines
+                while (splitFunc[1].length == 0) {
+                    splitFunc.splice(1, 1);// remove first line of function body if it's blank (optional)
+                }
+                let padded = splitFunc.map((e, n) => (n > 0 ? pad.substring(4) + e : e + " ")); // indent all lines after first to match current indent amount and add space to end of first line
+                embedIndex += padded[0].length; // length of first line
+                indexes.push(embedIndex);
+                embedIndex += (padded.slice(1).join("\n").length + 1); // length of all lines after first line + newline between 1st and 2nd line
+                return padded.join("\n"); // rejoin function lines and return
+            } else if (type == "string") {
+                let quote;
+                if (!obj.includes('"')) { // if there are no ", wrap with "
+                    quote = '"';
+                } else if (!obj.includes("'")) { // otherwise, if no ', wrap with '
+                    quote = "'";
+                } else if (!obj.includes("`")) {
+                    quote = '`'; // otherwise, if no `, wrap with `
+                } else {
+                    quote = '"'; // otherwise, wrap with "
+                }
+                [
+                    ["\n", "\\n"],
+                    ["\r", "\\r"],
+                    ["\t", "\\t"],
+                    [quote, "\\" + quote], // only escape the quotes that are the same as what the string is wrapped with
+                ].forEach(e => {
+                    obj = obj.replaceAll(e[0], e[1]); // escape quotes and all escape characters
                 });
-                indentAmount--; // decrement indent amount
-                depth--; // decrement depth
-                embedIndex += (1 + // newline before closing bracket
-                    (pad.length - 4) + // end pad
-                    1); // closing bracket
-                return `[ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}]`;
+                let str = `${quote}${obj}${quote}`; // wrap string with quotes
+                embedIndex += str.length; // add to stringified character count
+                return str;
+            } else if (type == "object") {
+                if (objects.includes(obj)) { // prevent recursion by checking objects that have already been stringified
+                    let str = "<already stringified (recursion prevention)>"; // return plain string
+                    embedIndex += str.length; // add to character count
+                    indexes.push(embedIndex); // save index
+                    return str;
+                }
+                objects.push(obj); // add to list of objects
+                let arr = []; // make array that stores all of this object's properties
+                indentAmount++; // increment indent amount
+                depth++; // increment depth
+
+                embedIndex += 2; // opening brace/bracket+space
+                indexes.push(embedIndex); // embed object after opening brace/bracket
+                embedIndex += (1 + // newline after opening brace/bracket
+                    pad.length); // first line pad
+
+                if (Array.isArray(obj)) { // object is an array
+                    obj.forEach((item, index) => { // loop through array items
+                        let str = stringify(item);
+                        arr.push(str);
+                        if (index < obj.length - 1) {
+                            embedIndex += 2 + // comma+newline
+                                pad.length; // next line pad
+                        }
+                    });
+                    indentAmount--; // decrement indent amount
+                    depth--; // decrement depth
+                    embedIndex += (1 + // newline before closing bracket
+                        (pad.length - 4) + // end pad
+                        1); // closing bracket
+                    return `[ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}]`;
+                } else {
+                    if (!obj) { // typeof null === "object"
+                        embedIndex += 4;
+                        return "null";
+                    }
+                    let entries = Object.entries(obj);
+                    entries.forEach(function (kvp, index) {
+                        let [key, value] = kvp;
+                        embedIndex += key.length + // key length
+                            2; // colon+space
+                        let str = stringify(value); // convert value to string
+                        str = `${key}: ${str}`; // create stringified kvp
+                        arr.push(str); // add to array
+                        if (index < entries.length - 1) { // only increment for comma/newlines between lines (1 less than the number of entries)
+                            embedIndex += 2 + // comma+newline
+                                pad.length; // next line pad
+                        }
+                    });
+                    indentAmount--; // decrement indent amount
+                    depth--; // decrement depth
+                    let returnVal = `{ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}}`;
+                    embedIndex += 1 + // newline before closing brace
+                        (pad.length - 4) +  // end pad
+                        1; // closing brace
+                    return returnVal;
+                }
             } else {
-                if (!obj) { // typeof null === "object"
-                    embedIndex += 4;
-                    return "null";
-                }
-                let entries = Object.entries(obj);
-                entries.forEach(function (kvp, index) {
-                    let [key, value] = kvp;
-                    embedIndex += key.length + // key length
-                        2; // colon+space
-                    let str = stringify(value); // convert value to string
-                    str = `${key}: ${str}`; // create stringified kvp
-                    arr.push(str); // add to array
-                    if (index < entries.length - 1) { // only increment for comma/newlines between lines (1 less than the number of entries)
-                        embedIndex += 2 + // comma+newline
-                            pad.length; // next line pad
-                    }
+                let str = "" + obj; // convert to string
+                embedIndex += str.length; // add string length to character count
+                return str;
+            }
+        }
+
+        let element = createElement("div", { innerHTML: Prism.highlight(stringify(object), Prism.languages.javascript).replaceAll("%", "%%") }); // syntax-highlight stringified code and put the result into a div
+
+        const regex = /(?<!%)(%%)*%[co]/g; // regex for matching [co] with odd number of 5 before it
+        const PRISM_CLASSES = [ // list of prism.js classes and their corresponding colors
+            [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
+            [["constant", "property", "symbol", "tag"], "#4fc1ff"],
+            [["number"], "#b5cea8"],
+            [["attr-name", "builtin", "char", "inserted", "selector", "string"], "#ce9178"],
+            [["entity", "url", "variable"], "#f4b73d"],
+            [["atrule", "attr-value", "keyword", "boolean"], "#569cd6"],
+            [["important", "regex"], "#ee9900"],
+            [["deleted"], "#ff0000"],
+            [["function"], "#dcdcaa"],
+            [["parameter"], "#9cdcfe"],
+            [["template-punctuation"], "#ce9178"],
+            [["interpolation-punctuation"], "#ffff00"],// "#ff8800"],
+            [["class-name"], "#4ec9b0"]
+        ];
+
+        function calcStyle(element) { // get calculated color of a text node based off of the classes it has
+            if (!element.style) return; // if element isa text node, return
+            let classList = [...element.classList]; // convert class list to array
+            classList.forEach(clss => { // loop through element classes
+                PRISM_CLASSES.forEach(pclass => { // check against each prism.js class
+                    if (pclass[0].includes(clss)) element.style.color = pclass[1];
                 });
-                indentAmount--; // decrement indent amount
-                depth--; // decrement depth
-                let returnVal = `{ \n${pad + arr.join(",\n" + pad)}\n${pad.substring(4)}}`;
-                embedIndex += 1 + // newline before closing brace
-                    (pad.length - 4) +  // end pad
-                    1; // closing brace
-                return returnVal;
-            }
-        } else {
-            let str = "" + obj; // convert to string
-            embedIndex += str.length; // add string length to character count
-            return str;
-        }
-    }
-
-    let element = createElement("div", { innerHTML: Prism.highlight(stringify(object), Prism.languages.javascript).replaceAll("%", "%%") }); // syntax-highlight stringified code and put the result into a div
-
-    const regex = /(?<!%)(%%)*%[co]/g; // regex for matching [co] with odd number of 5 before it
-    const PRISM_CLASSES = [ // list of prism.js classes and their corresponding colors
-        [["cdata", "comment", "doctype", "prolog"], "#6a9955"],
-        [["constant", "property", "symbol", "tag"], "#4fc1ff"],
-        [["number"], "#b5cea8"],
-        [["attr-name", "builtin", "char", "inserted", "selector", "string"], "#ce9178"],
-        [["entity", "url", "variable"], "#f4b73d"],
-        [["atrule", "attr-value", "keyword", "boolean"], "#569cd6"],
-        [["important", "regex"], "#ee9900"],
-        [["deleted"], "#ff0000"],
-        [["function"], "#dcdcaa"],
-        [["parameter"], "#9cdcfe"],
-        [["template-punctuation"], "#ce9178"],
-        [["interpolation-punctuation"], "#ffff00"],// "#ff8800"],
-        [["class-name"], "#4ec9b0"]
-    ];
-
-    function calcStyle(element) { // get calculated color of a text node based off of the classes it has
-        if (!element.style) return; // if element isa text node, return
-        let classList = [...element.classList]; // convert class list to array
-        classList.forEach(clss => { // loop through element classes
-            PRISM_CLASSES.forEach(pclass => { // check against each prism.js class
-                if (pclass[0].includes(clss)) element.style.color = pclass[1];
             });
-        });
-    }
+        }
 
-    let logs = [];
-    let styles = [];
-    const flattened = flattenChildNodes(element); // get list of all nodes in element
-    flattened.forEach(calcStyle); // manually set style.color for each element based off of its classes
-    if (embedObjects) { // objects will be embedd into the console.log statement for better inspection
-        let index = 0; // current character index
-        let lastPercent = false; // whether the last character was a % (functions as an escape character)
-        function count(node) { // count through each character of the node's textContent and inject a %o
-            let text = ""; // processed text
-            node.textContent.split("").forEach(function (char) {
-                if (char == "\r") return; // completely ignore carriage returns
-                if (index == indexes[0]) { // if current character count is where a %o needs to be injected
-                    indexes.shift(); // remove the inject index
-                    text += "%o"; // inject
+        let logs = [];
+        let styles = [];
+        const flattened = flattenChildNodes(element); // get list of all nodes in element
+        flattened.forEach(calcStyle); // manually set style.color for each element based off of its classes
+        if (embedObjects) { // objects will be embedd into the console.log statement for better inspection
+            let index = 0; // current character index
+            let lastPercent = false; // whether the last character was a % (functions as an escape character)
+            function count(node) { // count through each character of the node's textContent and inject a %o
+                let text = ""; // processed text
+                node.textContent.split("").forEach(function (char) {
+                    if (char == "\r") return; // completely ignore carriage returns
+                    if (index == indexes[0]) { // if current character count is where a %o needs to be injected
+                        indexes.shift(); // remove the inject index
+                        text += "%o"; // inject
+                    }
+                    if (char == "%" && !lastPercent) lastPercent = true; // next character should be escaped
+                    else if (lastPercent) { // if this character should be escaped
+                        lastPercent = false; // character has been escaped
+                        index++; // increment index
+                    } else index++;
+                    text += char; // add character to processed text
+                });
+                node.textContent = text; // set node content to processed text
+            }
+            flattened.forEach(e => { // loop through all nodes and count through the text nodes
+                if (e.nodeName.includes("text")) count(e);
+            });
+        }
+
+        flattened.forEach(e => { // convert text nodes to console log with interleaved formatting
+            if (e.nodeName != "#text") return;
+            logs.push(`%c${e.textContent}`); // push formatting tag and textContent
+            let color = ""; // set color to default
+            if (e.parentNode.style.color) color = `color:${e.parentNode.style.color};`; // if parent node has color, set it
+            styles.push(color); // add style to list
+        });
+        logs = logs.join(""); // join all text nodes into one message
+
+        function regexSplit(string) { // splits a string along REGEX and returns both the matches and split string
+            let str = [], reg = [], match, lastindex = 0, index;
+            while (match = regex.exec(string)) { // while string has match to the regex
+                index = match.index;
+                let kind = match[0], mod = 0; // kind is the string that was matched
+                if (kind.length > 2) { // if match  has more than one %
+                    str[str.length - 1] += kind.substring(0, kind.length - 2); // add extra % to previous split string
+                    mod = kind.length - 2; // offset index by amount of extra %
+                    kind = kind.substring(kind.length - 2);
                 }
-                if (char == "%" && !lastPercent) lastPercent = true; // next character should be escaped
-                else if (lastPercent) { // if this character should be escaped
-                    lastPercent = false; // character has been escaped
-                    index++; // increment index
-                } else index++;
-                text += char; // add character to processed text
-            });
-            node.textContent = text; // set node content to processed text
-        }
-        flattened.forEach(e => { // loop through all nodes and count through the text nodes
-            if (e.nodeName.includes("text")) count(e);
-        });
-    }
-
-    flattened.forEach(e => { // convert text nodes to console log with interleaved formatting
-        if (e.nodeName != "#text") return;
-        logs.push(`%c${e.textContent}`); // push formatting tag and textContent
-        let color = ""; // set color to default
-        if (e.parentNode.style.color) color = `color:${e.parentNode.style.color};`; // if parent node has color, set it
-        styles.push(color); // add style to list
-    });
-    logs = logs.join(""); // join all text nodes into one message
-
-    function regexSplit(string) { // splits a string along REGEX and returns both the matches and split string
-        let str = [], reg = [], match, lastindex = 0, index;
-        while (match = regex.exec(string)) { // while string has match to the regex
-            index = match.index;
-            let kind = match[0], mod = 0; // kind is the string that was matched
-            if (kind.length > 2) { // if match  has more than one %
-                str[str.length - 1] += kind.substring(0, kind.length - 2); // add extra % to previous split string
-                mod = kind.length - 2; // offset index by amount of extra %
-                kind = kind.substring(kind.length - 2);
+                str.push(string.substring(((lastindex + 2) > index ? index : (lastindex + 2)), index)); // push string from (end of last match to beginning of this match) to list
+                lastindex = index + mod; // offset index
+                reg.push(kind); // push %[oc] to matches list
             }
-            str.push(string.substring(((lastindex + 2) > index ? index : (lastindex + 2)), index)); // push string from (end of last match to beginning of this match) to list
-            lastindex = index + mod; // offset index
-            reg.push(kind); // push %[oc] to matches list
+            str.push(string.substring(lastindex + 2)); // add final chunk of string to list of splits
+            return { split: str, matches: reg, };
         }
-        str.push(string.substring(lastindex + 2)); // add final chunk of string to list of splits
-        return { split: str, matches: reg, };
-    }
 
-    let { matches, split } = regexSplit(logs), final = [], finalStyles = [];
-    while (matches.length > 0) {
-        let type = matches.shift(); // get %[oc] from list
-        final.push(split.shift() || ""); // add first split string to list
-        final.push(type); // push %[oc] to list
-        if (type == "%o") finalStyles.push(objects.shift() || ""); // if %[oc] is %o, push object
-        else finalStyles.push(styles.shift() || ""); // else, push style
-    }
-    while (split.length > 0) final.push(split.shift()); // push all remaining strings
-    while (embedObjects && objects.length > 0) finalStyles.push(objects.shift()); // push all remaining objects
-    while (styles.length > 0) finalStyles.push(styles.shift()); // push all remaining styles
-    function checkExtraLogs() {
-        if (extra_logs.length > 0) {
-            extra_logs.forEach(e => console.log(e));
+        let { matches, split } = regexSplit(logs), final = [], finalStyles = [];
+        while (matches.length > 0) {
+            let type = matches.shift(); // get %[oc] from list
+            final.push(split.shift() || ""); // add first split string to list
+            final.push(type); // push %[oc] to list
+            if (type == "%o") finalStyles.push(objects.shift() || ""); // if %[oc] is %o, push object
+            else finalStyles.push(styles.shift() || ""); // else, push style
         }
-    }
-    final = final.join(""); // join array into one message
-    if (raw) return { logs: final, styles: finalStyles, html: element.outerHTML } // return raw results without logging to console
-    else {
-        if (collapsed) { // if console log should be inside collapsed console group
-            console.groupCollapsed(label); // create collapsed group
-            checkExtraLogs(); // log any extra messages
-            console.log(final, ...finalStyles); // log formatted message
-            console.groupEnd(); // end group
-        } else console.log(final, ...finalStyles); // log formatted message
+        while (split.length > 0) final.push(split.shift()); // push all remaining strings
+        while (embedObjects && objects.length > 0) finalStyles.push(objects.shift()); // push all remaining objects
+        while (styles.length > 0) finalStyles.push(styles.shift()); // push all remaining styles
+        function checkExtraLogs() {
+            if (extra_logs.length > 0) {
+                extra_logs.forEach(e => console.log(e));
+            }
+        }
+        final = final.join(""); // join array into one message
+        if (raw) return { logs: final, styles: finalStyles, html: element.outerHTML } // return raw results without logging to console
+        else {
+            if (collapsed) { // if console log should be inside collapsed console group
+                console.groupCollapsed(label); // create collapsed group
+                checkExtraLogs(); // log any extra messages
+                console.log(final, ...finalStyles); // log formatted message
+                console.groupEnd(); // end group
+            } else console.log(final, ...finalStyles); // log formatted message
+        }
     }
 }
 
