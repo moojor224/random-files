@@ -11,7 +11,8 @@
             "jstools",
             "chartjs",
             "chromajs",
-            "dayjs"
+            "dayjs",
+            "jstree"
         ],
         "baseUrl": "../"
     },
