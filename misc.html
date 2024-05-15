@@ -304,8 +304,10 @@
         };
         navigator.serviceWorker.addEventListener('message', event => console.log(event.data));
     </script>
+    <input-slider checked="true"></input-slider>
     <script type="module">
-        import { settings } from "./js/jstools.js";
+        import { settings, CUSTOM_ELEMENTS } from "./js/jstools.js";
+        CUSTOM_ELEMENTS.all();
         console.log(settings);
         import { loadFormatters } from "/js/custom formatters/loader.js";
         loadFormatters();
