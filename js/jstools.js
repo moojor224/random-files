@@ -2441,13 +2441,14 @@ export const CUSTOM_ELEMENTS = (function () {
                     }
                 `;
                 this.shadowRoot.innerHTML = /*html*/`
-                <style>${CSS}</style>
-                <div class="slider" checked="${this.#checked}">
-                    <div class="dot">
-                        <div class="on-text"><span></span></div>
-                        <div class="off-text"><span></span></div>
+                    <style>${CSS}</style>
+                    <div class="slider" checked="${this.#checked}">
+                        <div class="dot">
+                            <div class="on-text"><span></span></div>
+                            <div class="off-text"><span></span></div>
+                        </div>
                     </div>
-                </div>`;
+                `;
                 this.addEventListener("click", () => {
                     let newChecked = !(this.shadowRoot.querySelector(".slider").getAttribute("checked") == "true");
                     this.shadowRoot.querySelector(".slider").setAttribute("checked", newChecked);
