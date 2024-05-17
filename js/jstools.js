@@ -2470,76 +2470,8 @@ export const CUSTOM_ELEMENTS = (function () {
             }
         });
     }
-    function larr() {
-        customElements.define("arrow-left", class extends HTMLElement {
-            constructor() {
-                super();
-                this.attachShadow({ mode: "open" });
-                this.shadowRoot.innerHTML = /*html*/`
-                    <style>
-                        :host{
-                            display: inline-grid;
-                            justify-content: center;
-                            align-items: center;
-                            grid-template-columns: auto auto;
-                        }
-                        .div1 {
-                            display: inline-block;
-                            width: 0;
-                            height: 0;
-                            border-top: 10px solid transparent;
-                            border-bottom: 10px solid transparent;
-                            border-right: 10px solid black;
-                        }
-                        .div2{
-                            height: 10px;
-                            width: 10px;
-                            background-color: black;
-                        }
-                    </style>
-                    <div class="div1"></div>
-                    <div class="div2"></div>
-                `;
-            }
-        });
-    }
-    function rarr() {
-        customElements.define("arrow-right", class extends HTMLElement {
-            constructor() {
-                super();
-                this.attachShadow({ mode: "open" });
-                this.shadowRoot.innerHTML = /*html*/`
-                    <style>
-                        :host{
-                            display: inline-grid;
-                            justify-content: center;
-                            align-items: center;
-                            grid-template-columns: auto auto;
-                        }
-                        .div1 {
-                            display: inline-block;
-                            width: 0;
-                            height: 0;
-                            border-top: 10px solid transparent;
-                            border-bottom: 10px solid transparent;
-                            border-left: 10px solid black;
-                        }
-                        .div2{
-                            height: 10px;
-                            width: 10px;
-                            background-color: black;
-                        }
-                    </style>
-                    <div class="div2"></div>
-                    <div class="div1"></div>
-                `;
-            }
-        });
-    }
     function all() {
         slider();
-        larr();
-        rarr();
     }
-    return { all, slider, larr };
+    return { all, slider };
 })();
