@@ -218,7 +218,7 @@ export function clearWarn(...selectors) {
  * @param  {...any} selectors elements to add error message to
  */
 export function error(str, ...selectors) {
-    clearWarn(...selectors);
+    clearError(...selectors);
     let w = createElement("error", {
         innerHTML: str
     });
