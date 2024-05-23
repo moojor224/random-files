@@ -69,9 +69,7 @@ if (createElement === undefined) { // this is done to allow typescript type defi
             } else if (emmet && emmet.expandAbbreviation && typeof emmet.expandAbbreviation == "function") { // if emmet.expandAbbreviation is defined
                 div.innerHTML = emmet.expandAbbreviation(tag); // expand abbreviation
             }
-            /**
-             * @type {HTMLElement[]}
-             */
+            /** @type {HTMLElement[]} */
             let arr = Array.from(div.children);
             return arr.length == 1 ? arr[0] : arr; // if only 1 top-level element was generated, return it, else return whole array
         }
@@ -123,9 +121,9 @@ export { createElement };
 function add(...args) {
     args.forEach(elem => {
         if (typeof elem == "string") {
-            this.insertAdjacentHTML("beforeend", elem);
+            this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
         } else {
-            this.append(elem);
+            this.append(elem); // append element
         }
     });
     return this;
@@ -147,27 +145,27 @@ Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWit
  */
 Object.defineProperty(HTMLElement.prototype, "isVisible", {
     get: function () {
-        if (this === document.documentElement) {
+        if (this === document.documentElement) { // node is the root node
             return true;
         }
-        if (!this.parentNode) {
+        if (!this.parentNode) { // node has no parent (not attached to page)
             return false;
         }
-        let style = window.getComputedStyle ? window.getComputedStyle(this) : this.currentStyle;
+        let style = window.getComputedStyle ? window.getComputedStyle(this) : this.currentStyle; // get current computed style
         return !(
-            style.display === "none" ||
+            style.display === "none" || // node is hidden via css
             style.visibility === "hidden" ||
             style.opacity == "0"
         ) &&
-            this.parentNode.isVisible &&
+            this.parentNode.isVisible && // make sure parent node is visible
             (function () {
-                let bounds = this.getBoundingClientRect();
-                let html = document.documentElement, body = document.body;
-                let viewport = {
+                let bounds = this.getBoundingClientRect();  // get position of element
+                let html = document.documentElement, body = document.body; // get html and body elements
+                let viewport = { // get viewport dimensions and position
                     width: Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth),
                     height: Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight)
                 };
-                return bounds.left >= 0 &&
+                return bounds.left >= 0 && // check if element is within viewport
                     bounds.top >= 0 &&
                     bounds.right <= viewport.width &&
                     bounds.bottom <= viewport.height;
@@ -175,16 +173,14 @@ Object.defineProperty(HTMLElement.prototype, "isVisible", {
     }
 });
 
-// window.HTMLSelectElement.prototype.add = add;
-
 /**
  * adds a warning message to the specified elements
  * @param {String} str message to display
  * @param  {...any} selectors elements to add warning message to
  */
-export function warn(str, ...selectors) {
-    clearWarn(...selectors);
-    let w = createElement("warn", {
+export function warn(str = "!", ...selectors) {
+    clearWarn(...selectors); // clear any existing warnings
+    let w = createElement("warn", { // create warning element
         innerHTML: str
     });
     selectors.forEach(s => {
@@ -206,8 +202,8 @@ export function clearWarn(...selectors) {
         if (typeof s === "string") {
             el = document.querySelector(s);
         }
-        for (let e of el.children) {
-            if (e.tagName.toLowerCase() == "warn") { // only remove warning messages that are children of this element
+        for (let e of el.children) { // only remove warning messages that are children of this element
+            if (e.tagName.toLowerCase() == "warn") {
                 e.remove();
             }
         }
@@ -243,8 +239,8 @@ export function clearError(...selectors) {
         if (typeof s === "string") {
             el = document.querySelector(s);
         }
-        for (let e of el.children) {
-            if (e.tagName.toLowerCase() == "error") { // only remove error messages that are children of this element
+        for (let e of el.children) { // only remove error messages that are children of this element
+            if (e.tagName.toLowerCase() == "error") {
                 e.remove();
             }
         }
@@ -311,7 +307,15 @@ export function clear(...selectors) {
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function disable(message, ...selectors) {
-    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).setAttribute("disabled", message);
+    for (let s of selectors) {
+        let el;
+        if (typeof s == "string") {
+            el = document.querySelector(s);
+        } else {
+            el = s;
+        }
+        el.setAttribute("disabled", message);
+    }
 }
 
 /**
@@ -319,7 +323,15 @@ export function disable(message, ...selectors) {
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function enable(...selectors) {
-    for (let s of selectors) (typeof s == "string" ? document.querySelector(s) : s).removeAttribute("disabled");
+    for (let s of selectors) {
+        let el;
+        if (typeof s == "string") { // if s is a string (css selector)
+            el = document.querySelector(s);
+        } else {
+            el = s;
+        }
+        el.removeAttribute("disabled");
+    }
 }
 
 /**
@@ -342,21 +354,21 @@ export function tabColor(color) {
     c.width = 1; // set favicon dimensions
     c.height = 1; // 1x1 is fine since it's a solid color
     let ctx = c.getContext("2d");
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, 128, 128);
-    let link = document.querySelector("link[rel=icon]") || document.createElement("link");
-    link.href = c.toDataURL();
-    link.rel = "icon";
-    document.head.append(link);
+    ctx.fillStyle = color; // set color
+    ctx.fillRect(0, 0, 128, 128); // fill canvas with color
+    let link = document.querySelector("link[rel=icon]") || document.createElement("link"); // find favicon link or create new one
+    link.href = c.toDataURL(); // convert to base64
+    link.rel = "icon"; // set rel
+    document.head.append(link); // append new element
 }
 
 /**
  * parses cookies into a hashmap\
- * doesn't always work well; just use a library for this
+ * doesn't always work well. just use a library for this
  * @param {string} [cookies=document.cookie] cookies to parse
  * @returns {Map} hashmap of all cookies
  */
-export function parseCookies(cookies = document.cookie) {
+function parseCookies(cookies = document.cookie) {
     console.log(cookies);
     let reading = !1;
     let escaped = !1;
@@ -481,7 +493,7 @@ export function advancedDynamicSort(...properties) {
  * @param {Object[]} colors array of rgb colors
  * @returns {string}
  */
-export function rgbGradient(
+export function rgbMix(
     p,
     colors = [
         { r: 0xff, g: 0, b: 0 }, // 0% red
@@ -541,7 +553,7 @@ export function gradient(count, colors = [
         return [`rgb(${r},${g},${b})`];
     }
     let arr = new Array(count).fill(""); // make array of how many colors you need
-    arr = arr.map((e, n) => rgbGradient(map(n, 0, count - 1, 0, 100), colors)); // fill array with colors
+    arr = arr.map((e, n) => rgbMix(map(n, 0, count - 1, 0, 100), colors)); // fill array with colors
     return arr;
 }
 
@@ -653,11 +665,11 @@ function convertTime(b) {
  * @returns {string} value of css variable
  */
 export function getColor(varname, ...append) {
-    let color = getComputedStyle(document.querySelector(":root")).getPropertyValue(varname);
-    if (color.match(/^#[a-zA-Z0-9]{3}$/g)) {
-        color = "#" + color.substring(1).split("").map(e => e.padStart(e, 2)).join("") + append.join("");
+    let color = getComputedStyle(document.querySelector(":root")).getPropertyValue(varname); //  get css variable value
+    if (color.match(/^#[a-zA-Z0-9]{3}$/g)) { // check if color is 3-digit hex
+        color = "#" + color.substring(1).split("").map(e => e.padStart(e, 2)).join("") + append.join(""); // convert color  to 6-digit hex
     }
-    return color + append.join("");
+    return color + append.join(""); // append is mostly useless
 }
 
 /**
@@ -708,12 +720,7 @@ export function listAllColorsOnPage() {
     }
 
     function rgbToHex(rgb) {
-        return "#" + rgb.replaceAll(/[^0-9\.,]/g, "").split(",").map((e, n) => parseInt(e * (n == 3 ? 255 : 1)).toString(16).padStart(2, e)).join("");
-    }
-    rgbToHex("rgba(255, 255, 255, 0.5)");
-
-    function flattenChildren(item) {
-        return [item, ...([...item.children]?.flatMap((e) => flattenChildren(e)) || [])];
+        return "#" + rgb.replaceAll(/[^0-9\.]/g, " ").replaceAll("  ", " ").trim().split(" ").map((e, n) => parseInt(e * (n == 3 ? 255 : 1)).toString(16).padStart(2, e)).join("");
     }
 
     function getColor(rgb) {
@@ -721,17 +728,17 @@ export function listAllColorsOnPage() {
         return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
     }
 
-    let colorProps = ["backgroundColor", "color"];
+    let colorProps = ["backgroundColor", "color"]; // which properties to search for colors in
 
     function displayResults(array) {
         array.forEach(e => {
-            console.groupCollapsed(`%c${rgbToHex(e.value)} (${(e.varName)})`, `
-    color: ${getColor(e.value)};
-    background-color: ${e.value};
-    padding: 20px;
-    line-height: 60px;
-    font-size: 20px;
-    `);
+            console.groupCollapsed(`%c${rgbToHex(e.value)} (${(e.varName)})`, /*STYLE*/`
+                color: ${getColor(e.value)};
+                background-color: ${e.value};
+                padding: 20px;
+                line-height: 60px;
+                font-size: 20px;
+            `);
             colorProps.forEach(prop => {
                 if (e[prop].length > 0) {
                     console.groupCollapsed("%c " + prop, "font-size: 20px;");
@@ -777,7 +784,10 @@ export function listAllColorsOnPage() {
  * @returns {Number} number clamped to range
  */
 export function clamp(val, min, max) {
-    return (((min > max) ? ([min, max] = [max, min]) : 0), (val < min ? min : val > max ? max : val));
+    if (min > mx) { // make sure min is less than max
+        [min, max] = [max, min];
+    }
+    return (val < min ? min : val > max ? max : val);
 }
 
 /**
@@ -874,6 +884,7 @@ function convertBase(str, fromBase, toBase) {
 // get settings not loading settings
 // ^honestly don't know what ths means, but it's funny, so I'm leaving it
 
+// initailize devtools formatters array if it doesn't exist
 if (!Array.isArray(window.devtoolsFormatters)) {
     window.devtoolsFormatters = [];
 }
@@ -881,8 +892,8 @@ if (!Array.isArray(window.devtoolsFormatters)) {
 let settingsFormatter = {
     label: "settings formatter",
     header: function (obj) {
-        if (obj instanceof Settings) {
-            return ['div', { style: 'font-weight: bold' }, `Settings: ${obj.config.name}`];
+        if (obj instanceof Settings) { // return header if object is a Settings object
+            return ['div', { style: 'font-weight:bold;' }, `Settings: `, ["span", { style: "font-style:italic;" }, obj.config.name]];
         }
         return null;
     },
@@ -892,15 +903,18 @@ let settingsFormatter = {
     body: function (obj) {
         if (obj instanceof Settings) {
             return ["div", {}, ...obj.sections.map(section => {
-                return ["object", {
-                    object: section
-                }]
+                return [
+                    "div",
+                    ["object", {
+                        object: section // embed section object
+                    }]
+                ]
             })];
         }
         return null;
     }
 };
-if (!window.devtoolsFormatters.includes(settingsFormatter)) {
+if (!window.devtoolsFormatters.includes(settingsFormatter)) { // only add one instance of the formatter
     window.devtoolsFormatters.push(settingsFormatter);
 }
 let Settings = window.Settings;
@@ -961,7 +975,7 @@ if (Settings === undefined) {
                 return value;
             }));
             data.sections.forEach(sec => {
-                sec.options.forEach(e => delete e.input)
+                sec.options.forEach(e => delete e.input) // remove input element
             });
             return JSON.stringify(data);
         }
@@ -983,7 +997,6 @@ if (Settings === undefined) {
          * @param {Function} callback callback function
          */
         on(type, callback) {
-            // console.log("on", this.#listeners);
             this.addEventListener(type, callback);
         }
 
@@ -994,7 +1007,6 @@ if (Settings === undefined) {
          * @param {Function} callback callback function
          */
         off(type, callback) {
-            // console.log("off", this.#listeners);
             this.removeEventListener(type, callback);
         }
 
@@ -1064,19 +1076,19 @@ if (Settings === undefined) {
 let sectionFormatter = {
     label: "section formatter",
     header: function (obj) {
-        if (obj instanceof Section) {
-            return ["div", {
-                style: "border:1px solid #000;border-radius:9px;padding-top:10px;background-color:#454d55;width:300px;display:inline-block;color:white"
-            }, ["div", { style: "padding:0 10px;display: block;font-size:1.5em;font-weight:bold;margin-block-start:.83em;margin-block-end:.83em" }, obj.config.name],
-                ...obj.options.map(option => {
+        if (obj instanceof Section) { // return header if object is a Section object
+            return ["div", { // main wrapper div
+                style: "border:1px solid #000;border-radius:9px;padding-top:10px;background-color:#454d55;width:300px;color:white"
+            }, ["div", { style: "padding:0 10px;display: block;font-size:1.5em;font-weight:bold;margin-block-start:.83em;margin-block-end:.83em" }, obj.config.name], // "h2"
+                ...obj.options.map(option => { // each option
                     return [
-                        "div",
+                        "div", // "label"
                         { style: "border-top:1px solid #000;width:100%;display:flex;justify-content:space-between;padding:10px;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;" },
                         ["span", {}, option.config.name],
                         ["div", {}, ["span", { style: "float:right" }, (function () {
                             if (Array.isArray(option.config.values)) {
                                 return ["object", {
-                                    object: {
+                                    object: { // dropdown list of values
                                         __expandable: true,
                                         title: option.config.value,
                                         contents: [
@@ -1107,7 +1119,7 @@ let sectionFormatter = {
         }
     }
 };
-if (!window.devtoolsFormatters.includes(sectionFormatter)) {
+if (!window.devtoolsFormatters.includes(sectionFormatter)) { // only add one instance of the formatter
     window.devtoolsFormatters.push(sectionFormatter);
 }
 let Section = window.Section;
@@ -1424,7 +1436,7 @@ export function consoleButton(obj, func, args = [], label = "button", width = 50
 let buttonFormatter = { // button formatter
     header: function (obj) {
         if (obj.__button) {
-            return ["div", {
+            return ["div", { // the button itself
                 style: `width:${obj.width}px;height:${obj.height}px;border:1px solid red;background-color:white;text-align:center;cursor:pointer;color:black;padding:5px;`
             }, ["span", {}, obj.label]];
         }
@@ -1435,7 +1447,7 @@ let buttonFormatter = { // button formatter
         return null;
     },
     body: function (obj) {
-        if (obj.__button) {
+        if (obj.__button) { // call function when button is "clicked" (expanded)
             try { obj.obj[obj.func](...obj.args); } catch (e) { }
             return ["div", {}];
         }
@@ -1465,17 +1477,18 @@ if (!window.devtoolsFormatters.includes(buttonFormatter)) {
 export function copyObject(obj) {
     let result = obj;
     var type = {}.toString.call(obj).slice(8, -1);
-    if (type == 'Set') return new Set([...obj].map(value => copyObject(value)));
-    if (type == 'Map') return new Map([...obj].map(kv => [copyObject(kv[0]), copyObject(kv[1])]));
-    if (type == 'Date') return new Date(obj.getTime());
-    if (type == 'RegExp') return RegExp(obj.source, getRegExpFlags(obj));
-    if (type == 'Array' || type == 'Object') {
-        result = Array.isArray(obj) ? [] : {};
-        for (var key in obj) {
-            result[key] = copyObject(obj[key]);
+    if (type == 'Set') return new Set([...obj].map(value => copyObject(value))); // convert list of values to array and copy each value
+    if (type == 'Map') return new Map([...obj].map(kv => [copyObject(kv[0]), copyObject(kv[1])])); // convert map to array of key-value pairs and copy each pair
+    if (type == 'Date') return new Date(obj.getTime()); // make new date from epoch time
+    if (type == 'RegExp') return RegExp(obj.source, getRegExpFlags(obj)); // make new regexp from source pattern and flags
+    if (type == 'Array' || type == 'Object') { // arrays are just objects whose keys are entirely numeric
+        result = Array.isArray(obj) ? [] : {}; // make new array or object
+        for (var key in obj) { // loop through each value or key in the object
+            result[key] = copyObject(obj[key]); // copy and apply each value or key to the new object
         }
     }
-    return result;
+    // any other data types that make it through are pass-by-value, so they don't need to be copied
+    return result; // return copied object
 }
 
 function getRegExpFlags(regExp) {
