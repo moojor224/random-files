@@ -94,6 +94,7 @@ if (createElement === undefined) { // this is done to allow typescript type defi
         return tag; // return result
     }
 }
+
 export { createElement };
 
 /**
@@ -129,6 +130,7 @@ function add(...args) {
     });
     return this;
 };
+
 if (window.HTMLElement.prototype.add === undefined) {
     window.HTMLElement.prototype.add = add;
 }
