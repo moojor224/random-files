@@ -247,37 +247,43 @@ export function clearError(...selectors) {
     });
 }
 
-
-/**
- * hides the given elements
- * @param  {...(String|Element)} selectors list of css selectors or elements
- */
-export function hide(...selectors) {
+function showHide(clss, selectors, mode) {
+    let all = [];
     for (let s of selectors) {
         let el;
         if (typeof s == "string") {
-            el = [...document.querySelectorAll(s)];
+            el = [...document.querySelectorAll(s)]; // query all elements that match the selector
         } else {
-            el = [s];
+            el = [s]; // if s is an element, convert it to an array
         }
-        el.forEach(e => e.classList.add("hidden")); // loop through given elements/selectors and add the hidden class
+        all.push(...el); // add queried elements to all array
+        el.forEach(e => e.classList[mode](clss)); // loop through given elements/selectors and remove the hidden class
+    }
+    return {
+        config: function (...clss) { // add or remove additional classes
+            clss.forEach(c => all.forEach(e => e.classList[mode](c)));
+            return this;
+        },
+        get elements() {
+            return all;
+        }
     }
 }
 
 /**
- * shows the given elements
+ * hides the given elements by adding the class "hidden"
+ * @param  {...(String|Element)} selectors list of css selectors or elements
+ */
+export function hide(...selectors) {
+    return showHide("hidden", selectors, "add");
+}
+
+/**
+ * shows the given elements by removing the class "hidden"
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function show(...selectors) {
-    for (let s of selectors) {
-        let el;
-        if (typeof s == "string") {
-            el = [...document.querySelectorAll(s)];
-        } else {
-            el = [s];
-        }
-        el.forEach(e => e.classList.remove("hidden")); // loop through given elements/selectors and remove the hidden class
-    }
+    return showHide("hidden", selectors, "remove");
 }
 
 /**
