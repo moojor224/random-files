@@ -333,42 +333,7 @@ export function tabColor(color) {
  * @returns {Map} hashmap of all cookies
  */
 function parseCookies(cookies = document.cookie) {
-    console.log(cookies);
-    let reading = !1;
-    let escaped = !1;
-    let quoted = NaN;
-    let key = "";
-    let value = "";
-    let map = new Map();
-    cookies.trim().split("").forEach((e) => {
-        if (escaped) {
-            value += e;
-            escaped = false;
-        } else if (reading) {
-            if (quoted == NaN) {
-                quoted = e == '"';
-                if (!quoted) {
-                    value += e;
-                }
-            } else if ((e == '"' && quoted) || (e == ";" && !quoted)) {
-                quoted = NaN;
-                map.set(key.trim(), value);
-                reading = false;
-                value = "";
-                key = "";
-            } else {
-                value += e;
-            }
-        } else if (e == "=") {
-            reading = true;
-        } else {
-            key += e;
-        }
-    });
-    if (key != "") {
-        map.set(key.trim(), value);
-    }
-    return map;
+    throw new Error("not implemented");
 }
 
 /**
