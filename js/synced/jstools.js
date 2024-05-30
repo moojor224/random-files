@@ -1,6 +1,6 @@
-import { devlog } from "./dev-helper.js";
-import { Prism } from "./prism.js";
-import { js_beautify } from "./beautify.js";
+import { devlog } from "../dev-helper.js";
+import { Prism } from "../prism.js";
+import { js_beautify } from "../beautify.js";
 
 Math.roundf = (v, t) => Math.round(v * t) / t;
 
@@ -37,27 +37,6 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
             (l[i] = c));
     waitForKeyElements.controlObj = l;
 } //wait for key elements
-
-/*
- * takes in a string and object, and returns an HTMLElement with tag "tag" and properties defined by data\
- * OR\
- * takes in an object and merges the properties from data into it
- * @param {(string|object)} tag html tag name, or object to apply properties to
- * @param {object} data object with properties to be applied
- * @returns {HTMLElement}
- * @example
- * createElement("div", {
- *      innerHTML: "Text Here",
- *      style: {
- *          color: red,
- *          fontSize: "20px",
- *          padding: "3px"
- *      },
- *      dataset: {
- *          title: "title"
- *      }
- * });// <div style="color: red; font-size: 20px; padding: 3px;" data-title="title">Text Here</div>
- */
 
 let createElement = window.createElement;
 if (createElement === undefined) { // this is done to allow typescript type definitions in index.d.ts to work
@@ -247,36 +226,13 @@ export function clearError(...selectors) {
     });
 }
 
-function showHide(clss, selectors, mode) {
-    console.log(clss, selectors, mode);
-    let all = [];
-    for (let s of selectors) {
-        let el;
-        if (typeof s == "string") {
-            el = [...document.querySelectorAll(s)]; // query all elements that match the selector
-        } else {
-            el = [s]; // if s is an element, convert it to an array
-        }
-        all.push(...el); // add queried elements to all array
-        el.forEach(e => e.classList[mode](clss)); // loop through given elements/selectors and remove the hidden class
-    }
-    return {
-        config: function (...clss) { // add or remove additional classes
-            clss.forEach(c => all.forEach(e => e.classList[mode](c)));
-            return this;
-        },
-        get elements() {
-            return all;
-        }
-    }
-}
+import { bulkElements } from "./bulkElements.js";
 
 /**
  * hides the given elements by adding the class "hidden"
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function hide(...selectors) {
-    // return showHide("hidden", selectors, "add");
     bulkElements(...selectors).classList.add("hidden");
 }
 
@@ -285,7 +241,6 @@ export function hide(...selectors) {
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function show(...selectors) {
-    // return showHide("hidden", selectors, "remove");
     bulkElements(...selectors).classList.remove("hidden");
 }
 
