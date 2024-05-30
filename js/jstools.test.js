@@ -1,4 +1,4 @@
-import { logFormatted } from './jstools.js';
+import { logFormatted } from "./synced/jstools.js";
 
 describe('logFormatted', () => {
     let consoleLogSpy;
