@@ -248,6 +248,7 @@ export function clearError(...selectors) {
 }
 
 function showHide(clss, selectors, mode) {
+    console.log(clss, selectors, mode);
     let all = [];
     for (let s of selectors) {
         let el;
@@ -275,7 +276,8 @@ function showHide(clss, selectors, mode) {
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function hide(...selectors) {
-    return showHide("hidden", selectors, "add");
+    // return showHide("hidden", selectors, "add");
+    bulkElements(...selectors).classList.add("hidden");
 }
 
 /**
@@ -283,7 +285,8 @@ export function hide(...selectors) {
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
 export function show(...selectors) {
-    return showHide("hidden", selectors, "remove");
+    // return showHide("hidden", selectors, "remove");
+    bulkElements(...selectors).classList.remove("hidden");
 }
 
 /**

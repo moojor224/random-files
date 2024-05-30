@@ -36,8 +36,8 @@ function computeDiff(originalTextLines, modifiedTextLines, options, algorithm) {
     return result;
 }
 
-// let linesBefore = (await fetch("/js/jstools.js").then(e=>e.text())).split("\n");
-// let linesAfter = (await fetch("/js/jstools.golfed.js").then(e=>e.text())).split("\n");
+// let linesBefore = (await fetch("/js/synced/jstools.js").then(e=>e.text())).split("\n");
+// let linesAfter = (await fetch("/js/synced/jstools.golfed.js").then(e=>e.text())).split("\n");
 
 // let computed = computeDiff(linesBefore, linesAfter, {
 //     shouldPostProcessCharChanges: true,
@@ -59,8 +59,8 @@ String.prototype.replaceIndex = function (start, end, replacer) {
     }
     return before + replacer + after;
 }
-let stringBefore = (await fetch("/js/jstools.js").then(e => e.text())).replaceAll("<", "&lt;"),
-    stringAfter = (await fetch("/js/jstools.golfed.js").then(e => e.text())).replaceAll("<", "&lt;");
+let stringBefore = (await fetch("/js/synced/jstools.js").then(e => e.text())).replaceAll("<", "&lt;"),
+    stringAfter = (await fetch("/js/synced/jstools.golfed.js").then(e => e.text())).replaceAll("<", "&lt;");
 let stringDiff = vscdiff.stringDiff(stringBefore, stringAfter).sort(advancedDynamicSort("-originalStart"));
 // console.log("stringDiff", stringDiff);
 let finalBefore = [], finalAfter = [];
