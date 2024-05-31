@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/themes/default/style.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="./js/jstree.min.js"></script>
+    <style>
+        #preview {
+            background-color: #0d1117;
+            color: white;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            white-space: pre;
+            font-family: monospace;
+            display: inline-block;
+        }
+        #preview:empty {
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: absolute;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <button id="button">send request</button>
+    <div id="tree"></div>
+    <div id="preview"></div>
+    <div class="modal"></div>
+    <script type="module">
+        import { Octokit } from "https://esm.sh/@octokit/core";
+
+        const key = "";
+        const octokit = new Octokit({ auth: key });
+        const user = "moojor224";
+
+        document.getElementById("button").addEventListener("click", async () => {
+            let repository = await octokit.request("GET /repos/{owner}/{repo}/contents/", {
+                owner: user,
+                repo: "tampermonkey-scripts",
+                headers: {
+                    "X-GitHub-Api-Version": "2022-11-28"
+                }
+            })
+            // console.log(repository);
+            let files = repository.data;
+            console.log(files);
+            async function convertToNode(file, parent = "#") {
+                let node = {
+                    id: file.sha,
+                    text: file.name,
+                    type: file.type,
+                    data: {
+                        path: file.path,
+                        url: file.url
+                    }
+                };
+                if (file.type === "dir") {
+                    node.children = await Promise.all(await getFolder(file.path).then(folder => {
+                        return folder.data.map(file => {
+                            return convertToNode(file, node.id);
+                        });
+                    }))
+                }
+                return node;
+            }
+            async function getFolder(folder) {
+                return await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", {
+                    owner: user,
+                    repo: "tampermonkey-scripts",
+                    path: folder,
+                    headers: {
+                        "X-GitHub-Api-Version": "2022-11-28"
+                    }
+                });
+            }
+            let tree = await Promise.all(files.map(async file => {
+                let node = await convertToNode(file);
+                return node;
+            }));
+            // console.log(tree);
+            $("#tree").jstree({
+                core: {
+                    data: tree,
+                    multiple: false,
+                }
+            });
+            $("#tree").on("select_node.jstree", function (event, data) {
+                let node = $("#tree").jstree(true).get_node(data.node.id);
+                // console.log(node);
+                if (node.original.type !== "file") return;
+                let preview = document.getElementById("preview");
+                if (node.data.contents) {
+                    preview.innerHTML = node.data.contents;
+                } else {
+                    document.querySelector(".modal").style.display = "block";
+                    fetch(node.data.url, {
+                        owner: user,
+                        repo: "tampermonkey-scripts",
+                        path: node.text,
+                        headers: {
+                            Accept: "application/vnd.github.v3+json",
+                            "Accept-Encoding": "gzip, deflate, br, zstd",
+                            "Accept-Language": "en-US,en;q=0.5",
+                            authorization: `token ${key}`,
+                            Connection: "keep-alive",
+                            "User-Agent": "octokit-core.js/6.1.2 Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
+                            "X-GitHub-Api-Version": "2022-11-28",
+                        }
+                    }).then(r => r.json()).then(file => {
+                        // console.log(file);
+                        document.querySelector(".modal").style.display = "none";
+                        preview.innerHTML = atob(file.content);
+                        node.data.contents = preview.innerHTML;
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

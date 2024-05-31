@@ -1,3 +1,5 @@
+import { clear } from "./jstools.js";
+
 const isSelectorValid = (selector) => {
     try {
         document.createDocumentFragment().querySelector(selector)
@@ -52,5 +54,14 @@ export function bulkElements(...selectors) {
             },
         },
         style: makeProxy("style"),
+        get innerHTML() {
+            return elements.map(e => e.innerHTML);
+        },
+        set innerHTML(value) {
+            elements.forEach(e => e.innerHTML = value);
+        },
+        clear: function () {
+            elements.forEach(e => clear(e));
+        }
     };
 }
