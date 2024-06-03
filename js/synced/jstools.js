@@ -40,6 +40,17 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
 
 let createElement = window.createElement;
 if (createElement === undefined) { // this is done to allow typescript type definitions in index.d.ts to work
+    {
+        // minified createElement
+        // @ts-format-ignore-region
+        let createElement = (t,D)=>(p=e=>typeof e,c=(T,d=
+        {})=>(T=p(T)[1]=="t"?document.createElement(T):T,
+        Object.keys(d).map(e=>(p(d[e])[0]=="o"?c(T[e]||
+        (T[e]={}),d[e]):(T instanceof window.Element?(e[s=
+        "substring"](0,2)=="on"&&p(d[e])[0]=="f"?T.addEventListener
+        (e[s](2),d[e]):T[e]=d[e]):(T[e]=d[e])))),T),c(t,D))
+        // @ts-format-ignore-endregion
+    }
     createElement = function (tag, data = {}) {
         if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) { // if tag is a string and string includes non alphanumeric characters, parse as emmet string
             let div = createElement("div"); // create temporary parent node
