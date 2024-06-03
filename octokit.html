@@ -43,8 +43,8 @@
     <div class="modal"></div>
     <script type="module">
         import { Octokit } from "https://esm.sh/@octokit/core";
+        import {key} from "./auth.js";
 
-        const key = "";
         const octokit = new Octokit({ auth: key });
         const user = "moojor224";
 
