@@ -2452,3 +2452,79 @@ export const CUSTOM_ELEMENTS = (function () {
     }
     return { all, slider };
 })();
+
+export class jst_CSSRule {
+    static checkValidSelector(selector) {
+        selector = selector.trim();
+        if (typeof selector != "string") return false;
+        if (selector.length == 0) return false;
+        try {
+            let sheet = new CSSStyleSheet();
+            sheet.insertRule(selector + "{}");
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * @param {string} selector
+     * @param {Object} styles
+     */
+    constructor(selector, styles) {
+        let validStyles = Object.keys(CSS2Properties.prototype);
+        let givenstyles = Object.entries(styles);
+        let valid = givenstyles.every(e => validStyles.includes(e[0]));
+        if (!valid) {
+            console.error("Invalid style properties:", givenstyles.filter(e => !validStyles.includes(e[0])).map(e => e[0]).join(", "));
+            return null;
+        }
+        Object.entries(styles).forEach(e => {
+            let newName = e[0].replaceAll(/[A-Z]/g, e => `-${e.toLowerCase()}`);
+            if (newName != e[0]) {
+                if (!validStyles.includes(newName)) {
+                    return;
+                }
+                styles[newName] = e[1];
+                delete styles[e[0]];
+            }
+        });
+        this.properties = styles;
+        this.selector = selector;
+    }
+
+    /** @param {boolean} minify */
+    compile(minify) {
+        let join = "\n    ";
+        let props = makeTemplate`${0}: ${1};`;
+        let whole = makeTemplate`${"selector"} {\n    ${"properties"}\n}`;
+        if (minify) {
+            join = ";";
+            props = makeTemplate`${0}:${1}`;
+            whole = makeTemplate`${"selector"}{${"properties"}}`;
+        }
+        let properties = Object.entries(this.properties).map(e => props(...e)).join(join);
+        return whole({ selector: this.selector, properties: properties });
+    }
+}
+
+export class jst_CSSStyleSheet {
+    constructor(rules = []) {
+        this.rules = rules.filter(e => e instanceof jst_CSSRule);
+    }
+
+    addRule(rule) {
+        if (!(rule instanceof jst_CSSRule)) {
+            return;
+        }
+        this.rules.push(rule);
+    }
+
+    compile(minify) {
+        if (minify) {
+            return this.rules.map(e => e.compile(true)).join("");
+        }
+        return this.rules.map(e => e.compile()).join("\n");
+    }
+
+}
