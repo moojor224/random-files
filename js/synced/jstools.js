@@ -1399,6 +1399,28 @@ if (!window.devtoolsFormatters.includes(buttonFormatter)) {
 }
 
 /**
+ * generates a string template function or smth idk
+ * @param {String[]} strings plain-text strings
+ * @param  {...String} keys keys to interpolate
+ * @returns {Function}
+ * 
+ * @example
+ * const template = makeTemplate`I'm ${"name"}. I'm almost ${"age"} years old.`;
+ * template({ name: "MDN", age: 30 }); // "I'm MDN. I'm almost 30 years old."
+ */
+export function makeTemplate(strings, ...keys) {
+    return function (...values) {
+        const dict = values[values.length - 1] || {};
+        const result = [strings[0]];
+        keys.forEach((key, i) => {
+            const value = Number.isInteger(key) ? values[key] : dict[key];
+            result.push(value, strings[i + 1]);
+        });
+        return result.join("");
+    };
+}
+
+/**
  * uses JSON.stringify and JSON.parse to copy an object and return the copy\
  * WARNING: do not use on objects that contain recursive references, or an error will be thrown
  * @param {Object} obj object to copy
