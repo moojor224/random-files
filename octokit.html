@@ -8,20 +8,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.16/themes/default/style.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="./js/jstree.min.js"></script>
+    <link rel="stylesheet" href="./js/highlightjs/styles/github-dark.css">
+    <script src="./js/highlightjs/highlight.js"></script>
+    <script src="./js/highlightjs/lineNumbers.js"></script>
+
+
     <style>
         #preview {
-            background-color: #0d1117;
-            color: white;
-            padding: 10px;
-            margin: 10px;
-            border-radius: 5px;
-            white-space: pre;
-            font-family: monospace;
             display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
         }
+
+        body>* {
+            max-height: 100%;
+            overflow: auto;
+        }
+
+        pre.language-javascript {
+            margin: 0px;
+            max-width: 100%;
+        }
+
+        .hljs {
+            white-space: pre-wrap;
+        }
+
         #preview:empty {
             display: none;
         }
+
         .modal {
             display: none;
             position: absolute;
@@ -33,33 +49,195 @@
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.4);
         }
+
+        .file.jstree-icon {
+            background-image: url("./res/javascript.svg");
+        }
+
+        .jstree-closed .dir.jstree-icon {
+            background-image: url("./res/folder.svg");
+        }
+
+        .jstree-open .dir.jstree-icon {
+            background-image: url("./res/folder-open.svg");
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            grid-template-rows: 1fr;
+            height: 100vh;
+            width: 100vw;
+        }
     </style>
 </head>
 
 <body>
-    <button id="button">send request</button>
-    <div id="tree"></div>
-    <div id="preview"></div>
+    <div id="controls">
+        <button id="button">send request</button>
+        <div id="tree"></div>
+        <input id="userInput" type="text" />
+    </div>
+    <div class="code-panel">
+        <pre><code class="" id="preview"></code></pre>
+    </div>
     <div class="modal"></div>
     <script type="module">
         import { Octokit } from "https://esm.sh/@octokit/core";
-        import {key} from "./auth.js";
+        import { key } from "./auth.js";
+        import { flattenChildren, extend, createElement } from "./js/synced/jstools.js";
 
         const octokit = new Octokit({ auth: key });
         const user = "moojor224";
+        const API_VER = "2022-11-28";
+        function getNodes(id) {
+            let node = tree.get_node(id);
+            console.log(node.original?.type);
+            node.children = node.children.map(e => getNodes(e));
+            return node;
+        }
 
-        document.getElementById("button").addEventListener("click", async () => {
+        class Autosave {
+            config = {
+                interval: 1000,
+                callback: () => { },
+                event: function (asave) {
+                    this.addEventListener("input", () => {
+                        asave.ping();
+                    });
+                },
+                target: null,
+                value: function () {
+                    return this.target.value;
+                }
+            };
+            pinged = true;
+            constructor(cfg) {
+                extend(this.config, cfg);
+                this.bar = createElement("div", {
+                    style: {
+                        border: "1px solid black",
+                        boxSize: "border-box",
+                        width: "200px",
+                        height: "10px",
+                    }
+                });
+                this._shade = createElement("div", {
+                    style: {
+                        height: "100%",
+                        display: "block",
+                        backgroundColor: "red",
+                    }
+                });
+                let { target } = this.config;
+                this.bind(target);
+                this.bar.add(this._shade);
+                this.lastSaved = Autosave.timestamp();
+                this._interval = setInterval(() => {
+                    this.runInterval();
+                });
+            }
+
+            static timestamp() {
+                return new Date().getTime();
+            }
+
+            bind(target) {
+                if (target instanceof Element) {
+                    this.config.target = target;
+                    if (typeof this.config.event === "string") {
+                        target.addEventListener(this.config.event, () => {
+                            this.ping();
+                        });
+                    } else if (typeof this.config.event == "function") {
+                        console.log("adding function event listener");
+                        this.config.event.apply(target, [this]);
+                    }
+                    // else if (Array.isArray(this.config.event)) {
+                    //     this.config.event.forEach(e => {
+                    //         target.addEventListener(e, () => {
+                    //             this.ping();
+                    //         });
+                    //     });
+                    // }
+                }
+            }
+
+            ping() {
+                this._shade.style.width = "100%";
+                this.pinged = false;
+                this.lastSaved = Autosave.timestamp();
+            }
+
+            runInterval() {
+                let now = Autosave.timestamp();
+                if (now - this.lastSaved > this.config.interval && !this.pinged) {
+                    console.log(now - this.lastSaved);
+                    this.pinged = true;
+                    this.config.callback(this.config.value());
+                } else {
+                    let width = 100 - ((now - this.lastSaved) / this.config.interval * 100);
+                    if (width >= 0) {
+                        this._shade.style.width = `${width}%`;
+                    } else {
+                        this._shade.style.width = 0;
+                    }
+                }
+            }
+        }
+
+        let preview = document.getElementById("preview");
+        let target = document.getElementById("userInput");
+        let save = new Autosave({
+            target: target,
+            interval: 1500,
+            callback: (value) => {
+                console.log("send user search request", value);
+                octokit.request(`GET /search/users?q=${value}`, {
+                    headers: {
+                        "X-GitHub-Api-Version": API_VER
+                    }
+                }).then(({ data }) => {
+                    console.log(data);
+                });
+            },
+            event: function (asave) {
+                this.addEventListener("input", () => {
+                    console.log("input event");
+                    asave.ping();
+                });
+            },
+            value: function () {
+                return target.value;
+            }
+        });
+        let githubNameRegex = new RegExp("[a-zA-Z0-9\\-\\.]+", "g");
+        console.log(githubNameRegex);
+        let repositoryRegex = new RegExp(`^((https?://)?github\.com/)?${githubNameRegex.source}/(${githubNameRegex.source}/?)?$`, "g");
+        console.log("github.com/moojor224/tampermonkey-scripts/".match(repositoryRegex), repositoryRegex);
+        console.log("https://github.com/moojor224/tampermonkey-scripts/".match(repositoryRegex), repositoryRegex);
+        console.log("https://github.com/moojor224/".match(repositoryRegex), repositoryRegex);
+
+
+        document.getElementById("button").onclick = ("click", async function onclick() {
             let repository = await octokit.request("GET /repos/{owner}/{repo}/contents/", {
                 owner: user,
                 repo: "tampermonkey-scripts",
                 headers: {
-                    "X-GitHub-Api-Version": "2022-11-28"
+                    "X-GitHub-Api-Version": API_VER
                 }
-            })
+            });
             // console.log(repository);
             let files = repository.data;
             console.log(files);
             async function convertToNode(file, parent = "#") {
+                // console.log("converting", file);
+                if (!file.name.endsWith(".user.js") && file.type !== "dir") {
+                    return null;
+                }
                 let node = {
                     id: file.sha,
                     text: file.name,
@@ -74,7 +252,8 @@
                         return folder.data.map(file => {
                             return convertToNode(file, node.id);
                         });
-                    }))
+                    }));
+                    node.children = node.children.filter(e => !!e);
                 }
                 return node;
             }
@@ -84,19 +263,35 @@
                     repo: "tampermonkey-scripts",
                     path: folder,
                     headers: {
-                        "X-GitHub-Api-Version": "2022-11-28"
+                        "X-GitHub-Api-Version": API_VER
                     }
                 });
             }
             let tree = await Promise.all(files.map(async file => {
-                let node = await convertToNode(file);
-                return node;
+                // console.log(file);
+                if (file.name.endsWith(".user.js") || file.type === "dir") {
+                    let node = await convertToNode(file);
+                    return node;
+                } else {
+                    return null;
+                }
             }));
-            // console.log(tree);
+            tree = tree.filter(e => !!e);
+            console.log("tree", tree);
             $("#tree").jstree({
                 core: {
                     data: tree,
                     multiple: false,
+                    check_callback: true,
+                },
+                plugins: ["types"],
+                types: {
+                    file: {
+                        icon: "file"
+                    },
+                    dir: {
+                        icon: "dir"
+                    }
                 }
             });
             $("#tree").on("select_node.jstree", function (event, data) {
@@ -106,29 +301,48 @@
                 let preview = document.getElementById("preview");
                 if (node.data.contents) {
                     preview.innerHTML = node.data.contents;
+                    hljs.highlightAll();
+                    hljs.initLineNumbersOnLoad();
                 } else {
                     document.querySelector(".modal").style.display = "block";
-                    fetch(node.data.url, {
+                    octokit.request("GET /repos/{owner}/{repo}/contents/{path}", {
                         owner: user,
                         repo: "tampermonkey-scripts",
-                        path: node.text,
+                        path: node.data.path,
                         headers: {
-                            Accept: "application/vnd.github.v3+json",
-                            "Accept-Encoding": "gzip, deflate, br, zstd",
-                            "Accept-Language": "en-US,en;q=0.5",
-                            authorization: `token ${key}`,
-                            Connection: "keep-alive",
-                            "User-Agent": "octokit-core.js/6.1.2 Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
-                            "X-GitHub-Api-Version": "2022-11-28",
+                            "X-GitHub-Api-Version": API_VER
                         }
-                    }).then(r => r.json()).then(file => {
-                        // console.log(file);
+                    }).then(({ data: { content }, data }) => {
+                        let file = atob(content);
                         document.querySelector(".modal").style.display = "none";
-                        preview.innerHTML = atob(file.content);
-                        node.data.contents = preview.innerHTML;
+                        preview.innerHTML = file;
+                        delete preview.dataset.highlighted;
+                        node.data.contents = file;
+                        hljs.highlightAll();
+                        hljs.initLineNumbersOnLoad();
                     });
                 }
             });
+            window.tree = $("#tree").jstree(true);
+            $("#tree").on("loaded.jstree", function (event, data) {
+                function get() {
+                    return window.tree.get_json("#", { flat: true }).map(e => window.tree.get_node(e.id)).filter(e => (e.children.length == 0 && e.original?.type == "dir")).reverse();
+                }
+                let nodes = get(), count = 0;
+                while (nodes.length > 0 && count < 100) {
+                    let node = nodes.pop();
+                    window.tree.delete_node(window.tree.get_node(node.id));
+                    nodes = get();
+                    count++;
+                }
+            });
+        });
+
+        preview.innerHTML = document.getElementById("button").onclick.toString();
+        preview.classList.add("language-javascript");
+        setTimeout(() => {
+            hljs.highlightAll();
+            hljs.initLineNumbersOnLoad();
         });
     </script>
 </body>
