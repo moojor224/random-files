@@ -745,7 +745,7 @@ export function getValueOrDefault(val, def) {
  * @param {Object} target 
  * @param {Object} source 
  */
-function extend(target, source) {
+export function extend(target, source) {
     Object.keys(source).forEach(key => {
         target[key] = source[key];
     });
