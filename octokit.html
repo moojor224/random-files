@@ -214,12 +214,32 @@
                 return target.value;
             }
         });
-        let githubNameRegex = new RegExp("[a-zA-Z0-9\\-\\.]+", "g");
-        console.log(githubNameRegex);
-        let repositoryRegex = new RegExp(`^((https?://)?github\.com/)?${githubNameRegex.source}/(${githubNameRegex.source}/?)?$`, "g");
-        console.log("github.com/moojor224/tampermonkey-scripts/".match(repositoryRegex), repositoryRegex);
-        console.log("https://github.com/moojor224/tampermonkey-scripts/".match(repositoryRegex), repositoryRegex);
-        console.log("https://github.com/moojor224/".match(repositoryRegex), repositoryRegex);
+        let repoNameRegex = "[\\w\.-]+";
+        let nameRegex = "[a-z\\d](?:[a-z\\d]|-(?=[a-z\\d])){0,38}";
+        let githubUsernameRegex = new RegExp(`^${nameRegex}$`, "i");
+        let githubRepositoryRegex = new RegExp(`^${repoNameRegex}$`, "g");
+        let repoUrlRegex = new RegExp(`^((https?://)?github\.com/)?${nameRegex}/(${repoNameRegex}/?)$`, "g");
+        let userUrlRegex = new RegExp(`^((https?://)?github\.com/)?${nameRegex}/(${repoNameRegex}/?)?$`, "g");
+        console.log(repoUrlRegex);
+        console.log(convertToRepoName("github.com/moojor224/tampermonkey-scripts/"));
+        console.log(convertToRepoName("https://github.com/moojor224/tampermonkey-scripts/"));
+        console.log(convertToRepoName("https://github.com/moojor224/"));
+        console.log(convertToRepoName("moojor224/repo-name"));
+        function convertToRepoName(url) {
+            if (url.match(repoUrlRegex)) {
+                if (url.startsWith("http")) {
+                    if (url.startsWith("http:")) {
+                        url = url.replace("http:", "https:");
+                    }
+                } else if (url.startsWith("github.com")) {
+                    url = `https://${url}`;
+                } else {
+                    return url;
+                }
+                return new URL(url).pathname.substring(1).replaceAll(/\/$/g, "");
+            }
+            return null;
+        }
 
 
         document.getElementById("button").onclick = ("click", async function onclick() {
