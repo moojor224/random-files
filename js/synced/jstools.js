@@ -1,4 +1,3 @@
-import { devlog } from "../dev-helper.js";
 import { Prism } from "../prism.js";
 import { js_beautify } from "../beautify.js";
 
@@ -999,12 +998,12 @@ if (Settings === undefined) {
         }
 
         replaceWith(settings) {
-            devlog("replacing", Object.assign({}, this), "with", Object.assign({}, settings));
+            console.log("replacing", Object.assign({}, this), "with", Object.assign({}, settings));
             // replaces this settings object with another one by overriding sections array and config.
             // because this object was exported, it can't be assigned in other modules,
             // so a custom function had to be made
             if (!(settings instanceof Settings)) { // only override if provided object is a Setting object
-                devlog("settings object is not an instance of the Settings class", settings);
+                console.log("settings object is not an instance of the Settings class", settings);
                 return;
             }
             this.config = settings.config; // override config
@@ -1186,7 +1185,7 @@ if (Option === undefined) {
         }
 
         set value(val) {
-            devlog("set value to", val);
+            console.log("set value to", val);
             show("#loadingModal"); // show the loading modal
             let option = this;
             let previousVal = this.config.value;
@@ -1200,7 +1199,7 @@ if (Option === undefined) {
             }).then(e => {
                 e.text().then(t => {
                     if (t.includes("error")) { // settings could not save
-                        devlog("error saving settings");
+                        console.log("error saving settings");
                         this.config.value = previousVal; // revert option change in config object
                         if (this.input.checked != undefined) { // revert option change in input element
                             this.input.checked = previousVal;
@@ -1208,7 +1207,7 @@ if (Option === undefined) {
                             this.input = previousVal;
                         }
                     } else {
-                        devlog("successfully saved settings");
+                        console.log("successfully saved settings");
                     }
                     option.dispatchEvent(new Event("change")); // forward event from html element to option object
                     hide("#loadingModal"); // hide the loading modal
