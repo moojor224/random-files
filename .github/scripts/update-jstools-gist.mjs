@@ -1,3 +1,4 @@
+// node --experimental-network-imports .\.github\scripts\update-jstools-gist.mjs
 // import { Octokit, App } from "octokit";
 // const key = process.argv[2];
 
@@ -26,18 +27,13 @@ import concat from "concat-stream";
 ['https://raw.githubusercontent.com/moojor224/random-files/main/js/synced/jstools.js'].forEach(url => {
     https.get(url, res => {
         console.log(res.headers['content-type']);
-        // if (res.statusCode === 200 && /\/javascript/.test(res.headers['content-type'])) {
-            let rawData = '';
-            res.setEncoding('utf8');
-            res.on('data', chunk => { rawData += chunk; });
-            res.on('end', async () => {
-                console.log("end");
-                vm.runInThisContext(rawData, url);
-                console.log(extend)
-            });
-        // } else {
-        //     console.log("not javascript");
-        // }
+        let rawData = '';
+        res.setEncoding('utf8');
+        res.on('data', chunk => { rawData += chunk; });
+        res.on('end', async () => {
+            console.log("end", rawData);
+            vm.runInThisContext(rawData, url);
+            console.log(extend);
+        });
     });
 });
-debugger;
