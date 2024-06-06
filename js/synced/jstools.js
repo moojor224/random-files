@@ -248,8 +248,6 @@ export function clearError(...selectors) {
     });
 }
 
-import { bulkElements } from "./bulkElements.js";
-
 /**
  * hides the given elements by adding the class "hidden"
  * @param  {...(String|Element)} selectors list of css selectors or elements
@@ -2695,8 +2693,8 @@ export class Color {
 
 export const BULK_OPERATIONS = (function () {
     class Numbers {
-        constructor(...nums) {
-            this.nums = nums;
+        constructor(...values) {
+            this.values = values;
         }
     }
     let ops = [
@@ -2709,24 +2707,28 @@ export const BULK_OPERATIONS = (function () {
     ];
     for (let [name, func] of ops) {
         Numbers.prototype[name] = function (val) {
-            return new Numbers(...this.nums.map(e => func(e, val)));
+            return new Numbers(...this.values.map(e => func(e, val)));
         };
     }
     class Booleans {
-        constructor(...bools) {
-            this.bools = bools;
+        constructor(...values) {
+            this.values = values;
         }
         flip() {
             return new Booleans(...this.bools.map(e => !e));
         }
     }
-    class Strings {
-        constructor(...strs) {
-            this.strs = strs;
-        }
-        // Object.getOwnPropertyNames(String.prototype).sort()
+    function makeNewClass(clss) {
+        let newClass = class { constructor(...values) { this.values = values; } }
+        let methods = Object.getOwnPropertyNames(clss.prototype).sort();
+        methods.forEach(m => {
+            newClass.prototype[m] = function (...args) {
+                return new newClass(...this.values.map(e => e[m].apply(e, args)));
+            }
+        });
+        return newClass;
     }
-    function gettypes(...args) {
+    function getTypes(...args) {
         let types = args.map(e => typeof e);
         let unique = [...new Set(types)];
         if (unique.length == 1) {
@@ -2734,6 +2736,9 @@ export const BULK_OPERATIONS = (function () {
         }
         return "mixed";
     }
+    const Strings = makeNewClass(String);
+    const Functions = makeNewClass(Function);
+    const Objects = makeNewClass(Object);
     function autodetectClass(type) {
         switch (type) {
             case "number": return Numbers;
@@ -2745,8 +2750,13 @@ export const BULK_OPERATIONS = (function () {
         }
     }
     return {
-        Numbers, autodetect: function (...args) {
-            let type = gettypes(...args);
+        Numbers,
+        Strings,
+        Booleans,
+        Objects,
+        Functions,
+        autodetect: function (...args) {
+            let type = getTypes(...args);
             return autodetectClass(type);
         }
     };
