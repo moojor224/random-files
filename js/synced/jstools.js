@@ -3,15 +3,15 @@ function tryImport(url) {
         return require(url);
     } catch (e) {
         try {
-            return import(url);
+            return import(url, () => { });
         } catch (e) {
             return {};
         }
     }
 }
-const { Prism } = tryImport("../prism.js");
-const { js_beautify } = tryImport("../beautify.js");
-const { bulkElements } = tryImport("./bulkElements.js");
+const { Prism } = await tryImport("../prism.js");
+const { js_beautify } = await tryImport("../beautify.js");
+const { bulkElements } = await tryImport("./bulkElements.js");
 
 Math.roundf = (v, t) => Math.round(v * t) / t;
 
