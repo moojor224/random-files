@@ -23,7 +23,7 @@ Math.roundf = (v, t) => Math.round(v * t) / t;
  * @param {Boolean} stopAfterFound whether to stop looking after the element is found
  * @param {Element} [element = document] parent element to look within -  defaults to document
  */
-export function waitForKeyElements(query, callback, stopAfterFound, element) {
+function waitForKeyElements(query, callback, stopAfterFound, element) {
     let o, r;
 
     (o = void 0 === element ? $(query) : $(element).contents().find(query)) &&
@@ -93,8 +93,6 @@ if (createElement === undefined) { // this is done to allow typescript type defi
         return tag; // return result
     }
 }
-
-export { createElement };
 
 /**
  * appends any number of objects to an HTMLElement
@@ -179,7 +177,7 @@ Object.defineProperty(HTMLElement.prototype, "isVisible", {
  * @param {String} str message to display
  * @param  {...any} selectors elements to add warning message to
  */
-export function warn(str = "!", ...selectors) {
+function warn(str = "!", ...selectors) {
     clearWarn(...selectors); // clear any existing warnings
     let w = createElement("warn", { // create warning element
         innerHTML: str
@@ -197,7 +195,7 @@ export function warn(str = "!", ...selectors) {
  * removes the warning message from the given elements
  * @param  {...any} selectors elements to remove the warning message from
  */
-export function clearWarn(...selectors) {
+function clearWarn(...selectors) {
     selectors.forEach(s => {
         let el = s;
         if (typeof s === "string") {
@@ -216,7 +214,7 @@ export function clearWarn(...selectors) {
  * @param {String} str message to display
  * @param  {...any} selectors elements to add error message to
  */
-export function error(str, ...selectors) {
+function error(str, ...selectors) {
     clearError(...selectors);
     let w = createElement("error", {
         innerHTML: str
@@ -234,7 +232,7 @@ export function error(str, ...selectors) {
  * removes the error message from the given elements
  * @param  {...any} selectors elements to remove the error message from
  */
-export function clearError(...selectors) {
+function clearError(...selectors) {
     selectors.forEach(s => {
         let el = s;
         if (typeof s === "string") {
@@ -252,7 +250,7 @@ export function clearError(...selectors) {
  * hides the given elements by adding the class "hidden"
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-export function hide(...selectors) {
+function hide(...selectors) {
     bulkElements(...selectors).classList.add("hidden");
 }
 
@@ -260,7 +258,7 @@ export function hide(...selectors) {
  * shows the given elements by removing the class "hidden"
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-export function show(...selectors) {
+function show(...selectors) {
     bulkElements(...selectors).classList.remove("hidden");
 }
 
@@ -268,7 +266,7 @@ export function show(...selectors) {
  * clears the given elements
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-export function clear(...selectors) {
+function clear(...selectors) {
     for (let s of selectors) {
         s = typeof s == "string" ? document.querySelector(s) : s; // convert string to queried element
         let arr = flattenChildNodes(s); // get all descendant nodes in order
@@ -290,7 +288,7 @@ export function clear(...selectors) {
  * @param {String} message message to show
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-export function disable(message, ...selectors) {
+function disable(message, ...selectors) {
     for (let s of selectors) {
         let el;
         if (typeof s == "string") {
@@ -306,7 +304,7 @@ export function disable(message, ...selectors) {
  * reenables the given elements
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-export function enable(...selectors) {
+function enable(...selectors) {
     for (let s of selectors) {
         let el;
         if (typeof s == "string") { // if s is a string (css selector)
@@ -322,7 +320,7 @@ export function enable(...selectors) {
  * sets the tab's favicon to a square with the specified color
  * @param {string} color color of the square
  */
-export function tabColor(color) {
+function tabColor(color) {
     function isValidCSSColor(color2) { // checks if string is valid css color
         if (["unset", "initial", "inherit"].includes(color2)) { // valid css colors that should return false
             return false;
@@ -370,7 +368,7 @@ function parseCookies(cookies = document.cookie) {
  * People.sort(dynamicSort("Surname"));
  * People.sort(dynamicSort("-Surname"));
  */
-export function dynamicSort(key) {
+function dynamicSort(key) {
     let sortOrder = 1; // normal sort order
     if (typeof key === "string" && key.startsWith("-")) { // if key starts with a -
         sortOrder = -1; // reversed sort order
@@ -403,7 +401,7 @@ export function dynamicSort(key) {
  *     {a: 1, b: 2},
  * ];
  */
-export function advancedDynamicSort(...properties) {
+function advancedDynamicSort(...properties) {
     if (properties.length < 1) return;
     // let w = (d, b) => d() ? (b(), w(d, b)) : 0;
     function dSort(property) {
@@ -442,7 +440,7 @@ export function advancedDynamicSort(...properties) {
  * @param {Object[]} colors array of rgb colors
  * @returns {string}
  */
-export function rgbMix(
+function rgbMix(
     p,
     colors = [
         { r: 0xff, g: 0, b: 0 }, // 0% red
@@ -479,7 +477,7 @@ export function rgbMix(
  * @param {Boolean} cmp whether to clamp the input value to the input range
  * @returns {Number}
  */
-export function map(x, inmin, inmax, outmin, outmax, cmp = false) {
+function map(x, inmin, inmax, outmin, outmax, cmp = false) {
     return ((cmp ? clamp(x, inmin, inmax) : x) - inmin) * (outmax - outmin) / (inmax - inmin) + outmin;
 }
 
@@ -489,7 +487,7 @@ export function map(x, inmin, inmax, outmin, outmax, cmp = false) {
  * @param {Object[]} colors array of colors in gradient
  * @returns {String[]} array of colors generated
  */
-export function gradient(count, colors = [
+function gradient(count, colors = [
     { r: 0xff, g: 0, b: 0 }, // 0% red
     { r: 0xff, g: 0x7f, b: 0 }, // 20% orange
     { r: 0xff, g: 0xff, b: 0 }, // 40% yellow
@@ -512,7 +510,7 @@ export function gradient(count, colors = [
  * @param  {...any} arrays arrays to interleave
  * @returns {any[]} interleaved arrays
  */
-export function interleaveArrays(fill, ...arrays) {
+function interleaveArrays(fill, ...arrays) {
     if (fill) {
         let max = Math.max(...arrays.map(e => e.length)); // get max length of all arrays
         arrays = arrays.map(arr => [...arr, ...new Array(max - arr.length).fill(null)]); // fill all arrays with null so that they're all the same length
@@ -530,7 +528,7 @@ export function interleaveArrays(fill, ...arrays) {
  * sets `console.everything` to an array of the console's history\
  * run this before using any console logging functions in order to capture everything
  */
-export function captureConsole() {
+function captureConsole() {
     if (console.everything === undefined) {
         console.everything = [];
         let TS = _ => new Date().toLocaleString("sv", { timeZone: 'UTC' }) + "Z"; // timestamp function
@@ -585,7 +583,7 @@ export function captureConsole() {
  * @param {object} arr object to flatten
  * @returns {object[]} array of all children
  */
-export function flattenChildren(arr) {
+function flattenChildren(arr) {
     return [arr, ...(arr.children?.flatMap((e) => flattenChildren(e)) || [])];
 }
 
@@ -594,7 +592,7 @@ export function flattenChildren(arr) {
  * @param {HTMLElement} el element to flatten
  * @returns {HTMLElement[]} array of all children
  */
-export function flattenChildNodes(el) {
+function flattenChildNodes(el) {
     return [el, ...([...el.childNodes].flatMap((e) => flattenChildNodes(e)) || [])];
 }
 
@@ -613,7 +611,7 @@ function convertTime(b) {
  * @param {string} varname css variable name
  * @returns {string} value of css variable
  */
-export function getColor(varname, ...append) {
+function getColor(varname, ...append) {
     let color = getComputedStyle(document.querySelector(":root")).getPropertyValue(varname); //  get css variable value
     if (color.match(/^#[a-zA-Z0-9]{3}$/g)) { // check if color is 3-digit hex
         color = "#" + color.substring(1).split("").map(e => e.padStart(e, 2)).join("") + append.join(""); // convert color  to 6-digit hex
@@ -635,7 +633,7 @@ export function getColor(varname, ...append) {
  * console.log(+val);
  * // logs 4 random numbers
  */
-export function lockValue(callback, ...args) {
+function lockValue(callback, ...args) {
     return class {
         constructor() { }
         static valueOf() {
@@ -649,7 +647,7 @@ export function lockValue(callback, ...args) {
  * 
  * show each individual element in each group
  */
-export function listAllColorsOnPage() {
+function listAllColorsOnPage() {
     function hexToRgb(color) {
         if (color.match(/#?([a-zA-Z0-9]{8}|[a-zA-Z0-9]{6}|[a-zA-Z0-9]{3,4})/g)?.at(0) === color) {
             color = color.replace("#", "");
@@ -732,7 +730,7 @@ export function listAllColorsOnPage() {
  * @param {Number} max maximum of range
  * @returns {Number} number clamped to range
  */
-export function clamp(val, min, max) {
+function clamp(val, min, max) {
     if (min > max) { // make sure min is less than max
         [min, max] = [max, min];
     }
@@ -744,7 +742,7 @@ export function clamp(val, min, max) {
  * @param {any} def 
  * @returns {any | undefined}
  */
-export function getValueOrDefault(val, def) {
+function getValueOrDefault(val, def) {
     if (val === undefined || val === null) return def;
     return val;
 }
@@ -754,7 +752,7 @@ export function getValueOrDefault(val, def) {
  * @param {Object} target 
  * @param {Object} source 
  */
-export function extend(target, source) {
+function extend(target, source) {
     Object.keys(source).forEach(key => {
         target[key] = source[key];
     });
@@ -1323,10 +1321,8 @@ if (Option === undefined) {
     }
 }
 
-export { Settings, Section, Option };
 
-
-export let settings = new Settings({
+let settings = new Settings({
     name: "Settings"
 }, [
     new Section({
@@ -1378,7 +1374,7 @@ export let settings = new Settings({
     ])
 ]);
 
-export function consoleButton(obj, func, args = [], label = "button", width = 50, height = width) {
+function consoleButton(obj, func, args = [], label = "button", width = 50, height = width) {
     return { __button: true, obj, func, args, label, width, height };
 }
 
@@ -1417,7 +1413,7 @@ if (!window.devtoolsFormatters.includes(buttonFormatter)) {
  * const template = makeTemplate`I'm ${"name"}. I'm almost ${"age"} years old.`;
  * template({ name: "MDN", age: 30 }); // "I'm MDN. I'm almost 30 years old."
  */
-export function makeTemplate(strings, ...keys) {
+function makeTemplate(strings, ...keys) {
     return function (...values) {
         const dict = values[values.length - 1] || {};
         const result = [strings[0]];
@@ -1445,7 +1441,7 @@ export function makeTemplate(strings, ...keys) {
  * // obj1 == {a: 4, b: 2, c: 3}
  * // obj2 == {a: 1, b: 2, c: 3}
  */
-export function copyObject(obj) {
+function copyObject(obj) {
     let result = obj;
     var type = {}.toString.call(obj).slice(8, -1);
     if (type == 'Set') return new Set([...obj].map(value => copyObject(value))); // convert list of values to array and copy each value
@@ -1502,7 +1498,7 @@ function parseTrace(trace) {
  * @param {String} str string to convert
  * @returns {String} converted string
  */
-export function toHTMLEntities(str) {
+function toHTMLEntities(str) {
     return [...str].split("").map(e => `&#${e.charCodeAt(0)};`).join("");
 }
 
@@ -1627,7 +1623,7 @@ let svgToDataUri = (function () {
  * @param {Boolean} raw whether to return the raw result or just console.log it
  * @returns {Object[]}
  */
-export function logFormatted(object, options = {}) {
+function logFormatted(object, options = {}) {
     let { embedObjects, raw, collapsed, maxDepth, label, extra_logs, enableCustomFormatters } = (function () {
         let defaults = {
             embedObjects: false, // embed the objects within the console message
@@ -1888,7 +1884,7 @@ window.logFormatted = logFormatted; // make function globally available
  * @param {any} obj the object to  stringify
  * @returns {string} the stringified object
  */
-export function stringify(obj) {
+function stringify(obj) {
     let objects = []; // array that holds list of all objects
     let indentAmount = 1; // number of spaces to indent the stringified object by (don't change this)
     let indentWidth = 4; // width of each indent. change this to change indent width
@@ -2224,7 +2220,7 @@ function meyerDiff(seq1, seq2) {
  * @param {any} arg
  * @returns {typeof arg}
  */
-export function logAndReturn(arg) {
+function logAndReturn(arg) {
     console.log(arg);
     return arg;
 }
@@ -2232,7 +2228,7 @@ export function logAndReturn(arg) {
 /**
  * a set of utility functions to convert times to milliseconds
  */
-export let timeConversions = (function () {
+let timeConversions = (function () {
     let seconds = t => t * 1000;
     let minutes = t => t * seconds(60);
     let hours = t => t * minutes(60);
@@ -2275,7 +2271,7 @@ let WIP = (function () {
     console.log(tobe == decoded);
 });
 
-export function rectangle(num) {
+function rectangle(num) {
     let height = Math.ceil(Math.sqrt(num));
     let width = height;
     while (height * width - width > num) {
@@ -2285,7 +2281,7 @@ export function rectangle(num) {
     return arr;
 }
 
-export function reshape(arr, length, width) {
+function reshape(arr, length, width) {
     arr = [...arr]; // clone array
     let result = [];
     for (let x = 0; x < width; x++) {
@@ -2304,7 +2300,7 @@ export function reshape(arr, length, width) {
  * @param {Function} func the function to check
  * @returns {Boolean}
  */
-export function isAsync(func) {
+function isAsync(func) {
     const AsyncFunction = (async () => { }).constructor;
     return func instanceof AsyncFunction;
 }
@@ -2324,7 +2320,7 @@ const polyfills = (function () {
 /**
  * defines some custom elements
  */
-export const CUSTOM_ELEMENTS = (function () {
+const CUSTOM_ELEMENTS = (function () {
     function slider() { // input toggle slider
         customElements.define("input-slider", class extends HTMLElement {
             static observedAttributes = ["checked"];
@@ -2462,7 +2458,7 @@ export const CUSTOM_ELEMENTS = (function () {
     return { all, slider };
 })();
 
-export class jst_CSSRule {
+class jst_CSSRule {
     static checkValidSelector(selector) {
         selector = selector.trim();
         if (typeof selector != "string") return false;
@@ -2517,7 +2513,7 @@ export class jst_CSSRule {
     }
 }
 
-export class jst_CSSStyleSheet {
+class jst_CSSStyleSheet {
     constructor(rules = []) {
         this.rules = rules.filter(e => e instanceof jst_CSSRule);
     }
@@ -2570,7 +2566,7 @@ const CSSColors = {
     whitesmoke: "#f5f5f5", yellow: "#ffff00", yellowgreen: "#9acd32"
 };
 
-export class Color {
+class Color {
     static hexRegex = /^#([0-9a-f]{3}){1,2}$/i;
     static hexaRegex = /^#([0-9a-f]{4}){1,2}$/i;
     static rgbRegex = /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/;
@@ -2691,7 +2687,7 @@ export class Color {
     }
 }
 
-export const BULK_OPERATIONS = (function () {
+const BULK_OPERATIONS = (function () {
     class Numbers {
         constructor(...values) {
             this.values = values;
@@ -2761,3 +2757,14 @@ export const BULK_OPERATIONS = (function () {
         }
     };
 })();
+
+const EXPORTS = {
+    waitForKeyElements, createElement, warn, clearWarn, error, clearError, hide, show, clear, disable, enable, tabColordynamicSort, advancedDynamicSort, rgbMix, map, gradient, interleaveArrays, captureConsoleflattenChildren, flattenChildNodes, getColor, lockValue, listAllColorsOnPage, clamp, getValueOrDefault, extend, settings, consoleButton, Settings, Section, Option, makeTemplate, copyObject, toHTMLEntities, logFormatted, stringify, logAndReturn, timeConversions, rectangle, reshape, isAsync, CUSTOM_ELEMENTS, jst_CSSRule, jst_CSSStyleSheet, Color, BULK_OPERATIONS
+};
+if (typeof module != "undefined") {
+    module.exports = EXPORTS;
+} else if (typeof window != "undefined") {
+    window.jstools = EXPORTS;
+} else {
+    globalThis.jstools = EXPORTS;
+}
