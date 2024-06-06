@@ -1,4 +1,4 @@
-import { clear } from "./jstools.js";
+// import { clear } from "./jstools.js";
 
 const isSelectorValid = (selector) => {
     try {
@@ -61,7 +61,7 @@ export function bulkElements(...selectors) {
             elements.forEach(e => e.innerHTML = value);
         },
         clear: function () {
-            elements.forEach(e => clear(e));
+            elements.forEach(e => e.innerHTML = "");
         }
     };
 }
