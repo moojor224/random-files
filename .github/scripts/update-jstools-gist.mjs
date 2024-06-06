@@ -23,6 +23,7 @@ import https from "https";
 import http from "http";
 import vm from "vm";
 import concat from "concat-stream";
+import fs from "fs"; // read file to string and override response data
 
 ['https://raw.githubusercontent.com/moojor224/random-files/main/js/synced/jstools.js'].forEach(url => {
     https.get(url, res => {
@@ -31,9 +32,9 @@ import concat from "concat-stream";
         res.setEncoding('utf8');
         res.on('data', chunk => { rawData += chunk; });
         res.on('end', async () => {
-            console.log("end", rawData);
-            vm.runInThisContext(rawData, url);
-            console.log(extend);
+            console.log("end", rawData.split("\n").slice(0, 20).join("\n"));
+            vm.runInThisContext(`(async ()=>{${rawData}})()`, url);
+            // console.log(extend);
         });
     });
 });
