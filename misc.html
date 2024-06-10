@@ -50,6 +50,8 @@
     <!-- auto refresh page every 5 seconds -->
     <!-- <meta http-equiv="refresh" content="5"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="misc.webmanifest" />
+
     <title>Document</title>
     <style>
         div#box {
@@ -305,10 +307,32 @@
         navigator.serviceWorker.addEventListener('message', event => console.log(event.data));
     </script>
     <input-slider checked="true"></input-slider>
+    <button id="butInstall"></button>
     <script type="module">
-        import { settings, CUSTOM_ELEMENTS } from "./js/synced/jstools.js";
+        let deferredPrompt;
+        const btnAdd = document.getElementById('butInstall');
+        btnAdd.addEventListener('click', (e) => {
+        // hide our user interface that shows our A2HS button
+        btnAdd.setAttribute('disabled', true);
+        // Show the prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice.then((resp) => {
+            console.log(JSON.stringify(resp));
+        });
+        });
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-info bar from appearing.
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            // Update UI notify the user they can add to home screen
+            btnAdd.removeAttribute('disabled');
+        });
+
+        import { CUSTOM_ELEMENTS } from "./js/synced/jstools.js";
         CUSTOM_ELEMENTS.all();
-        console.log(settings);
         import { loadFormatters } from "/js/custom formatters/loader.js";
         loadFormatters();
 

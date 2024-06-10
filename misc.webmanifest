@@ -1,0 +1,21 @@
+{
+    "name": "Progressive Web App",
+    "short_name": "misc",
+    "description": "Progressive Web App.",
+    "icons": [
+        {
+            "src": "icons/icon-32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "res/javascript.svg",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "/misc.html",
+    "display": "minimal-ui",
+    "theme_color": "#B12A34",
+    "background_color": "#B12A34"
+}
