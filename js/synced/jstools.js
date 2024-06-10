@@ -3,7 +3,7 @@ function tryImport(url) {
         return require(url);
     } catch (e) {
         try {
-            return import(url, () => { });
+            return import(url).then(e => e);
         } catch (e) {
             return {};
         }
@@ -2759,12 +2759,18 @@ const BULK_OPERATIONS = (function () {
 })();
 
 const EXPORTS = {
-    waitForKeyElements, createElement, warn, clearWarn, error, clearError, hide, show, clear, disable, enable, tabColordynamicSort, advancedDynamicSort, rgbMix, map, gradient, interleaveArrays, captureConsoleflattenChildren, flattenChildNodes, getColor, lockValue, listAllColorsOnPage, clamp, getValueOrDefault, extend, settings, consoleButton, Settings, Section, Option, makeTemplate, copyObject, toHTMLEntities, logFormatted, stringify, logAndReturn, timeConversions, rectangle, reshape, isAsync, CUSTOM_ELEMENTS, jst_CSSRule, jst_CSSStyleSheet, Color, BULK_OPERATIONS
+    waitForKeyElements, createElement, warn, clearWarn, error, clearError, hide, show, clear, disable, enable, tabColor, dynamicSort, advancedDynamicSort, rgbMix, map, gradient, interleaveArrays, captureConsole, flattenChildren, flattenChildNodes, getColor, lockValue, listAllColorsOnPage, clamp, getValueOrDefault, extend, settings, consoleButton, Settings, Section, Option, makeTemplate, copyObject, toHTMLEntities, logFormatted, stringify, logAndReturn, timeConversions, rectangle, reshape, isAsync, CUSTOM_ELEMENTS, jst_CSSRule, jst_CSSStyleSheet, Color, BULK_OPERATIONS
 };
+
 if (typeof module != "undefined") {
+    console.log("export 1");
     module.exports = EXPORTS;
 } else if (typeof window != "undefined") {
+    console.log("export 3");
     window.jstools = EXPORTS;
 } else {
+    console.log("export 4");
     globalThis.jstools = EXPORTS;
 }
+
+export default EXPORTS;
