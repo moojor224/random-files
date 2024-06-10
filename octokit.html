@@ -87,8 +87,10 @@
     <div class="modal"></div>
     <script type="module">
         import { Octokit } from "https://esm.sh/@octokit/core";
-        import { key } from "./auth.js";
-        import { flattenChildren, extend, createElement } from "./js/synced/jstools.js";
+        import "./auth.js";
+        const { key } = auth;
+        import * as jstools from "./js/synced/jstools.js";
+        const { flattenChildren, extend, createElement } = jstools;
 
         const octokit = new Octokit({ auth: key });
         const user = "moojor224";
