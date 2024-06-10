@@ -13,6 +13,31 @@ const { Prism } = await tryImport("../prism.js");
 const { js_beautify } = await tryImport("../beautify.js");
 const { bulkElements } = await tryImport("./bulkElements.js");
 
+(function () { // overrides for nodejs
+    function proxy() { // create a recursive dummy proxy object
+        let t = {};
+        return new Proxy(t, {
+            get: function (target, prop) {
+                if (typeof target[prop] == "undefined") return proxy();
+                return target[prop];
+            },
+            set: function (target, prop, value) {
+                target[prop] = value;
+                return true;
+            }
+        });
+    }
+    if (typeof window === "undefined") {
+        globalThis.window = proxy();
+    }
+    if (typeof HTMLElement === "undefined") {
+        globalThis.HTMLElement = proxy();
+    }
+    if (typeof Element === "undefined") {
+        globalThis.Element = proxy();
+    }
+})();
+
 Math.roundf = (v, t) => Math.round(v * t) / t;
 
 /**
@@ -866,7 +891,7 @@ if (!window.devtoolsFormatters.includes(settingsFormatter)) { // only add one in
     window.devtoolsFormatters.push(settingsFormatter);
 }
 let Settings = window.Settings;
-if (Settings === undefined) {
+if (Settings === undefined || !(Settings.prototype instanceof EventTarget)) {
     Settings = class extends EventTarget {
         config = {
             name: "settings"
@@ -1071,8 +1096,9 @@ let sectionFormatter = {
 if (!window.devtoolsFormatters.includes(sectionFormatter)) { // only add one instance of the formatter
     window.devtoolsFormatters.push(sectionFormatter);
 }
+
 let Section = window.Section;
-if (Section === undefined) {
+if (Section === undefined || !(Section.prototype instanceof EventTarget)) {
     Section = class extends EventTarget {
         /**
          * @type {Settings}
@@ -1162,7 +1188,7 @@ if (Section === undefined) {
 export { Section };
 
 let Option = window.Options;
-if (Option === undefined) {
+if (Option === undefined || !(Option.prototype instanceof EventTarget)) {
     Option = class extends EventTarget {
         /**
          * @type {HTMLElement}
