@@ -23,7 +23,7 @@ Math.roundf = (v, t) => Math.round(v * t) / t;
  * @param {Boolean} stopAfterFound whether to stop looking after the element is found
  * @param {Element} [element = document] parent element to look within -  defaults to document
  */
-function waitForKeyElements(query, callback, stopAfterFound, element) {
+export function waitForKeyElements(query, callback, stopAfterFound, element) {
     let o, r;
 
     (o = void 0 === element ? $(query) : $(element).contents().find(query)) &&
@@ -93,6 +93,7 @@ if (createElement === undefined) { // this is done to allow typescript type defi
         return tag; // return result
     }
 }
+export { createElement };
 
 /**
  * appends any number of objects to an HTMLElement
@@ -177,7 +178,7 @@ Object.defineProperty(HTMLElement.prototype, "isVisible", {
  * @param {String} str message to display
  * @param  {...any} selectors elements to add warning message to
  */
-function warn(str = "!", ...selectors) {
+export function warn(str = "!", ...selectors) {
     clearWarn(...selectors); // clear any existing warnings
     let w = createElement("warn", { // create warning element
         innerHTML: str
@@ -195,7 +196,7 @@ function warn(str = "!", ...selectors) {
  * removes the warning message from the given elements
  * @param  {...any} selectors elements to remove the warning message from
  */
-function clearWarn(...selectors) {
+export function clearWarn(...selectors) {
     selectors.forEach(s => {
         let el = s;
         if (typeof s === "string") {
@@ -214,7 +215,7 @@ function clearWarn(...selectors) {
  * @param {String} str message to display
  * @param  {...any} selectors elements to add error message to
  */
-function error(str, ...selectors) {
+export function error(str, ...selectors) {
     clearError(...selectors);
     let w = createElement("error", {
         innerHTML: str
@@ -232,7 +233,7 @@ function error(str, ...selectors) {
  * removes the error message from the given elements
  * @param  {...any} selectors elements to remove the error message from
  */
-function clearError(...selectors) {
+export function clearError(...selectors) {
     selectors.forEach(s => {
         let el = s;
         if (typeof s === "string") {
@@ -250,7 +251,7 @@ function clearError(...selectors) {
  * hides the given elements by adding the class "hidden"
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-function hide(...selectors) {
+export function hide(...selectors) {
     bulkElements(...selectors).classList.add("hidden");
 }
 
@@ -258,7 +259,7 @@ function hide(...selectors) {
  * shows the given elements by removing the class "hidden"
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-function show(...selectors) {
+export function show(...selectors) {
     bulkElements(...selectors).classList.remove("hidden");
 }
 
@@ -266,7 +267,7 @@ function show(...selectors) {
  * clears the given elements
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-function clear(...selectors) {
+export function clear(...selectors) {
     for (let s of selectors) {
         s = typeof s == "string" ? document.querySelector(s) : s; // convert string to queried element
         let arr = flattenChildNodes(s); // get all descendant nodes in order
@@ -288,7 +289,7 @@ function clear(...selectors) {
  * @param {String} message message to show
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-function disable(message, ...selectors) {
+export function disable(message, ...selectors) {
     for (let s of selectors) {
         let el;
         if (typeof s == "string") {
@@ -304,7 +305,7 @@ function disable(message, ...selectors) {
  * reenables the given elements
  * @param  {...(String|Element)} selectors list of css selectors or elements
  */
-function enable(...selectors) {
+export function enable(...selectors) {
     for (let s of selectors) {
         let el;
         if (typeof s == "string") { // if s is a string (css selector)
@@ -320,7 +321,7 @@ function enable(...selectors) {
  * sets the tab's favicon to a square with the specified color
  * @param {string} color color of the square
  */
-function tabColor(color) {
+export function tabColor(color) {
     function isValidCSSColor(color2) { // checks if string is valid css color
         if (["unset", "initial", "inherit"].includes(color2)) { // valid css colors that should return false
             return false;
@@ -368,7 +369,7 @@ function parseCookies(cookies = document.cookie) {
  * People.sort(dynamicSort("Surname"));
  * People.sort(dynamicSort("-Surname"));
  */
-function dynamicSort(key) {
+export function dynamicSort(key) {
     let sortOrder = 1; // normal sort order
     if (typeof key === "string" && key.startsWith("-")) { // if key starts with a -
         sortOrder = -1; // reversed sort order
@@ -401,7 +402,7 @@ function dynamicSort(key) {
  *     {a: 1, b: 2},
  * ];
  */
-function advancedDynamicSort(...properties) {
+export function advancedDynamicSort(...properties) {
     if (properties.length < 1) return;
     // let w = (d, b) => d() ? (b(), w(d, b)) : 0;
     function dSort(property) {
@@ -440,7 +441,7 @@ function advancedDynamicSort(...properties) {
  * @param {Object[]} colors array of rgb colors
  * @returns {string}
  */
-function rgbMix(
+export function rgbMix(
     p,
     colors = [
         { r: 0xff, g: 0, b: 0 }, // 0% red
@@ -477,7 +478,7 @@ function rgbMix(
  * @param {Boolean} cmp whether to clamp the input value to the input range
  * @returns {Number}
  */
-function map(x, inmin, inmax, outmin, outmax, cmp = false) {
+export function map(x, inmin, inmax, outmin, outmax, cmp = false) {
     return ((cmp ? clamp(x, inmin, inmax) : x) - inmin) * (outmax - outmin) / (inmax - inmin) + outmin;
 }
 
@@ -487,7 +488,7 @@ function map(x, inmin, inmax, outmin, outmax, cmp = false) {
  * @param {Object[]} colors array of colors in gradient
  * @returns {String[]} array of colors generated
  */
-function gradient(count, colors = [
+export function gradient(count, colors = [
     { r: 0xff, g: 0, b: 0 }, // 0% red
     { r: 0xff, g: 0x7f, b: 0 }, // 20% orange
     { r: 0xff, g: 0xff, b: 0 }, // 40% yellow
@@ -510,7 +511,7 @@ function gradient(count, colors = [
  * @param  {...any} arrays arrays to interleave
  * @returns {any[]} interleaved arrays
  */
-function interleaveArrays(fill, ...arrays) {
+export function interleaveArrays(fill, ...arrays) {
     if (fill) {
         let max = Math.max(...arrays.map(e => e.length)); // get max length of all arrays
         arrays = arrays.map(arr => [...arr, ...new Array(max - arr.length).fill(null)]); // fill all arrays with null so that they're all the same length
@@ -528,7 +529,7 @@ function interleaveArrays(fill, ...arrays) {
  * sets `console.everything` to an array of the console's history\
  * run this before using any console logging functions in order to capture everything
  */
-function captureConsole() {
+export function captureConsole() {
     if (console.everything === undefined) {
         console.everything = [];
         let TS = _ => new Date().toLocaleString("sv", { timeZone: 'UTC' }) + "Z"; // timestamp function
@@ -583,7 +584,7 @@ function captureConsole() {
  * @param {object} arr object to flatten
  * @returns {object[]} array of all children
  */
-function flattenChildren(arr) {
+export function flattenChildren(arr) {
     return [arr, ...(arr.children?.flatMap((e) => flattenChildren(e)) || [])];
 }
 
@@ -592,7 +593,7 @@ function flattenChildren(arr) {
  * @param {HTMLElement} el element to flatten
  * @returns {HTMLElement[]} array of all children
  */
-function flattenChildNodes(el) {
+export function flattenChildNodes(el) {
     return [el, ...([...el.childNodes].flatMap((e) => flattenChildNodes(e)) || [])];
 }
 
@@ -611,7 +612,7 @@ function convertTime(b) {
  * @param {string} varname css variable name
  * @returns {string} value of css variable
  */
-function getColor(varname, ...append) {
+export function getColor(varname, ...append) {
     let color = getComputedStyle(document.querySelector(":root")).getPropertyValue(varname); //  get css variable value
     if (color.match(/^#[a-zA-Z0-9]{3}$/g)) { // check if color is 3-digit hex
         color = "#" + color.substring(1).split("").map(e => e.padStart(e, 2)).join("") + append.join(""); // convert color  to 6-digit hex
@@ -633,7 +634,7 @@ function getColor(varname, ...append) {
  * console.log(+val);
  * // logs 4 random numbers
  */
-function lockValue(callback, ...args) {
+export function lockValue(callback, ...args) {
     return class {
         constructor() { }
         static valueOf() {
@@ -647,7 +648,7 @@ function lockValue(callback, ...args) {
  * 
  * show each individual element in each group
  */
-function listAllColorsOnPage() {
+export function listAllColorsOnPage() {
     function hexToRgb(color) {
         if (color.match(/#?([a-zA-Z0-9]{8}|[a-zA-Z0-9]{6}|[a-zA-Z0-9]{3,4})/g)?.at(0) === color) {
             color = color.replace("#", "");
@@ -730,7 +731,7 @@ function listAllColorsOnPage() {
  * @param {Number} max maximum of range
  * @returns {Number} number clamped to range
  */
-function clamp(val, min, max) {
+export function clamp(val, min, max) {
     if (min > max) { // make sure min is less than max
         [min, max] = [max, min];
     }
@@ -742,7 +743,7 @@ function clamp(val, min, max) {
  * @param {any} def 
  * @returns {any | undefined}
  */
-function getValueOrDefault(val, def) {
+export function getValueOrDefault(val, def) {
     if (val === undefined || val === null) return def;
     return val;
 }
@@ -752,7 +753,7 @@ function getValueOrDefault(val, def) {
  * @param {Object} target 
  * @param {Object} source 
  */
-function extend(target, source) {
+export function extend(target, source) {
     Object.keys(source).forEach(key => {
         target[key] = source[key];
     });
@@ -1019,6 +1020,7 @@ if (Settings === undefined) {
         }
     }
 }
+export { Settings };
 
 let sectionFormatter = {
     label: "section formatter",
@@ -1157,6 +1159,7 @@ if (Section === undefined) {
         }
     }
 }
+export { Section };
 
 let Option = window.Options;
 if (Option === undefined) {
@@ -1320,9 +1323,9 @@ if (Option === undefined) {
         }
     }
 }
+export { Option };
 
-
-let settings = new Settings({
+export let settings = new Settings({
     name: "Settings"
 }, [
     new Section({
@@ -1374,7 +1377,7 @@ let settings = new Settings({
     ])
 ]);
 
-function consoleButton(obj, func, args = [], label = "button", width = 50, height = width) {
+export function consoleButton(obj, func, args = [], label = "button", width = 50, height = width) {
     return { __button: true, obj, func, args, label, width, height };
 }
 
@@ -1413,7 +1416,7 @@ if (!window.devtoolsFormatters.includes(buttonFormatter)) {
  * const template = makeTemplate`I'm ${"name"}. I'm almost ${"age"} years old.`;
  * template({ name: "MDN", age: 30 }); // "I'm MDN. I'm almost 30 years old."
  */
-function makeTemplate(strings, ...keys) {
+export function makeTemplate(strings, ...keys) {
     return function (...values) {
         const dict = values[values.length - 1] || {};
         const result = [strings[0]];
@@ -1441,7 +1444,7 @@ function makeTemplate(strings, ...keys) {
  * // obj1 == {a: 4, b: 2, c: 3}
  * // obj2 == {a: 1, b: 2, c: 3}
  */
-function copyObject(obj) {
+export function copyObject(obj) {
     let result = obj;
     var type = {}.toString.call(obj).slice(8, -1);
     if (type == 'Set') return new Set([...obj].map(value => copyObject(value))); // convert list of values to array and copy each value
@@ -1498,7 +1501,7 @@ function parseTrace(trace) {
  * @param {String} str string to convert
  * @returns {String} converted string
  */
-function toHTMLEntities(str) {
+export function toHTMLEntities(str) {
     return [...str].split("").map(e => `&#${e.charCodeAt(0)};`).join("");
 }
 
@@ -1623,7 +1626,7 @@ let svgToDataUri = (function () {
  * @param {Boolean} raw whether to return the raw result or just console.log it
  * @returns {Object[]}
  */
-function logFormatted(object, options = {}) {
+export function logFormatted(object, options = {}) {
     let { embedObjects, raw, collapsed, maxDepth, label, extra_logs, enableCustomFormatters } = (function () {
         let defaults = {
             embedObjects: false, // embed the objects within the console message
@@ -1884,7 +1887,7 @@ window.logFormatted = logFormatted; // make function globally available
  * @param {any} obj the object to  stringify
  * @returns {string} the stringified object
  */
-function stringify(obj) {
+export function stringify(obj) {
     let objects = []; // array that holds list of all objects
     let indentAmount = 1; // number of spaces to indent the stringified object by (don't change this)
     let indentWidth = 4; // width of each indent. change this to change indent width
@@ -1960,7 +1963,7 @@ function stringify(obj) {
             return "" + obj; // just convert to string and return
         }
     }
-    return internal_stringify;
+    return internal_stringify(obj);
 }
 
 // JSF*ck
@@ -2220,7 +2223,7 @@ function meyerDiff(seq1, seq2) {
  * @param {any} arg
  * @returns {typeof arg}
  */
-function logAndReturn(arg) {
+export function logAndReturn(arg) {
     console.log(arg);
     return arg;
 }
@@ -2228,7 +2231,7 @@ function logAndReturn(arg) {
 /**
  * a set of utility functions to convert times to milliseconds
  */
-let timeConversions = (function () {
+export let timeConversions = (function () {
     let seconds = t => t * 1000;
     let minutes = t => t * seconds(60);
     let hours = t => t * minutes(60);
@@ -2271,7 +2274,7 @@ let WIP = (function () {
     console.log(tobe == decoded);
 });
 
-function rectangle(num) {
+export function rectangle(num) {
     let height = Math.ceil(Math.sqrt(num));
     let width = height;
     while (height * width - width > num) {
@@ -2281,7 +2284,7 @@ function rectangle(num) {
     return arr;
 }
 
-function reshape(arr, length, width) {
+export function reshape(arr, length, width) {
     arr = [...arr]; // clone array
     let result = [];
     for (let x = 0; x < width; x++) {
@@ -2300,7 +2303,7 @@ function reshape(arr, length, width) {
  * @param {Function} func the function to check
  * @returns {Boolean}
  */
-function isAsync(func) {
+export function isAsync(func) {
     const AsyncFunction = (async () => { }).constructor;
     return func instanceof AsyncFunction;
 }
@@ -2320,7 +2323,7 @@ const polyfills = (function () {
 /**
  * defines some custom elements
  */
-const CUSTOM_ELEMENTS = (function () {
+export const CUSTOM_ELEMENTS = (function () {
     function slider() { // input toggle slider
         customElements.define("input-slider", class extends HTMLElement {
             static observedAttributes = ["checked"];
@@ -2458,7 +2461,7 @@ const CUSTOM_ELEMENTS = (function () {
     return { all, slider };
 })();
 
-class jst_CSSRule {
+export class jst_CSSRule {
     static checkValidSelector(selector) {
         selector = selector.trim();
         if (typeof selector != "string") return false;
@@ -2513,7 +2516,7 @@ class jst_CSSRule {
     }
 }
 
-class jst_CSSStyleSheet {
+export class jst_CSSStyleSheet {
     constructor(rules = []) {
         this.rules = rules.filter(e => e instanceof jst_CSSRule);
     }
@@ -2533,7 +2536,7 @@ class jst_CSSStyleSheet {
     }
 }
 
-const CSSColors = {
+export const CSSColors = {
     aliceblue: "#f0f8ff", antiquewhite: "#faebd7", aqua: "#00ffff", aquamarine: "#7fffd4", azure: "#f0ffff",
     beige: "#f5f5dc", bisque: "#ffe4c4", black: "#000000", blanchedalmond: "#ffebcd", blue: "#0000ff",
     blueviolet: "#8a2be2", brown: "#a52a2a", burlywood: "#deb887", cadetblue: "#5f9ea0", chartreuse: "#7fff00",
@@ -2566,7 +2569,7 @@ const CSSColors = {
     whitesmoke: "#f5f5f5", yellow: "#ffff00", yellowgreen: "#9acd32"
 };
 
-class Color {
+export class Color {
     static hexRegex = /^#([0-9a-f]{3}){1,2}$/i;
     static hexaRegex = /^#([0-9a-f]{4}){1,2}$/i;
     static rgbRegex = /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/;
@@ -2687,7 +2690,7 @@ class Color {
     }
 }
 
-const BULK_OPERATIONS = (function () {
+export const BULK_OPERATIONS = (function () {
     class Numbers {
         constructor(...values) {
             this.values = values;
@@ -2757,20 +2760,3 @@ const BULK_OPERATIONS = (function () {
         }
     };
 })();
-
-const EXPORTS = {
-    waitForKeyElements, createElement, warn, clearWarn, error, clearError, hide, show, clear, disable, enable, tabColor, dynamicSort, advancedDynamicSort, rgbMix, map, gradient, interleaveArrays, captureConsole, flattenChildren, flattenChildNodes, getColor, lockValue, listAllColorsOnPage, clamp, getValueOrDefault, extend, settings, consoleButton, Settings, Section, Option, makeTemplate, copyObject, toHTMLEntities, logFormatted, stringify, logAndReturn, timeConversions, rectangle, reshape, isAsync, CUSTOM_ELEMENTS, jst_CSSRule, jst_CSSStyleSheet, Color, BULK_OPERATIONS
-};
-
-if (typeof module != "undefined") {
-    console.log("export 1");
-    module.exports = EXPORTS;
-} else if (typeof window != "undefined") {
-    console.log("export 3");
-    window.jstools = EXPORTS;
-} else {
-    console.log("export 4");
-    globalThis.jstools = EXPORTS;
-}
-
-export default EXPORTS;
