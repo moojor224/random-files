@@ -50,7 +50,7 @@ Math.roundf = (v, t) => Math.round(v * t) / t;
  */
 export function waitForKeyElements(query, callback, stopAfterFound, element) {
     let o, r;
-
+    
     (o = void 0 === element ? $(query) : $(element).contents().find(query)) &&
         o.length > 0
         ? ((r = !0),
