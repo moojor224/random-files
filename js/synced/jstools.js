@@ -75,7 +75,7 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
 } //wait for key elements
 
 let createElement = window.createElement;
-if (createElement === undefined) { // this is done to allow typescript type definitions in index.d.ts to work
+if (typeof createElement != "function") { // this is done to allow typescript type definitions in index.d.ts to work
     {
         // minified createElement
         // @ts-format-ignore-region
@@ -1350,58 +1350,6 @@ if (Option === undefined || !(Option.prototype instanceof EventTarget)) {
     }
 }
 export { Option };
-
-export let settings = new Settings({
-    name: "Settings"
-}, [
-    new Section({
-        name: "Billing Report",
-        id: "Sites_PlayerSummariesListNew"
-    }, [
-        new Option({
-            name: "Graph Type",
-            id: "graph_type",
-            type: "dropdown",
-            values: ["bar", "line"]
-        }),
-        new Option({
-            name: "Show Composite Graph",
-            id: "composite_graph",
-            type: "toggle",
-            value: false
-        }),
-        new Option({
-            name: "Show Individual Graphs",
-            id: "individual_graph",
-            type: "toggle",
-            value: false
-        })
-    ]),
-    new Section({
-        name: "Online Game Report",
-        id: "SereneOnlineGameReport"
-    }, [
-        new Option({
-            name: "Graph Type",
-            id: "graph_type",
-            type: "dropdown",
-            values: ["bar", "line"]
-        })
-    ]),
-    new Section({
-        name: "Recent Player Count",
-        id: "SereneRecentPlayerCount"
-    }, [
-        new Option({
-            name: "Graph Type",
-            id: "graph_type",
-            type: "dropdown",
-            values: ["bar", "line",
-                "cal"
-            ]
-        })
-    ])
-]);
 
 export function consoleButton(obj, func, args = [], label = "button", width = 50, height = width) {
     return { __button: true, obj, func, args, label, width, height };
