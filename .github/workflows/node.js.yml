@@ -10,6 +10,7 @@ on:
       - js/synced/jstools.js
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   build:
