@@ -1,4 +1,4 @@
-// node .\.github\scripts\update-jstools-gist.mjs {{ jstools_gist_key }}
+// node .\.github\scripts\update-jstools-gist.js {{ jstools_gist_key }}
 (async function () {
     const { Octokit } = await import("octokit");
     const key = await (async function () {
