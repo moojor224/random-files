@@ -1222,7 +1222,7 @@ if (Option === undefined || !(Option.prototype instanceof EventTarget)) {
         }
 
         set value(val) {
-            console.log("set value to", val);
+            // console.log("set value to", val);
             show("#loadingModal"); // show the loading modal
             let option = this;
             let previousVal = this.config.value;
@@ -1258,12 +1258,12 @@ if (Option === undefined || !(Option.prototype instanceof EventTarget)) {
          */
         render() {
             // devlog("render option");
-            let label = createElement("label");
+            let label = createElement("label"); // clicking a label will activate the first <input> inside it, so the 'for' attribute isn't required
             let span = createElement("span", {
                 innerHTML: this.config.name
             });
             let input = this.createInput();
-            label.add(span, input); // clicking a label will activate the first <input> inside it, so the 'for' attribute isn't required
+            label.add(span, input);
             return label;
         }
 
