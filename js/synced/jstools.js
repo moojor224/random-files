@@ -9,9 +9,10 @@ function tryImport(url) {
         }
     }
 }
-const { Prism } = await tryImport("../prism.js");
-const { js_beautify } = await tryImport("../beautify.js");
+const { Prism } = await tryImport("./prism.js");
+const { js_beautify } = await tryImport("./beautify.js");
 const { bulkElements } = await tryImport("./bulkElements.js");
+const { emmet } = await tryImport("./emmet.js");
 
 (function () { // overrides for nodejs
     function proxy() { // create a recursive dummy proxy object
