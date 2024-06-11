@@ -6,7 +6,7 @@ class Task:
             self.task = task
         else:
             raise Exception("Task function must have a return annotation of type bool")
-        self.initialized = True;
+        self.initialized = True
 
     def __init__(self, init, task):
         if str(init.__annotations__["return"]) == "<class 'bool'>":
@@ -17,7 +17,7 @@ class Task:
             self.task = task
         else:
             raise Exception("Task function must have a return annotation of type bool")
-        self.initialized = False;
+        self.initialized = False
 
     def execute(self):
         if not self.initialized:
