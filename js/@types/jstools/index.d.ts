@@ -83,12 +83,6 @@ declare class Tab extends EventTarget {
 // type CreateElementOptions<T> = {} & T;
 
 interface Window {
-    /**
-     * creates an element
-     * @param tagName tag name of the element
-     * @param options properties to set
-     */
-    createElement<Tag extends keyof HTMLElementTagNameMap>(tagName: Tag, options?: {} & HTMLElementTagNameMap[Tag]): HTMLElementTagNameMap[Tag];
     Settings: Settings;
     Section: Section;
     Options: Options;
