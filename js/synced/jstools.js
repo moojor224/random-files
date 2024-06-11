@@ -139,41 +139,39 @@ export function createElement(tag, data = {}) {
     return tag; // return result
 }
 
-extend(HTMLElement.prototype, /** @lends HTMLElement.prototype */ {
-    /**
-     * appends any number of objects to an HTMLElement
-     * @param  {...Element} args an array of objects to be added to the parent element
-     * @returns {typeof this}
-     * @memberof HTMLElement
-     * @function external:HTMLElement#add
-     * @example
-     * createElement("table").add(
-     *      createElement("tr").add(
-     *          createElement("td", {innerHTML: "col 1"}),
-     *          createElement("td", {innerHTML: "col 2"}),
-     *          createElement("td", {innerHTML: "col 3"})
-     *      )
-     * );
-     * // results in:
-     * <table>
-     *     <tr>
-     *         <td>col 1</td>
-     *         <td>col 2</td>
-     *         <td>col 3</td>
-     *     </tr>
-     * </table>
-     */
-    add: function (...args) {
-        args.forEach(elem => {
-            if (typeof elem == "string") {
-                this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
-            } else {
-                this.append(elem); // append element
-            }
-        });
-        return this;
-    }
-});
+/**
+ * appends any number of objects to an HTMLElement
+ * @param  {...Element} args an array of objects to be added to the parent element
+ * @returns {typeof this}
+ * @memberof HTMLElement
+ * @function external:HTMLElement#add
+ * @example
+ * createElement("table").add(
+ *      createElement("tr").add(
+ *          createElement("td", {innerHTML: "col 1"}),
+ *          createElement("td", {innerHTML: "col 2"}),
+ *          createElement("td", {innerHTML: "col 3"})
+ *      )
+ * );
+ * // results in:
+ * <table>
+ *     <tr>
+ *         <td>col 1</td>
+ *         <td>col 2</td>
+ *         <td>col 3</td>
+ *     </tr>
+ * </table>
+ */
+HTMLElement.prototype.add = function (...args) {
+    args.forEach(elem => {
+        if (typeof elem == "string") {
+            this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
+        } else {
+            this.append(elem); // append element
+        }
+    });
+    return this;
+}
 
 // loop through all HTML...Element prototypes and add the add function
 // Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
@@ -1310,7 +1308,8 @@ if (Option === undefined || !(Option.prototype instanceof EventTarget)) {
                     values.push(...this.config.values); // add defined values to list
                 }
                 values = Array.from(new Set(values)); // remove duplicates
-                input.add(...values.map(v => createElement("option", {
+                // input.add(...args);
+                values.forEach(v => input.add(createElement("option", {
                     innerHTML: v
                 })));
                 // if specified value is not in the list of predefined values, add it as a placeholder
