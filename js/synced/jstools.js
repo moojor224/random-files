@@ -138,51 +138,53 @@ export function createElement(tag, data = {}) {
     });
     return tag; // return result
 }
-
 /**
- * appends any number of objects to an HTMLElement
- * @param  {...Element} args an array of objects to be added to the parent element
- * @returns {this}
- * @memberof Element
- * @function external:Element#add
- * @example
- * createElement("table").add(
- *      createElement("tr").add(
- *          createElement("td", {innerHTML: "col 1"}),
- *          createElement("td", {innerHTML: "col 2"}),
- *          createElement("td", {innerHTML: "col 3"})
- *      )
- * );
- * // results in:
- * <table>
- *     <tr>
- *         <td>col 1</td>
- *         <td>col 2</td>
- *         <td>col 3</td>
- *     </tr>
- * </table>
+ * @interface HTMLElement
+ * @property {Function} add
  */
-function add(...args) {
-    args.forEach(elem => {
-        if (typeof elem == "string") {
-            this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
-        } else {
-            this.append(elem); // append element
-        }
-    });
-    return this;
-};
 
-if (window.HTMLElement.prototype.add === undefined) {
-    window.HTMLElement.prototype.add = add;
-}
-
-// loop through all HTML...Element prototypes and add the add function
-Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
-    if (window[e].prototype.add !== add) {
-        window[e].prototype.add = add
+extend(HTMLElement.prototype, /** @lends HTMLElement.prototype */ {
+    /**
+     * appends any number of objects to an HTMLElement
+     * @param  {...Element} args an array of objects to be added to the parent element
+     * @returns {typeof this}
+     * @memberof HTMLElement
+     * @function external:HTMLElement#add
+     * @example
+     * createElement("table").add(
+     *      createElement("tr").add(
+     *          createElement("td", {innerHTML: "col 1"}),
+     *          createElement("td", {innerHTML: "col 2"}),
+     *          createElement("td", {innerHTML: "col 3"})
+     *      )
+     * );
+     * // results in:
+     * <table>
+     *     <tr>
+     *         <td>col 1</td>
+     *         <td>col 2</td>
+     *         <td>col 3</td>
+     *     </tr>
+     * </table>
+     */
+    add: function (...args) {
+        args.forEach(elem => {
+            if (typeof elem == "string") {
+                this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
+            } else {
+                this.append(elem); // append element
+            }
+        });
+        return this;
     }
 });
+
+// loop through all HTML...Element prototypes and add the add function
+// Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
+//     if (window[e].prototype.add !== add) {
+//         window[e].prototype.add = add
+//     }
+// });
 
 /**
  * HTMLElement.isVisible will return true if the element is currently on screen
@@ -909,162 +911,170 @@ let settingsFormatter = {
 if (!window.devtoolsFormatters.includes(settingsFormatter)) { // only add one instance of the formatter
     window.devtoolsFormatters.push(settingsFormatter);
 }
-let Settings = window.Settings;
-if (Settings === undefined || !(Settings.prototype instanceof EventTarget)) {
-    Settings = class extends EventTarget {
-        config = {
-            name: "settings"
-        };
-        sections = [];
-        /**
-         * creates a new Settings object
-         * @param {Object} config config options
-         * @param {Section[]} sections array of sections to add to the settings
-         */
-        constructor(config = {}, sections) {
-            super(); // initialize EventTarget object
-            extend(this.config, config); // apply config to this
-            if (!Array.isArray(sections)) { // turn sections into array if it isn't already
-                sections = [sections];
+
+export class Settings extends EventTarget {
+    config = {
+        name: "settings"
+    };
+    /** @type {Section[]} */
+    sections = [];
+    /**
+     * creates a new Settings object
+     * @param {typeof this.config} config config options
+     * @param {Section[]} sections array of sections to add to the settings
+     */
+    constructor(config = {}, sections) {
+        super(); // initialize EventTarget object
+        extend(this.config, config); // apply config to this
+        if (!Array.isArray(sections)) { // turn sections into array if it isn't already
+            sections = [sections];
+        }
+        this.sections = sections.filter(e => e instanceof Section); // filter all non-Section elements out of sections array
+        sections.forEach(section => {
+            if (section instanceof Section) {
+                section.settings_obj = this; // set parent object of each section
             }
-            this.sections = sections.filter(e => e instanceof Section); // filter all non-Section elements out of sections array
-            sections.forEach(section => {
-                if (section instanceof Section) {
-                    section.settings_obj = this; // set parent object of each section
-                }
-            });
-        }
+        });
+    }
 
-        render() {
-            // devlog("render settings");
-            let div = createElement("div", { // main settings div
-                classList: "settings"
-            }).add(
-                createElement("h2", { innerHTML: this.config.name })
-            );
-            div.add(...this.sections.map(s => s.render())); // render all subsections and add them to the settings div
-            return div;
-        }
+    /**
+     * renders the settings object
+     * @returns {HTMLDivElement} settings element
+     */
+    render() {
+        // devlog("render settings");
+        let div = createElement("div", { // main settings div
+            classList: "settings"
+        }).add(
+            createElement("h2", { innerHTML: this.config.name })
+        );
+        div.add(...this.sections.map(s => s.render())); // render all subsections and add them to the settings div
+        return div;
+    }
 
-        /**
-         * 
-         * @param {String} id
-         * @returns {Section}
-         */
-        getSection(id) { // returns the section object with the given id
-            return this.sections.find(e => e.config.id == id);
-        }
+    /**
+     * returns the section object with the given id
+     * @param {String} id
+     * @returns {Section}
+     */
+    getSection(id) {
+        return this.sections.find(e => e.config.id == id);
+    }
 
-        /**
-         * converts the settings object to a stringified JSON object cabable of being imported through the Settings.fromJson() method
-         * @returns {String}
-         */
-        export() {
-            let data = JSON.parse(JSON.stringify(this, function (key, value) {
-                if (key.includes("_obj")) { // exclude parent objects to avoid recursion
-                    return undefined;
-                }
-                return value;
-            }));
-            data.sections.forEach(sec => {
-                sec.options.forEach(e => delete e.input) // remove input element
-            });
-            return JSON.stringify(data);
-        }
-
-        /**
-         * dispatches an event on the Settings object
-         * @param {Event} event event
-         */
-        dispatchEvent(event) {
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]) // call original dispatchEvent function
-            return !event.defaultPrevented || !event.cancelable;
-        }
-
-        /**
-         * listens for an event\
-         * wrapper function for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        on(type, callback) {
-            this.addEventListener(type, callback);
-        }
-
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper function for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        off(type, callback) {
-            this.removeEventListener(type, callback);
-        }
-
-        /**
-         * converts stringified json data into a settings object\
-         * json data can be generated from the export method
-         * @static
-         * @param {String} jsontext stringified json data
-         * @returns {Settings}
-         */
-        static fromJson(jsontext) {
-            if (jsontext.length == 0) {
-                return null;
+    /**
+     * converts the settings object to a stringified JSON object cabable of being imported through the Settings.fromJson() method
+     * @returns {String}
+     */
+    export() {
+        let data = JSON.parse(JSON.stringify(this, function (key, value) {
+            if (key.includes("_obj")) { // exclude parent objects to avoid recursion
+                return undefined;
             }
-            try {
-                let json = JSON.parse(jsontext);
-                let validate = Joi.object({ // validate object to make sure it's in the correct format
+            return value;
+        }));
+        data.sections.forEach(sec => {
+            sec.options.forEach(e => delete e.input) // remove input element
+        });
+        return JSON.stringify(data);
+    }
+
+    /**
+     * dispatches an event on the Settings object
+     * @param {Event} event the event to dispatch
+     * @returns {Boolean}
+     */
+    dispatchEvent(event) {
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
+        originalDispatch.apply(this, [event]) // call original dispatchEvent function
+        return !event.defaultPrevented || !event.cancelable;
+    }
+
+    /**
+     * listens for an event\
+     * wrapper function for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    on(type, callback) {
+        this.addEventListener(type, callback);
+    }
+
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper function for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    off(type, callback) {
+        this.removeEventListener(type, callback);
+    }
+
+    /**
+     * converts stringified json data into a settings object\
+     * json data can be generated from the export method
+     * @static
+     * @param {String} jsontext stringified json data
+     * @returns {Settings}
+     */
+    static fromJson(jsontext) {
+        if (jsontext.length == 0) {
+            return null;
+        }
+        try {
+            let json = JSON.parse(jsontext);
+            let validate = Joi.object({ // validate object to make sure it's in the correct format
+                config: Joi.object({
+                    name: Joi.string().required()
+                }).required(),
+                sections: Joi.array().items(Joi.object({
                     config: Joi.object({
-                        name: Joi.string().required()
-                    }).required(),
-                    sections: Joi.array().items(Joi.object({
+                        name: Joi.string().required(),
+                        id: Joi.string().required()
+                    }),
+                    options: Joi.array().items(Joi.object({
                         config: Joi.object({
                             name: Joi.string().required(),
-                            id: Joi.string().required()
-                        }),
-                        options: Joi.array().items(Joi.object({
-                            config: Joi.object({
-                                name: Joi.string().required(),
-                                id: Joi.string().required(),
-                                type: Joi.string().required(),
-                                value: Joi.any(),
-                                values: Joi.array()
-                            }).required()
-                        })).required()
+                            id: Joi.string().required(),
+                            type: Joi.string().required(),
+                            value: Joi.any(),
+                            values: Joi.array()
+                        }).required()
                     })).required()
-                }).validate(json);
-                if (validate.error) { // object isn't in the correct format
-                    console.error("invalid json data");
-                    throw new Error(validate.error);
-                }
-                return new Settings(json.config, json.sections.map(sec => { // parse object into settings, sections, and options
-                    return new Section(sec.config, sec.options.map(opt => {
-                        return new Option(opt.config);
-                    }));
+                })).required()
+            }).validate(json);
+            if (validate.error) { // object isn't in the correct format
+                console.error("invalid json data");
+                throw new Error(validate.error);
+            }
+            return new Settings(json.config, json.sections.map(sec => { // parse object into settings, sections, and options
+                return new Section(sec.config, sec.options.map(opt => {
+                    return new Option(opt.config);
                 }));
-            } catch (err) {
-                console.error(err);
-                return err;
-            }
-        }
-
-        replaceWith(settings) {
-            console.log("replacing", Object.assign({}, this), "with", Object.assign({}, settings));
-            // replaces this settings object with another one by overriding sections array and config.
-            // because this object was exported, it can't be assigned in other modules,
-            // so a custom function had to be made
-            if (!(settings instanceof Settings)) { // only override if provided object is a Setting object
-                console.log("settings object is not an instance of the Settings class", settings);
-                return;
-            }
-            this.config = settings.config; // override config
-            this.sections = settings.sections; // override sections
+            }));
+        } catch (err) {
+            console.error(err);
+            return err;
         }
     }
+
+    /**
+     * replaces this settings object with another one by overriding sections array and config\
+     * meant to be used with the Settings.fromJson() method
+     * @param {Settings} settings settings object to replace this one with
+     */
+    replaceWith(settings) {
+        console.log("replacing", Object.assign({}, this), "with", Object.assign({}, settings));
+        // replaces this settings object with another one by overriding sections array and config.
+        // because this object was exported, it can't be assigned in other modules,
+        // so a custom function had to be made
+        if (!(settings instanceof Settings)) { // only override if provided object is a Setting object
+            console.log("settings object is not an instance of the Settings class", settings);
+            return;
+        }
+        this.config = settings.config; // override config
+        this.sections = settings.sections; // override sections
+    }
 }
-export { Settings };
 
 let sectionFormatter = {
     label: "section formatter",
@@ -1116,95 +1126,90 @@ if (!window.devtoolsFormatters.includes(sectionFormatter)) { // only add one ins
     window.devtoolsFormatters.push(sectionFormatter);
 }
 
-let Section = window.Section;
-if (Section === undefined || !(Section.prototype instanceof EventTarget)) {
-    Section = class extends EventTarget {
-        /**
-         * @type {Settings}
-         */
-        settings_obj = null;
-        config = {
-            name: "section"
-        }
-        options = [];
+export class Section extends EventTarget {
+    /** @type {Settings} */
+    settings_obj = null;
+    config = {
+        name: "section"
+    }
+    /** @type {Options[]} */
+    options = [];
 
-        /**
-         * makes a new Section object
-         * @param {Object} config config options
-         * @param {Options[]} options array of Options to add to the section
-         */
-        constructor(config, options) {
-            super(); // initialize EventTarget
-            extend(this.config, config); // apply config to this
-            if (!Array.isArray(options)) { // turn options into array if it isn't one already
-                options = [options];
+    /**
+     * makes a new Section object
+     * @param {typeof this.config} config config options
+     * @param {Options[]} options array of Options to add to the section
+     */
+    constructor(config, options) {
+        super(); // initialize EventTarget
+        extend(this.config, config); // apply config to this
+        if (!Array.isArray(options)) { // turn options into array if it isn't one already
+            options = [options];
+        }
+        this.options = options.filter(e => e instanceof Option); // remove all non-Option items from array
+        options.forEach(option => {
+            if (option instanceof Option) {
+                option.section_obj = this; // set parent object for each option
             }
-            this.options = options.filter(e => e instanceof Option); // remove all non-Option items from array
-            options.forEach(option => {
-                if (option instanceof Option) {
-                    option.section_obj = this; // set parent object for each option
-                }
-            });
-        }
+        });
+    }
 
-        /**
-         * 
-         * @param {String} name
-         * @returns {Option}
-         */
-        getOption(name) { // returns the section object with the given id
-            return this.options.find(e => e.config.id == name);
-        }
+    /**
+     * returns the option object with the given id
+     * @param {String} name
+     * @returns {Options}
+     */
+    getOption(name) { // returns the section object with the given id
+        return this.options.find(e => e.config.id == name);
+    }
 
-        /**
-         * renders the section object as HTML
-         * @returns {HTMLElement}
-         */
-        render() {
-            // devlog("render section");
-            let section = createElement("section").add(
-                createElement("h2", { innerHTML: this.config.name }) // section title
-            );
-            section.add(...this.options.map(o => o.render())); // render all options in this section
-            return section;
-        }
+    /**
+     * renders the section object as HTML
+     * @returns {}
+     */
+    render() {
+        // devlog("render section");
+        let section = createElement("section").add(
+            createElement("h2", { innerHTML: this.config.name }) // section title
+        );
+        section.add(...this.options.map(o => o.render())); // render all options in this section
+        return section;
+    }
 
-        /**
-         * dispatches an event on the Section object
-         * @param {String} type event type
-         * @param {Object} config event options/data
-         */
-        dispatchEvent(event) {
-            this.settings_obj.dispatchEvent(event); // bubble event to parent element
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]); // call original dispatchEvent function
-            return !event.defaultPrevented || !event.cancelable;
-        }
+    /**
+     * dispatches an event on the Section object
+     * @param {String} type event type
+     * @param {Object} config event options/data
+     */
+    dispatchEvent(event) {
+        this.settings_obj.dispatchEvent(event); // bubble event to parent element
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
+        originalDispatch.apply(this, [event]); // call original dispatchEvent function
+        return !event.defaultPrevented || !event.cancelable;
+    }
 
-        /**
-         * listens for an event\
-         * wrapper for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        on(type, callback) {
-            // console.log("on", this.#listeners);
-            this.addEventListener(type, callback);
-        }
+    /**
+     * listens for an event\
+     * wrapper for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    on(type, callback) {
+        // console.log("on", this.#listeners);
+        this.addEventListener(type, callback);
+    }
 
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        off(type, callback) {
-            // console.log("off", this.#listeners);
-            this.removeEventListener(type, callback);
-        }
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    off(type, callback) {
+        // console.log("off", this.#listeners);
+        this.removeEventListener(type, callback);
     }
 }
-export { Section };
 
 let Option = window.Options;
 if (Option === undefined || !(Option.prototype instanceof EventTarget)) {

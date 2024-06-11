@@ -10,9 +10,6 @@ type Without<T, K> = {
     [L in Exclude<keyof T, K>]: T[L];
 }
 
-type SettingsConfig = {
-    name?: String
-}
 
 type SectionConfig = {
     name?: String;
@@ -32,26 +29,7 @@ type OptionTypes = {
     "slider": HTMLInputElement;
 }
 
-
-declare class Settings extends EventTarget {
-    constructor(config: SettingsConfig);
-    config: SettingsConfig;
-    sections: Section[];
-    render(): HTMLDivElement;
-    getSection(id: string): Section;
-    export(): String;
-    dispatchEvent(event: Event): boolean;
-    on(type: String, callback: Function): void;
-    off(type: String, callback: Function): void;
-    static loadJson(jsontext: String): Settings;
-    replaceWith(settings: Settings): void;
-}
-
 declare class Section {
-    constructor(config: SectionConfig);
-    config: SectionConfig;
-    settings_obj: Settings;
-    options: Options[];
     render(): HTMLDivElement;
 }
 
@@ -83,9 +61,6 @@ declare class Tab extends EventTarget {
 // type CreateElementOptions<T> = {} & T;
 
 interface Window {
-    Settings: Settings;
-    Section: Section;
-    Options: Options;
     Tab: Tab;
 }
 
@@ -94,8 +69,8 @@ type HTMLWarnElement = HTMLDivElement;
 type HTMLErrorElement = HTMLDivElement;
 
 
-interface HTMLElementTagNameMap {
-    "warn": HTMLWarnElement
-    "error": HTMLErrorElement
-    "tab": HTMLTabElement
-}
+// interface HTMLElementTagNameMap {
+//     "warn": HTMLWarnElement
+//     "error": HTMLErrorElement
+//     "tab": HTMLTabElement
+// }
