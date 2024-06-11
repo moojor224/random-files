@@ -138,10 +138,6 @@ export function createElement(tag, data = {}) {
     });
     return tag; // return result
 }
-/**
- * @interface HTMLElement
- * @property {Function} add
- */
 
 extend(HTMLElement.prototype, /** @lends HTMLElement.prototype */ {
     /**
