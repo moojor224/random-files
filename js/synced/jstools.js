@@ -987,9 +987,11 @@ export class Settings extends EventTarget {
      * @returns {Boolean}
      */
     dispatchEvent(event) {
+        // console.log("dispatching settings event:", event.type, event);
         let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
-        originalDispatch.apply(this, [event]) // call original dispatchEvent function
-        return !event.defaultPrevented || !event.cancelable;
+        let cont = originalDispatch.apply(this, [event]); // call original dispatchEvent function
+        // console.log("settings event default prevented:", event.defaultPrevented, event.cancelable, cont);
+        return !event.defaultPrevented && cont;
     }
 
     /**
@@ -999,7 +1001,9 @@ export class Settings extends EventTarget {
      * @param {Function} callback callback function
      */
     on(type, callback) {
-        this.addEventListener(type, callback);
+        // console.log("binding settings listener", type, callback);
+        let originalAddEventListener = EventTarget.prototype.addEventListener.bind(this); // get copy of original addEventListener function
+        originalAddEventListener.apply(this, [type, callback]); // call original addEventListener function
     }
 
     /**
@@ -1009,7 +1013,9 @@ export class Settings extends EventTarget {
      * @param {Function} callback callback function
      */
     off(type, callback) {
-        this.removeEventListener(type, callback);
+        // this.removeEventListener(type, callback);
+        let originalRemoveEventListener = EventTarget.prototype.removeEventListener.bind(this); // get copy of original removeEventListener function
+        originalRemoveEventListener.apply(this, [type, callback]); // call original removeEventListener function
     }
 
     /**
@@ -1076,6 +1082,12 @@ export class Settings extends EventTarget {
         }
         this.config = settings.config; // override config
         this.sections = settings.sections; // override sections
+        this.sections.forEach(section => {
+            section.settings_obj = this; // set parent object for each section
+            section.options.forEach(option => {
+                option.section_obj = section; // set parent object for each option
+            });
+        });
     }
 }
 
@@ -1185,10 +1197,12 @@ export class Section extends EventTarget {
      * @param {Object} config event options/data
      */
     dispatchEvent(event) {
-        this.settings_obj.dispatchEvent(event); // bubble event to parent element
+        // console.log("dispatching section event", event);
         let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
-        originalDispatch.apply(this, [event]); // call original dispatchEvent function
-        return !event.defaultPrevented || !event.cancelable;
+        let cont = originalDispatch.apply(this, [event]); // call original dispatchEvent function
+        if (cont) this.settings_obj.dispatchEvent(event); // bubble event to parent element
+        // console.log("section event default prevented:", event.defaultPrevented, event.cancelable, cont);
+        return !event.defaultPrevented && cont;
     }
 
     /**
@@ -1199,7 +1213,8 @@ export class Section extends EventTarget {
      */
     on(type, callback) {
         // console.log("on", this.#listeners);
-        this.addEventListener(type, callback);
+        let originalAddEventListener = EventTarget.prototype.addEventListener.bind(this); // get copy of original addEventListener function
+        originalAddEventListener.apply(this, [type, callback]); // call original addEventListener function
     }
 
     /**
@@ -1210,174 +1225,159 @@ export class Section extends EventTarget {
      */
     off(type, callback) {
         // console.log("off", this.#listeners);
-        this.removeEventListener(type, callback);
+        let originalRemoveEventListener = EventTarget.prototype.removeEventListener.bind(this); // get copy of original removeEventListener function
+        originalRemoveEventListener.apply(this, [type, callback]); // call original removeEventListener function
     }
 }
 
-let Option = window.Options;
-if (Option === undefined || !(Option.prototype instanceof EventTarget)) {
-    Option = class extends EventTarget {
-        /**
-         * @type {HTMLElement}
-         */
-        input = null;
 
-        /**
-         * @type {Section}
-         */
-        section_obj = null;
-        config = {
-            name: "option",
-            type: "toggle",
-            value: false
-        }
+export class Option extends EventTarget {
+    /** @type {HTMLElement} */
+    input = null;
 
-        /**
-         * creates a new Option object
-         * @param {Object} config Option options
-         */
-        constructor(config) {
-            super(); // initialize EventTarget object
-            extend(this.config, config); // apply config to this
-            if (config.value == undefined && config.values) { // if value is not specified, set value to first value in values
-                this.config.value = config.values[0];
-            }
-        }
+    /** @type {Section} */
+    section_obj = null;
+    config = {
+        name: "option",
+        type: "toggle",
+        value: false
+    }
 
-        get value() {
-            return this.config.value;
-        }
-
-        set value(val) {
-            // console.log("set value to", val);
-            show("#loadingModal"); // show the loading modal
-            let option = this;
-            let previousVal = this.config.value;
-            this.config.value = val;
-            fetch("/Reports/Report/SaveSettings", { // fetch request to server to save user settings
-                method: "POST",
-                body: this.section_obj.settings_obj.export(),
-                headers: {
-                    "X-CSRF-TOKEN": Cookies.get("CSRF-TOKEN") // auth token
-                }
-            }).then(e => {
-                e.text().then(t => {
-                    if (t.includes("error")) { // settings could not save
-                        console.log("error saving settings");
-                        this.config.value = previousVal; // revert option change in config object
-                        if (this.input.checked != undefined) { // revert option change in input element
-                            this.input.checked = previousVal;
-                        } else {
-                            this.input = previousVal;
-                        }
-                    } else {
-                        console.log("successfully saved settings");
-                    }
-                    option.dispatchEvent(new Event("change")); // forward event from html element to option object
-                    hide("#loadingModal"); // hide the loading modal
-                });
-            });
-        }
-
-        /**
-         * renders the option object as HTML
-         * @returns {HTMLLabelElement}
-         */
-        render() {
-            // devlog("render option");
-            let label = createElement("label"); // clicking a label will activate the first <input> inside it, so the 'for' attribute isn't required
-            let span = createElement("span", {
-                innerHTML: this.config.name
-            });
-            let input = this.createInput();
-            label.add(span, input);
-            return label;
-        }
-
-        /**
-         * creates the input method specified by the option config
-         * @returns {HTMLSelectElement|HTMLInputElement}
-         */
-        createInput() {
-            let input; // initialize variable
-            let option = this; // save reference to this
-            if (this.config.type == "toggle") { // standard on/off toggle
-                input = createElement("input", {
-                    type: "checkbox",
-                    classList: "slider", // pure css toggle switch
-                    checked: option.config.value
-                });
-            } else if (this.config.type == "dropdown") {
-                input = createElement("select");
-                let values = [];
-                if (this.config.values || (!["undefined", "null"].includes(typeof this.config.values))) { // if list of values is defined
-                    if (!Array.isArray(this.config.values)) { // if values is not an array, make it one
-                        this.config.values = [this.config.values];
-                    }
-                    values.push(...this.config.values); // add defined values to list
-                }
-                values = Array.from(new Set(values)); // remove duplicates
-                // input.add(...args);
-                values.forEach(v => input.add(createElement("option", {
-                    innerHTML: v
-                })));
-                // if specified value is not in the list of predefined values, add it as a placeholder
-                if (this.config.value && !this.config.values.includes(this.config.value)) {
-                    input.insertAdjacentElement("afterBegin", createElement("option", { // insert option element at beginning of select list
-                        innerHTML: this.config.value,
-                        value: this.config.value,
-                        hidden: true, // visually hide placeholder from dropdown
-                        disabled: true // prevent user from selecting it
-                    }));
-                }
-                input.value = this.config.value || this.config.values[0];
-            }
-            input.addEventListener("input", function () { // when setting is changed, dispatch change event on the options object
-                if (input.checked != undefined) {
-                    option.value = input.checked;
-                } else {
-                    option.value = input.value;
-                }
-            });
-            return input;
-        }
-
-        /**
-         * dispatches an event on the Option object
-         * @param {String} type event type
-         * @param {Object} config event options/data
-         */
-        dispatchEvent(event) {
-            this.section_obj.dispatchEvent(event); // bubble event to parent section
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // save copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]); // call original dispatchEvent function
-            return !event.defaultPrevented || !event.cancelable;
-        }
-
-        /**
-         * listens for an event\
-         * wrapper function for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        on(type, callback) {
-            // console.log("option on", this.#listeners);
-            this.addEventListener(type, callback);
-        }
-
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper function for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        off(type, callback) {
-            // console.log("option off", this.#listeners);
-            this.removeEventListener(type, callback);
+    /**
+     * creates a new Option object
+     * @param {Object} config Option options
+     */
+    constructor(config) {
+        super(); // initialize EventTarget object
+        extend(this.config, config); // apply config to this
+        if (config.value == undefined && config.values) { // if value is not specified, set value to first value in values
+            this.config.value = config.values[0];
         }
     }
+
+    get value() {
+        return this.config.value;
+    }
+
+    set value(val) {
+        // console.log("set value to", val, "cur:", this.config.value);
+        this.config.value = val;
+    }
+
+    /**
+     * renders the option object as HTML
+     * @returns {HTMLLabelElement}
+     */
+    render() {
+        // devlog("render option");
+        let label = createElement("label"); // clicking a label will activate the first <input> inside it, so the 'for' attribute isn't required
+        let span = createElement("span", {
+            innerHTML: this.config.name
+        });
+        let input = this.createInput();
+        label.add(span, input);
+        return label;
+    }
+
+    /**
+     * creates the input method specified by the option config
+     * @returns {HTMLSelectElement|HTMLInputElement}
+     */
+    createInput() {
+        let input; // initialize variable
+        let option = this; // save reference to this
+        if (this.config.type == "toggle") { // standard on/off toggle
+            input = createElement("input", {
+                type: "checkbox",
+                classList: "slider", // pure css toggle switch
+                checked: option.config.value
+            });
+        } else if (this.config.type == "dropdown") {
+            input = createElement("select");
+            let values = [];
+            if (this.config.values || (!["undefined", "null"].includes(typeof this.config.values))) { // if list of values is defined
+                if (!Array.isArray(this.config.values)) { // if values is not an array, make it one
+                    this.config.values = [this.config.values];
+                }
+                values.push(...this.config.values); // add defined values to list
+            }
+            values = Array.from(new Set(values)); // remove duplicates
+            // input.add(...args);
+            values.forEach(v => input.add(createElement("option", {
+                innerHTML: v
+            })));
+            // if specified value is not in the list of predefined values, add it as a placeholder
+            if (this.config.value && !this.config.values.includes(this.config.value)) {
+                input.insertAdjacentElement("afterBegin", createElement("option", { // insert option element at beginning of select list
+                    innerHTML: this.config.value,
+                    value: this.config.value,
+                    hidden: true, // visually hide placeholder from dropdown
+                    disabled: true // prevent user from selecting it
+                }));
+            }
+            input.value = this.config.value || this.config.values[0];
+        }
+        input.addEventListener("change", function (event) { // when setting is changed, dispatch change event on the options object
+            let evt = new Event("change", { cancelable: true });
+            let prop;
+            if (input.checked != undefined) {
+                prop = "checked";
+            } else {
+                prop = "value";
+            }
+            evt.val = input[prop];
+            evt.opt = option;
+            evt.prop = prop;
+            let cont = option.dispatchEvent(evt);
+            if (cont) {
+                option.value = evt.val;
+            } else {
+                // console.log("input canceled");
+                input[prop] = option.value;
+                event.preventDefault();
+            }
+        });
+        option.config.input = input; // save input element to config object
+        return input;
+    }
+
+    /**
+     * dispatches an event on the Option object
+     * @param {String} type event type
+     * @param {Object} config event options/data
+     */
+    dispatchEvent(event) {
+        // console.log("dispatching option event", event.val);
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // save copy of original dispatchEvent function
+        let cont = originalDispatch.apply(this, [event]); // call original dispatchEvent function
+        if (cont) this.section_obj.dispatchEvent(event); // bubble event to parent section
+        return !event.defaultPrevented && cont;
+    }
+
+    /**
+     * listens for an event\
+     * wrapper function for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    on(type, callback) {
+        // console.log("option on", this.#listeners);
+        let originalAddEventListener = EventTarget.prototype.addEventListener.bind(this); // get copy of original addEventListener function
+        originalAddEventListener.apply(this, [type, callback]); // call original addEventListener function
+    }
+
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper function for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    off(type, callback) {
+        // console.log("option off", this.#listeners);
+        let originalRemoveEventListener = EventTarget.prototype.removeEventListener.bind(this); // get copy of original removeEventListener function
+        originalRemoveEventListener.apply(this, [type, callback]); // call original removeEventListener function
+    }
 }
-export { Option };
 
 export function consoleButton(obj, func, args = [], label = "button", width = 50, height = width) {
     return { __button: true, obj, func, args, label, width, height };
