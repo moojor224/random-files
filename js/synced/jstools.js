@@ -59,7 +59,16 @@ const { emmet } = await tryImport("./emmet.js");
     }
 })();
 
-Math.roundf = (v, t) => Math.round(v * t) / t;
+/**
+ * rounds a number {v} to the nearest multiple of {t}
+ * @param {number} v the value to round
+ * @param {number} t the multiple to round to
+ * @returns {number}
+ */
+export function roundf(v, t) {
+    return Math.round(v / t) * t;
+}
+Math.roundf = roundf;
 
 /**
  * accepts a css selector and a callback function\
