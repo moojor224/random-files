@@ -1,4 +1,7 @@
 {
     "window.title": "${rootName}",
-    "liveServer.settings.port": 5502
+    "liveServer.settings.port": 5502,
+    "scriptmonkey.activation condition.userscript header": true,
+    "scriptmonkey.metaData.default.author": "moojor224",
+    "scriptmonkey.metaData.default.namespace": "https://github.com/moojor224",
 }
