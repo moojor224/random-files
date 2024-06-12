@@ -138,80 +138,89 @@ export function createElement(tag, data = {}) {
     });
     return tag; // return result
 }
-
 /**
- * appends any number of objects to an HTMLElement
- * @param  {...Element} args an array of objects to be added to the parent element
- * @returns {typeof this}
- * @memberof HTMLElement
- * @function external:HTMLElement#add
- * @example
- * createElement("table").add(
- *      createElement("tr").add(
- *          createElement("td", {innerHTML: "col 1"}),
- *          createElement("td", {innerHTML: "col 2"}),
- *          createElement("td", {innerHTML: "col 3"})
- *      )
- * );
- * // results in:
- * <table>
- *     <tr>
- *         <td>col 1</td>
- *         <td>col 2</td>
- *         <td>col 3</td>
- *     </tr>
- * </table>
+ * one-time definition of methods
  */
-HTMLElement.prototype.add = function (...args) {
-    args.forEach(elem => {
-        if (typeof elem == "string") {
-            this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
-        } else {
-            this.append(elem); // append element
+(function () {
+    if (globalThis.jstools_defined) {
+        return;
+    }
+    // loop through all HTML...Element prototypes and add the add function
+    // Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
+    //     if (window[e].prototype.add !== add) {
+    //         window[e].prototype.add = add
+    //     }
+    // });
+
+    /**
+     * appends any number of objects to an HTMLElement
+     * @param  {...Element} args an array of objects to be added to the parent element
+     * @returns {typeof this}
+     * @memberof HTMLElement
+     * @function external:HTMLElement#add
+     * @example
+     * createElement("table").add(
+     *      createElement("tr").add(
+     *          createElement("td", {innerHTML: "col 1"}),
+     *          createElement("td", {innerHTML: "col 2"}),
+     *          createElement("td", {innerHTML: "col 3"})
+     *      )
+     * );
+     * // results in:
+     * <table>
+     *     <tr>
+     *         <td>col 1</td>
+     *         <td>col 2</td>
+     *         <td>col 3</td>
+     *     </tr>
+     * </table>
+     */
+    HTMLElement.prototype.add = function (...args) {
+        args.forEach(elem => {
+            if (typeof elem == "string") {
+                this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
+            } else {
+                this.append(elem); // append element
+            }
+        });
+        return this;
+    }
+
+    /** HTMLElement.isVisible will return true if the element is currently on screen */
+    Object.defineProperty(HTMLElement.prototype, "isVisible", {
+        get: function () {
+            if (this === document.documentElement) { // node is the root node
+                return true;
+            }
+            if (!this.parentNode) { // node has no parent (not attached to page)
+                return false;
+            }
+            let style = window.getComputedStyle ? window.getComputedStyle(this) : this.currentStyle; // get current computed style
+            return !(
+                style.display === "none" || // node is hidden via css
+                style.visibility === "hidden" ||
+                style.opacity == "0"
+            ) &&
+                this.parentNode.isVisible && // make sure parent node is visible
+                (function () {
+                    let bounds = this.getBoundingClientRect();  // get position of element
+                    let html = document.documentElement, body = document.body; // get html and body elements
+                    let viewport = { // get viewport dimensions and position
+                        width: Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth),
+                        height: Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight)
+                    };
+                    return bounds.left >= 0 && // check if element is within viewport
+                        bounds.top >= 0 &&
+                        bounds.right <= viewport.width &&
+                        bounds.bottom <= viewport.height;
+                }).bind(this)();
         }
     });
-    return this;
-}
+})()
 
-// loop through all HTML...Element prototypes and add the add function
-// Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
-//     if (window[e].prototype.add !== add) {
-//         window[e].prototype.add = add
-//     }
-// });
 
-/**
- * HTMLElement.isVisible will return true if the element is currently on screen
- */
-Object.defineProperty(HTMLElement.prototype, "isVisible", {
-    get: function () {
-        if (this === document.documentElement) { // node is the root node
-            return true;
-        }
-        if (!this.parentNode) { // node has no parent (not attached to page)
-            return false;
-        }
-        let style = window.getComputedStyle ? window.getComputedStyle(this) : this.currentStyle; // get current computed style
-        return !(
-            style.display === "none" || // node is hidden via css
-            style.visibility === "hidden" ||
-            style.opacity == "0"
-        ) &&
-            this.parentNode.isVisible && // make sure parent node is visible
-            (function () {
-                let bounds = this.getBoundingClientRect();  // get position of element
-                let html = document.documentElement, body = document.body; // get html and body elements
-                let viewport = { // get viewport dimensions and position
-                    width: Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth),
-                    height: Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight)
-                };
-                return bounds.left >= 0 && // check if element is within viewport
-                    bounds.top >= 0 &&
-                    bounds.right <= viewport.width &&
-                    bounds.bottom <= viewport.height;
-            }).bind(this)();
-    }
-});
+
+
 
 /**
  * adds a warning message to the specified elements
@@ -1963,6 +1972,7 @@ export function stringify(obj) {
 // library that converts javascript to code that only uses the following characters: []()!+
 
 (function () {
+    if (globalThis.jstools_defined) return;
     const MIN = 32, MAX = 126;
     const SIMPLE = { false: '![]', true: '!![]', undefined: '[][[]]', NaN: '+[![]]', Infinity: '+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])'/* +"1e1000" */ };
     const CONSTRUCTORS = { Array: '[]', Number: '(+[])', String: '([]+[])', Boolean: '(![])', Function: '[]["flat"]', RegExp: 'Function("return/"+false+"/")()', Object: '[]["entries"]()' };
@@ -2306,7 +2316,8 @@ export function isAsync(func) {
  * Adds polyfills for missing browser features.
  */
 const polyfills = (function () {
-    if (!Element.prototype.computedStyleMap && window.getComputedStyle != undefined) {
+    if (globalThis.jstools_defined) return;
+    if (!Element.prototype.computedStyleMap && globalThis.getComputedStyle != undefined) {
         Element.prototype.computedStyleMap = function () {
             return window.getComputedStyle(this);
         }
@@ -2684,6 +2695,7 @@ export class Color {
 }
 
 export const BULK_OPERATIONS = (function () {
+    if (globalThis.jstools_defined) return;
     class Numbers {
         constructor(...values) {
             this.values = values;
@@ -2753,3 +2765,5 @@ export const BULK_OPERATIONS = (function () {
         }
     };
 })();
+
+globalThis.jstools_defined = true;
