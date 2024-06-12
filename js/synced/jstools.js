@@ -693,6 +693,16 @@ export function lockValue(callback, ...args) {
 }
 
 /**
+ * return white or black depending on the contrast of the given color
+ * @param {string} rgb rgb(R, G, B) formatted color
+ * @returns 
+ */
+export function getContrastColor(rgb) {
+    let [r, g, b] = rgb.replaceAll(/[^0-9 ]/g, "").split(" ");
+    return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
+}
+
+/**
  * logs all colors on the page to console, grouped by text color and background color
  * 
  * show each individual element in each group
@@ -720,17 +730,12 @@ export function listAllColorsOnPage() {
         return "#" + rgb.replaceAll(/[^0-9\.]/g, " ").replaceAll("  ", " ").trim().split(" ").map((e, n) => parseInt(e * (n == 3 ? 255 : 1)).toString(16).padStart(2, e)).join("");
     }
 
-    function getColor(rgb) {
-        let [r, g, b] = rgb.replaceAll(/[^0-9 ]/g, "").split(" ");
-        return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
-    }
-
     let colorProps = ["backgroundColor", "color"]; // which properties to search for colors in
 
     function displayResults(array) {
         array.forEach(e => {
             console.groupCollapsed(`%c${rgbToHex(e.value)} (${(e.varName)})`, /*STYLE*/`
-                color: ${getColor(e.value)};
+                color: ${getContrastColor(e.value)};
                 background-color: ${e.value};
                 padding: 20px;
                 line-height: 60px;
