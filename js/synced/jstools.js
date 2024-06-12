@@ -1036,6 +1036,9 @@ export class Settings extends EventTarget {
         }
         try {
             let json = JSON.parse(jsontext);
+            try {
+                json.sections.forEach(s => s.options.forEach(o => delete o.config.input))
+            } catch (err) { }
             let validate = Joi.object({ // validate object to make sure it's in the correct format
                 config: Joi.object({
                     name: Joi.string().required()
