@@ -2302,10 +2302,15 @@ let WIP = (function () {
     console.log(tobe == decoded);
 });
 
+/**
+ * generates a 2d array
+ * @param {Number} num the minimum number of items
+ * @returns {Array<Array<any>>}
+ */
 export function rectangle(num) {
     let height = Math.ceil(Math.sqrt(num));
     let width = height;
-    while (height * width - width > num) {
+    while (height * width - width >= num) {
         height--;
     }
     let arr = new Array(height).fill(0).map(e => new Array(width));
