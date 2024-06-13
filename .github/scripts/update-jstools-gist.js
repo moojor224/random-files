@@ -31,8 +31,10 @@
     //     return match;
     // });
     jst_src = jst_src.replaceAll(/\nexport\s?/g, "");
+    jst_src = jst_src.replaceAll(/\nconst \{ [a-zA-Z0-9_]+ \} = await tryImport\("[a-zA-Z0-9_\.\/]+\.js"\);/g, "");
     jst_src = `export const jst = (async function(){${jst_src}\nreturn { ${exported_vars.map(e => `${e}`).join(", ")} }\n})();`.toString("base64");
     // fs.writeFileSync(path.join(__dirname, "jst_src,js"), jst_src);
+    // debugger
     let jst_imported = await import("data:text/javascript;base64," + Buffer.from(jst_src).toString('base64'));
     await jst_imported.jst;
     jst_imported = await jst_imported.jst;
