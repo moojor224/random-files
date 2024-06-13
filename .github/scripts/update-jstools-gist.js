@@ -4,6 +4,9 @@
     const path = await import("path");
     const { Octokit } = await import("octokit");
     const key = await (async function () {
+        if (process.argv[2]) {
+            return process.argv[2];
+        }
         try {
             return require("../../auth.js").jstools_gist_key;
         } catch (e) {
@@ -22,7 +25,7 @@
     // console.log(exported_vars);
     exported_vars = exported_vars.map(x => x.match(/export\s+((const|let|class|function)\s+([a-zA-Z0-9_]+)\s*=?)/)[3]);
     // console.log(exported_vars);
-        // debugger
+    // debugger
     // jst_src.replaceAll(/\nexport\s?/g, function (match) {
     //     console.log(match);
     //     return match;
