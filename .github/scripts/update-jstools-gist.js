@@ -1,5 +1,7 @@
 // node .\.github\scripts\update-jstools-gist.js {{ jstools_gist_key }}
 (async function () {
+    const fs = await import("fs");
+    const path = await import("path");
     const { Octokit } = await import("octokit");
     const key = await (async function () {
         try {
@@ -13,7 +15,9 @@
     const octokit = new Octokit({ auth: key });
     const API_VER = "2022-11-28";
 
-    const jst = await import("../../js/synced/jstools.js");
+    // const jst_src = fs.readFileSync(path.resolve(__dirname, "../../js/synced/jstools.js"), "utf8");
+    // const jst = await import("../../js/synced/jstools.js");
+    const jst = await import("data:text/javascript;base64," + fs.readFileSync(path.resolve(__dirname, "../../js/synced/jstools.js"), "utf8").toString("base64"));
     const jstools = { ...jst };
     let { data: gist_files } = await octokit.request("PATCH /gists/{gist_id}", {
         gist_id: "c1d8199c6c90a17cdbfec1b18efa3ee4",
