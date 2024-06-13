@@ -1,3 +1,4 @@
+// see this gist for a list of functions and objects exported by this module: https://gist.github.com/moojor224/c1d8199c6c90a17cdbfec1b18efa3ee4
 /**
  * picks out all properties from an object that start with a specified string
  * @template Keys
