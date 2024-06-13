@@ -60,14 +60,14 @@
     if (Object.keys(data).length > 0) {
         console.log("updating files:", (data));
         // debugger
-        // await octokit.request("PATCH /gists/{gist_id}", {
-        //     gist_id: "c1d8199c6c90a17cdbfec1b18efa3ee4",
-        //     headers: { "X-GitHub-Api-Version": API_VER },
-        //     files: {
-        //         "0_jstools functions.md": { content: `this gist contains all of the functions exported by jstools.js` },
-        //         ...data
-        //     }
-        // });
+        await octokit.request("PATCH /gists/{gist_id}", {
+            gist_id: "c1d8199c6c90a17cdbfec1b18efa3ee4",
+            headers: { "X-GitHub-Api-Version": API_VER },
+            files: {
+                "0_jstools functions.md": { content: `this gist contains all of the functions exported by jstools.js` },
+                ...data
+            }
+        });
     } else {
         console.log("no files to update");
     }
