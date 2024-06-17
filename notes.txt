@@ -107,3 +107,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
   // Update UI notify the user they can add to home screen
   btnAdd.removeAttribute('disabled');
 });
+
+
+
+(?=) - positive lookahead
+(?!) - negative lookahead
+(?<=) - positive lookbehind
+(?<!) - negative lookbehind
+(?>) - atomic group
