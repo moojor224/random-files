@@ -2591,7 +2591,7 @@ if (!window.devtoolsFormatters.includes(collapsed_formatter)) {
     window.devtoolsFormatters.push(collapsed_formatter);
 }
 (function () { // custom formatters
-    if (!$?.jstree?.core?.prototype || window.____________jstree_formatted) {
+    if (typeof $ != "undefined" && !$?.jstree?.core?.prototype || window.____________jstree_formatted) {
         return;
     }
     window.____________jstree_formatted = true;
