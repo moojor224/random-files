@@ -25,7 +25,7 @@ async function tryImport(url) {
         return require(url);
     } catch (e) {
         try {
-            let mod = await import(url).then(e => e).catch(e => {});
+            let mod = await import(url).then(e => e).catch(e => { });
             if (!mod) throw new Error("module not found");
             return mod;
         } catch (e) {
@@ -2558,5 +2558,37 @@ export const BULK_OPERATIONS = (function () {
         }
     };
 })();
+
+if (!Array.isArray(window.devtoolsFormatters)) {
+    window.devtoolsFormatters = [];
+}
+let collapsed_formatter = {
+    label: "collapsed formatter",
+    hasBody: function (obj) {
+        if (typeof obj.__collapsed != "boolean") {
+            return false;
+        }
+        return !!obj.__collapsed;
+    },
+    header: function (obj) {
+        if (typeof obj.__collapsed != "boolean") {
+            return null;
+        }
+        let label = "";
+        if (obj.__label) {
+            label = ": " + obj.__label;
+        }
+        return ["div", { style: "color: red;" }, "Collapsed object" + label];
+    },
+    body: function (obj) {
+        if (obj.__collapsed) {
+            return ["div", ["object", { object: obj.data }]];
+        }
+        return ["div", "No data"];
+    }
+};
+if (!window.devtoolsFormatters.includes(collapsed_formatter)) {
+    window.devtoolsFormatters.push(collapsed_formatter);
+}
 
 globalThis.jstools_defined = true;

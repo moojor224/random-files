@@ -302,7 +302,6 @@
                 includeTriggered: true
             });
             notifications.forEach(notification => notification.close());
-            alert(`${notifications.length} notification(s) cancelled`);
         };
         navigator.serviceWorker.addEventListener('message', event => console.log(event.data));
     </script>
@@ -312,11 +311,11 @@
         let deferredPrompt;
         const btnAdd = document.getElementById('butInstall');
         btnAdd.addEventListener('click', (e) => {
-        btnAdd.setAttribute('disabled', true);
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((resp) => {
-            console.log(JSON.stringify(resp));
-        });
+            btnAdd.setAttribute('disabled', true);
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((resp) => {
+                console.log(JSON.stringify(resp));
+            });
         });
 
         window.addEventListener('beforeinstallprompt', function (event) {
@@ -335,35 +334,21 @@
         import { Grid } from "./js/console_game.js";
         // let game = new Grid(7, 10)
     </script>
-    <script> // convert html element to xml string without properties
+    <script type="module"> // convert html element to xml string without properties
+        import "/js/synced/jstools.js";
         function thisThing(element) {
-            const formatter = [];
-
-            function traverse(element, indent) {
-                const { tagName, childNodes } = element;
-                const formattedElement = `${indent}<${tagName}>`;
-                formatter.push(formattedElement);
-
-                for (let i = 0; i < childNodes.length; i++) {
-                    const child = childNodes[i];
-
-                    if (child.nodeType === Node.ELEMENT_NODE) {
-                        traverse(child, indent + " ".repeat(4)); // 4 spaces for indentation
-                    } else if (child.nodeType === Node.TEXT_NODE) {
-                        const formattedText = `${indent}  ${child.textContent}`;
-                        formatter.push(formattedText);
-                    }
-                }
-
-                const closingTag = `${indent}</${tagName}>`;
-                formatter.push(closingTag);
+            function traverse(el, indent, arr) {
+                arr.push(`${indent}<${el.tagName}>`);
+                el.childNodes.forEach(e => ((e.nodeType === Node.ELEMENT_NODE) ? traverse(e, indent + "    ", arr) : 0))
+                arr.push(`${indent}</${el.tagName}>`);
+                return arr;
             }
-
-            traverse(element, '');
-
-            return formatter.join('\n');
+            return traverse(element, "", []).join('\n').replaceAll(/<([A-Z0-9\-]+)>([\n\r ]+)<\/\1>/g, function (match) {
+                let tagName = match.match(/<([A-Z0-9\-]+)>/)[1];
+                return `<${tagName}></${tagName}>`;
+            }).toLowerCase();
         }
-        thisThing(document.body);
+        console.log(thisThing(document.body);
     </script>
     <!--☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ 
         !"#$%&'()*+,-./0123456789:;<=>?@
