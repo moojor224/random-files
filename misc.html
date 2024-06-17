@@ -561,67 +561,8 @@
 ζ:&zeta;
 Ζ:&Zeta;
 -->
-    <script src="./js/goto.js"></script>
-    <script type="text/jsplusgoto">
-        var log = [],
-            p = 0;
 
-        var testGoTo = function testGoto() {
 
-            // Goto calls inside of nested functions work
-            this.logme = function tgLogMe(num, times) {
-                var j = 0;
-                [lbl] logtop:
-                if (j < times) {
-                    log.push(num);
-                    j++;
-                    goto logtop;
-                }
-                console.log("goto log", log.join('|'));
-            };
-
-            // Safe strings
-            var proof = "Strings with special chars like -- ";
-            proof = "function() { -- & -- goto lbl -- & -- [lbl] test";
-            proof = "-- are totally safe!";
-
-            // Nested/Overlapping Gotos (aka the magic)
-            var i = 0,
-                j = 0;
-            [lbl] top:
-            i++;
-            [lbl] middle:
-            j++;
-            if (i < 10) {
-                goto top;
-            }
-            if (j < 22) {
-                goto middle;
-            }
-
-            // p was set below at 11
-            // j-i should be 22-10 = 12
-            this.logme(p, j - i);
-
-            return j - i;
-        };
-
-        // Functions don't need to exist to use goto
-        // In fact... functions are for the weak.
-        [lbl] outsideLabel:
-        p++;
-        if (p < 11) {
-            goto outsideLabel;
-        }
-    </script>
-    <script>
-        // Ideally this would actually be the onDomReady function of your choice...
-        var otherload = window.onload;
-        window.onload = function () {
-            if (typeof otherload != "undefined") { otherload(); }
-            console.log("test goto", testGoTo());
-        };
-    </script>
 </body>
 
 </html>
