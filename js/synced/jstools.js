@@ -2245,6 +2245,19 @@ export const CUSTOM_ELEMENTS = (function () {
 })();
 
 export class jst_CSSRule {
+    static validStyles = (function getProperties() {
+        try {
+            let div = document.createElement("div");
+            document.body.append(div);
+            let styles = Object.keys(getComputedStyle(div)).filter(s => isNaN(parseInt(s)));
+            styles = styles.flatMap(e => [e, e.replace(/[A-Z]/g, m => "-" + m.toLowerCase())]);
+            styles = Array.from(new Set(styles)).sort();
+            div.remove();
+            return styles;
+        } catch (err) {
+            return [];
+        }
+    })();
     static checkValidSelector(selector) {
         selector = selector.trim();
         if (typeof selector != "string") return false;
@@ -2259,23 +2272,20 @@ export class jst_CSSRule {
     }
 
     /**
-     * @param {string} selector
-     * @param {Object} styles
+     * @param {String} selector
+     * @param {CSSStyleDeclaration} styles
      */
     constructor(selector, styles) {
-        let validStyles = Object.keys(CSS2Properties.prototype);
         let givenstyles = Object.entries(styles);
-        let valid = givenstyles.every(e => validStyles.includes(e[0]));
+        let valid = givenstyles.every(e => jst_CSSRule.validStyles.includes(e[0]));
         if (!valid) {
-            console.error("Invalid style properties:", givenstyles.filter(e => !validStyles.includes(e[0])).map(e => e[0]).join(", "));
+            console.error("Invalid style properties:", givenstyles.filter(e => !jst_CSSRule.validStyles.includes(e[0])).map(e => e[0]).join(", "));
             return null;
         }
         Object.entries(styles).forEach(e => {
             let newName = e[0].replaceAll(/[A-Z]/g, e => `-${e.toLowerCase()}`);
             if (newName != e[0]) {
-                if (!validStyles.includes(newName)) {
-                    return;
-                }
+                if (!jst_CSSRule.validStyles.includes(newName)) return;
                 styles[newName] = e[1];
                 delete styles[e[0]];
             }
@@ -2300,6 +2310,10 @@ export class jst_CSSRule {
 }
 
 export class jst_CSSStyleSheet {
+    /**
+     * creates a new stylesheet
+     * @param {jst_CSSRule[]} rules array of rules
+     */
     constructor(rules = []) {
         this.rules = rules.filter(e => e instanceof jst_CSSRule);
     }
