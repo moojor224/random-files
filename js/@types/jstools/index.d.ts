@@ -46,31 +46,3 @@ declare class Options {
     on(type: string, callback: Function): void;
     off(type: string, callback: Function): void;
 }
-
-declare class Tab extends EventTarget {
-    tab: HTMLTabElement;
-    tabHead: HTMLDivElement;
-    tabBody: HTMLDivElement;
-    index: Number;
-    constructor(title: String, active: Boolean);
-    close(): void;
-    on(type: String, callback: Function): void;
-    off(type: String, callback: Function): void;
-}
-
-// type CreateElementOptions<T> = {} & T;
-
-interface Window {
-    Tab: Tab;
-}
-
-type HTMLTabElement = HTMLDivElement;
-type HTMLWarnElement = HTMLDivElement;
-type HTMLErrorElement = HTMLDivElement;
-
-
-// interface HTMLElementTagNameMap {
-//     "warn": HTMLWarnElement
-//     "error": HTMLErrorElement
-//     "tab": HTMLTabElement
-// }
