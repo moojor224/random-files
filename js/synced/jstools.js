@@ -1171,6 +1171,12 @@ if (!window.devtoolsFormatters.includes(sectionFormatter)) { // only add one ins
 export class Section extends EventTarget {
     /** @type {Settings} */
     settings_obj = null;
+    /**
+     * @type {{
+     *   name: String,
+     *   id: String
+     * }}
+     */
     config = {
         name: "section"
     }
@@ -1207,7 +1213,7 @@ export class Section extends EventTarget {
 
     /**
      * renders the section object as HTML
-     * @returns {}
+     * @returns {HTMLElement}
      */
     render() {
         // devlog("render section");
@@ -1257,13 +1263,21 @@ export class Section extends EventTarget {
     }
 }
 
-
 export class Option extends EventTarget {
     /** @type {HTMLElement} */
     input = null;
 
     /** @type {Section} */
     section_obj = null;
+    /**
+     * @type {{
+     *  name: String,
+     *  value?: String,
+     *  values?: String[],
+     *  id: String,
+     *  type: "dropdown"| "slider"
+     * }}
+     */
     config = {
         name: "option",
         type: "toggle",
@@ -1272,7 +1286,7 @@ export class Option extends EventTarget {
 
     /**
      * creates a new Option object
-     * @param {Object} config Option options
+     * @param {typeof this.config} config Option options
      */
     constructor(config) {
         super(); // initialize EventTarget object
@@ -1282,10 +1296,12 @@ export class Option extends EventTarget {
         }
     }
 
+    /** @returns {String} */
     get value() {
         return this.config.value;
     }
 
+    /** @param {String} val */
     set value(val) {
         // console.log("set value to", val, "cur:", this.config.value);
         this.config.value = val;
@@ -1308,7 +1324,7 @@ export class Option extends EventTarget {
 
     /**
      * creates the input method specified by the option config
-     * @returns {HTMLSelectElement|HTMLInputElement}
+     * @returns {HTMLElement}
      */
     createInput() {
         let input; // initialize variable
@@ -1370,8 +1386,8 @@ export class Option extends EventTarget {
 
     /**
      * dispatches an event on the Option object
-     * @param {String} type event type
-     * @param {Object} config event options/data
+     * @param {Event} event event
+     * @returns {Boolean}
      */
     dispatchEvent(event) {
         // console.log("dispatching option event", event.val);
