@@ -115,3 +115,28 @@ window.addEventListener('beforeinstallprompt', (e) => {
 (?<=) - positive lookbehind
 (?<!) - negative lookbehind
 (?>) - atomic group
+
+
+
+high resolution timestamps
+
+performance.mark("start");
+performance.mark("end");
+performance.measure("measurement", "start", "end"); // returns measuremment object and stores it in performance api
+performance.getEntriesByName("measurement")[0]; // gets all data points with the specified name. works on measurements and marks
+performance.clearMeasures("measurement")[0]; // deletes all data points with the specified name. works on measurements and marks
+
+
+
+
+
+// future modeifications to capture console
+
+function timestamp() {
+    let date = new Date();
+    return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${(date.getMilliseconds()+"").padStart(3, "0")}`;
+}
+console.group()
+console.log("%c%o %c | ", "color:#939395", timestamp(), "font-size:12px;color:#75bfff", "log", "log2", {});
+console.groupEnd();
+console.log("    %c%o %c | ", "color:#939395", timestamp(), "font-size:12px;color:#75bfff", "log", "log2", {});
