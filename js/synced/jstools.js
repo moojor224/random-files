@@ -993,16 +993,20 @@ export class Settings extends EventTarget {
      * @returns {String}
      */
     export() {
-        let data = JSON.parse(JSON.stringify(this, function (key, value) {
-            if (key.includes("_obj")) { // exclude parent objects to avoid recursion
-                return undefined;
-            }
-            return value;
-        }));
-        data.sections.forEach(sec => {
-            sec.options.forEach(e => delete e.input) // remove input element
+        return JSON.stringify(Object.fromEntries(this.sections.map(e => ([e.config.id, Object.fromEntries(e.options.map(e => [e.config.id, e.config.value]))]))));
+    }
+
+    /**
+     * imports saved settings
+     * @param {String} data stringified json data
+     */
+    import(data){
+        let json = JSON.parse(data);
+        this.sections.forEach(section => {
+            section.options.forEach(option => {
+                option.config.value = json[section.config.id][option.config.id];
+            });
         });
-        return JSON.stringify(data);
     }
 
     /**
