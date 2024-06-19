@@ -3979,7 +3979,7 @@ export let js_beautify = (function () {
      * @return {String}
      */
     return function (...args) {
-        return js_beautify(args);
+        return js_beautify(...args);
     };
 
 }());
