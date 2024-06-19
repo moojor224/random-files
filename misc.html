@@ -302,85 +302,53 @@
                 includeTriggered: true
             });
             notifications.forEach(notification => notification.close());
-            alert(`${notifications.length} notification(s) cancelled`);
         };
         navigator.serviceWorker.addEventListener('message', event => console.log(event.data));
     </script>
     <input-slider checked="true"></input-slider>
-    <button id="butInstall"></button>
+    <button id="butInstall" disabled>install as app</button>
     <script type="module">
         let deferredPrompt;
         const btnAdd = document.getElementById('butInstall');
         btnAdd.addEventListener('click', (e) => {
-        // hide our user interface that shows our A2HS button
-        btnAdd.setAttribute('disabled', true);
-        // Show the prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        deferredPrompt.userChoice.then((resp) => {
-            console.log(JSON.stringify(resp));
-        });
+            btnAdd.setAttribute('disabled', true);
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((resp) => {
+                console.log(JSON.stringify(resp));
+            });
         });
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the mini-info bar from appearing.
-            e.preventDefault();
-            // Stash the event so it can be triggered later.
-            deferredPrompt = e;
-            // Update UI notify the user they can add to home screen
+        window.addEventListener('beforeinstallprompt', function (event) {
+            console.log("activating install button");
+            event.preventDefault();
+            deferredPrompt = event;
             btnAdd.removeAttribute('disabled');
         });
+        navigator.serviceWorker.register("/js/service-worker.js");
 
         import { CUSTOM_ELEMENTS } from "./js/synced/jstools.js";
         CUSTOM_ELEMENTS.all();
-        import { loadFormatters } from "/js/custom formatters/loader.js";
-        loadFormatters();
 
-        console.log({
-            "schedules": [{
-                "start": "2024-05-01T17:00:00-05:00",
-                "end": "2024-05-01T18:00:00-05:00",
-                "date": "2024-05-01T00:00:00-05:00"
-            }, {
-                "start": "2024-05-02T09:00:00-05:00",
-                "end": "2024-05-02T17:00:00-05:00",
-                "date": "2024-05-02T00:00:00-05:00"
-            }]
-        });
     </script>
     <script type="module">
         import { Grid } from "./js/console_game.js";
         // let game = new Grid(7, 10)
     </script>
-    <script> // convert html element to xml string without properties
+    <script type="module"> // convert html element to xml string without properties
+        import "/js/synced/jstools.js";
         function thisThing(element) {
-            const formatter = [];
-
-            function traverse(element, indent) {
-                const { tagName, childNodes } = element;
-                const formattedElement = `${indent}<${tagName}>`;
-                formatter.push(formattedElement);
-
-                for (let i = 0; i < childNodes.length; i++) {
-                    const child = childNodes[i];
-
-                    if (child.nodeType === Node.ELEMENT_NODE) {
-                        traverse(child, indent + " ".repeat(4)); // 4 spaces for indentation
-                    } else if (child.nodeType === Node.TEXT_NODE) {
-                        const formattedText = `${indent}  ${child.textContent}`;
-                        formatter.push(formattedText);
-                    }
-                }
-
-                const closingTag = `${indent}</${tagName}>`;
-                formatter.push(closingTag);
+            function traverse(el, indent, arr) {
+                arr.push(`${indent}<${el.tagName}>`);
+                el.childNodes.forEach(e => ((e.nodeType === Node.ELEMENT_NODE) ? traverse(e, indent + "    ", arr) : 0))
+                arr.push(`${indent}</${el.tagName}>`);
+                return arr;
             }
-
-            traverse(element, '');
-
-            return formatter.join('\n');
+            return traverse(element, "", []).join('\n').replaceAll(/<([A-Z0-9\-]+)>([\n\r ]+)<\/\1>/g, function (match) {
+                let tagName = match.match(/<([A-Z0-9\-]+)>/)[1];
+                return `<${tagName}></${tagName}>`;
+            }).toLowerCase();
         }
-        thisThing(document.body);
+        console.log(thisThing(document.body));
     </script>
     <!--☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ 
         !"#$%&'()*+,-./0123456789:;<=>?@
@@ -561,67 +529,8 @@
 ζ:&zeta;
 Ζ:&Zeta;
 -->
-    <script src="./js/goto.js"></script>
-    <script type="text/jsplusgoto">
-        var log = [],
-            p = 0;
 
-        var testGoTo = function testGoto() {
 
-            // Goto calls inside of nested functions work
-            this.logme = function tgLogMe(num, times) {
-                var j = 0;
-                [lbl] logtop:
-                if (j < times) {
-                    log.push(num);
-                    j++;
-                    goto logtop;
-                }
-                console.log("goto log", log.join('|'));
-            };
-
-            // Safe strings
-            var proof = "Strings with special chars like -- ";
-            proof = "function() { -- & -- goto lbl -- & -- [lbl] test";
-            proof = "-- are totally safe!";
-
-            // Nested/Overlapping Gotos (aka the magic)
-            var i = 0,
-                j = 0;
-            [lbl] top:
-            i++;
-            [lbl] middle:
-            j++;
-            if (i < 10) {
-                goto top;
-            }
-            if (j < 22) {
-                goto middle;
-            }
-
-            // p was set below at 11
-            // j-i should be 22-10 = 12
-            this.logme(p, j - i);
-
-            return j - i;
-        };
-
-        // Functions don't need to exist to use goto
-        // In fact... functions are for the weak.
-        [lbl] outsideLabel:
-        p++;
-        if (p < 11) {
-            goto outsideLabel;
-        }
-    </script>
-    <script>
-        // Ideally this would actually be the onDomReady function of your choice...
-        var otherload = window.onload;
-        window.onload = function () {
-            if (typeof otherload != "undefined") { otherload(); }
-            console.log("test goto", testGoTo());
-        };
-    </script>
 </body>
 
 </html>

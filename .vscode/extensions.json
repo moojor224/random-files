@@ -1,5 +1,22 @@
 {
     "recommendations": [
-        "zardoy.ts-essential-plugins"
+        "zardoy.ts-essential-plugins",
+        "andywang.vscode-scriptmonkey",
+        "antfu.browse-lite",
+        "firefox-devtools.vscode-firefox-debug",
+        "donjayamanne.githistory",
+        "ecmel.vscode-html-css",
+        "pushqrdx.inline-html",
+        "bierner.jsdoc-markdown-highlighting",
+        "ritwickdey.liveserver",
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        "pkief.material-icon-theme",
+        "pkief.material-product-icons",
+        "esbenp.prettier-vscode",
+        "mechatroner.rainbow-csv",
+        "rioj7.vscode-remove-comments",
+        "yurish.size",
+        "franneck94.workspace-formatter",
     ]
 }

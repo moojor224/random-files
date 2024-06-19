@@ -1,17 +1,47 @@
-function tryImport(url) {
+// see this gist for a list of functions and objects exported by this module: https://gist.github.com/moojor224/c1d8199c6c90a17cdbfec1b18efa3ee4
+/**
+ * picks out all properties from an object that start with a specified string
+ * @template Keys
+ * @template {string} Needle
+ * @typedef {(Keys extends `${Needle}${infer _X}` ? Keys : never)} FilterStartingWith
+ * @usage FilterStartingWith<keyof Type, "needle">
+ */
+/**
+ * picks out all  function property names from an object
+ * @template T
+ * @typedef {{ [K in keyof T]: T[K] extends Function ? K : never }[keyof T]} FunctionPropertyNames
+ * @usage FunctionPropertyNames<Type>
+ */
+/**
+ * picks out all configurable properties from an object\
+ * this is used to get all non-function prperties from an element class, including on\<event> listeners
+ * @template T
+ * @typedef {Pick<T, keyof Omit<T, FunctionPropertyNames<T>>> & Pick<T, FilterStartingWith<keyof T, "on">>} ElementProps
+ */
+
+
+async function tryImport(url) {
     try {
         return require(url);
     } catch (e) {
         try {
-            return import(url).then(e => e);
+            let mod = await import(url).then(e => e).catch(e => { });
+            if (!mod) throw new Error("module not found");
+            return mod;
         } catch (e) {
-            return {};
+            return {
+                Prism: {},
+                js_beautify: {},
+                bulkElements: {},
+                emmet: {},
+            };
         }
     }
 }
-const { Prism } = await tryImport("../prism.js");
-const { js_beautify } = await tryImport("../beautify.js");
+const { Prism } = await tryImport("./prism.js");
+const { js_beautify } = await tryImport("./beautify.js");
 const { bulkElements } = await tryImport("./bulkElements.js");
+const { emmet } = await tryImport("./emmet.js");
 
 (function () { // overrides for nodejs
     function proxy() { // create a recursive dummy proxy object
@@ -38,7 +68,16 @@ const { bulkElements } = await tryImport("./bulkElements.js");
     }
 })();
 
-Math.roundf = (v, t) => Math.round(v * t) / t;
+/**
+ * rounds a number {v} to the nearest multiple of {t}
+ * @param {number} v the value to round
+ * @param {number} t the multiple to round to
+ * @returns {number}
+ */
+export function roundf(v, t) {
+    return Math.round(v / t) * t;
+}
+Math.roundf = roundf;
 
 /**
  * accepts a css selector and a callback function\
@@ -50,7 +89,7 @@ Math.roundf = (v, t) => Math.round(v * t) / t;
  */
 export function waitForKeyElements(query, callback, stopAfterFound, element) {
     let o, r;
-    
+
     (o = void 0 === element ? $(query) : $(element).contents().find(query)) &&
         o.length > 0
         ? ((r = !0),
@@ -74,129 +113,133 @@ export function waitForKeyElements(query, callback, stopAfterFound, element) {
     waitForKeyElements.controlObj = l;
 } //wait for key elements
 
-let createElement = window.createElement;
-if (typeof createElement != "function") { // this is done to allow typescript type definitions in index.d.ts to work
-    {
-        // minified createElement
-        // @ts-format-ignore-region
-        let createElement = (t,D)=>(p=e=>typeof e,c=(T,d=
-        {})=>(T=p(T)[1]=="t"?document.createElement(T):T,
-        Object.keys(d).map(e=>(p(d[e])[0]=="o"?c(T[e]||
-        (T[e]={}),d[e]):(T instanceof window.Element?(e[s=
-        "substring"](0,2)=="on"&&p(d[e])[0]=="f"?T.addEventListener
-        (e[s](2),d[e]):T[e]=d[e]):(T[e]=d[e])))),T),c(t,D))
-        // @ts-format-ignore-endregion
+/**
+ * creates a new element with the specified tag name and properties
+ * @type {<Tag extends keyof HTMLElementTagNameMap>(tagName: Tag, options?: ElementProps<HTMLElementTagNameMap[Tag]>) => HTMLElementTagNameMap[Tag]}
+ * @param tagName tag name of the element to create
+ * @param options properties to set on the element
+ */
+export function createElement(tag, data = {}) {
+    // {
+    //     // minified createElement (without emmet)
+    //     // @ts-format-ignore-region
+    //     let createElement = (t,D)=>(p=e=>typeof e,c=(T,d=
+    //     {})=>(T=p(T)[1]=="t"?document.createElement(T):T,
+    //     Object.keys(d).map(e=>(p(d[e])[0]=="o"?c(T[e]||
+    //     (T[e]={}),d[e]):(T instanceof window.Element?(e[s=
+    //     "substring"](0,2)=="on"&&p(d[e])[0]=="f"?T.addEventListener
+    //     (e[s](2),d[e]):T[e]=d[e]):(T[e]=d[e])))),T),c(t,D))
+    //     // @ts-format-ignore-endregion
+    // }
+    if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) { // if tag is a string and string includes non alphanumeric characters, parse as emmet string
+        let div = createElement("div"); // create temporary parent node
+        div.innerHTML = emmet.expandAbbreviation(tag); // expand abbreviation
+        /** @type {HTMLElement[]} */
+        let arr = Array.from(div.children);
+        return arr.length == 1 ? arr[0] : arr; // if only 1 top-level element was generated, return it, else return whole array
     }
-    createElement = function (tag, data = {}) {
-        if (typeof tag === "string" && tag.match(/[^a-zA-Z0-9]/g)) { // if tag is a string and string includes non alphanumeric characters, parse as emmet string
-            let div = createElement("div"); // create temporary parent node
-            if (expandAbbreviation && typeof expandAbbreviation == "function") { // if expandAbbreviation is defined
-                div.innerHTML = expandAbbreviation(tag); // expand abbreviation
-            } else if (emmet && emmet.expandAbbreviation && typeof emmet.expandAbbreviation == "function") { // if emmet.expandAbbreviation is defined
-                div.innerHTML = emmet.expandAbbreviation(tag); // expand abbreviation
-            }
-            /** @type {HTMLElement[]} */
-            let arr = Array.from(div.children);
-            return arr.length == 1 ? arr[0] : arr; // if only 1 top-level element was generated, return it, else return whole array
-        }
-        tag = typeof tag === "string" ? document.createElement(tag) : tag; // convert string to HTMLElement
-        Object.keys(data).forEach((e) => { // loop through object properties
-            if (typeof data[e] === "object") { // if value is object, recurse
-                createElement(tag[e] || (tag[e] = {}), data[e]);
-            } else {
-                if (tag instanceof window.Element) { // if tag is an html element
-                    if (e.substring(0, 2) == "on" && typeof data[e] == "function") { // if property is an event listener
-                        tag.addEventListener(e.substring(2), data[e]); // add event listener
-                    } else {
-                        tag[e] = data[e]; // else, set property
-                    }
+    tag = typeof tag === "string" ? document.createElement(tag) : tag; // convert string to HTMLElement
+    Object.keys(data).forEach((e) => { // loop through object properties
+        if (typeof data[e] === "object") { // if value is object, recurse
+            createElement(tag[e] || (tag[e] = {}), data[e]);
+        } else {
+            if (tag instanceof window.Element) { // if tag is an html element
+                if (e.substring(0, 2) == "on" && typeof data[e] == "function") { // if property is an event listener
+                    tag.addEventListener(e.substring(2), data[e]); // add event listener
                 } else {
                     tag[e] = data[e]; // else, set property
                 }
+            } else {
+                tag[e] = data[e]; // else, set property
             }
-        });
-        return tag; // return result
-    }
-}
-export { createElement };
-
-/**
- * appends any number of objects to an HTMLElement
- * @param  {...Element} args an array of objects to be added to the parent element
- * @returns {this}
- * @memberof Element
- * @function external:Element#add
- * @example
- * createElement("table").add(
- *      createElement("tr").add(
- *          createElement("td", {innerHTML: "col 1"}),
- *          createElement("td", {innerHTML: "col 2"}),
- *          createElement("td", {innerHTML: "col 3"})
- *      )
- * );
- * // results in:
- * <table>
- *     <tr>
- *         <td>col 1</td>
- *         <td>col 2</td>
- *         <td>col 3</td>
- *     </tr>
- * </table>
- */
-function add(...args) {
-    args.forEach(elem => {
-        if (typeof elem == "string") {
-            this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
-        } else {
-            this.append(elem); // append element
         }
     });
-    return this;
-};
-
-if (window.HTMLElement.prototype.add === undefined) {
-    window.HTMLElement.prototype.add = add;
+    return tag; // return result
 }
-
-// loop through all HTML...Element prototypes and add the add function
-Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
-    if (window[e].prototype.add !== add) {
-        window[e].prototype.add = add
-    }
-});
-
 /**
- * HTMLElement.isVisible will return true if the element is currently on screen
+ * one-time definition of methods
  */
-Object.defineProperty(HTMLElement.prototype, "isVisible", {
-    get: function () {
-        if (this === document.documentElement) { // node is the root node
-            return true;
-        }
-        if (!this.parentNode) { // node has no parent (not attached to page)
-            return false;
-        }
-        let style = window.getComputedStyle ? window.getComputedStyle(this) : this.currentStyle; // get current computed style
-        return !(
-            style.display === "none" || // node is hidden via css
-            style.visibility === "hidden" ||
-            style.opacity == "0"
-        ) &&
-            this.parentNode.isVisible && // make sure parent node is visible
-            (function () {
-                let bounds = this.getBoundingClientRect();  // get position of element
-                let html = document.documentElement, body = document.body; // get html and body elements
-                let viewport = { // get viewport dimensions and position
-                    width: Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth),
-                    height: Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight)
-                };
-                return bounds.left >= 0 && // check if element is within viewport
-                    bounds.top >= 0 &&
-                    bounds.right <= viewport.width &&
-                    bounds.bottom <= viewport.height;
-            }).bind(this)();
+(function () {
+    if (globalThis.jstools_defined) {
+        return;
     }
-});
+    // loop through all HTML...Element prototypes and add the add function
+    // Object.getOwnPropertyNames(window).filter(e => e.startsWith("HTML") && e.endsWith("Element")).forEach(e => {
+    //     if (window[e].prototype.add !== add) {
+    //         window[e].prototype.add = add
+    //     }
+    // });
+
+    /**
+     * appends any number of objects to an HTMLElement
+     * @param  {...Element} args an array of objects to be added to the parent element
+     * @returns {typeof this}
+     * @memberof HTMLElement
+     * @function external:HTMLElement#add
+     * @example
+     * createElement("table").add(
+     *      createElement("tr").add(
+     *          createElement("td", {innerHTML: "col 1"}),
+     *          createElement("td", {innerHTML: "col 2"}),
+     *          createElement("td", {innerHTML: "col 3"})
+     *      )
+     * );
+     * // results in:
+     * <table>
+     *     <tr>
+     *         <td>col 1</td>
+     *         <td>col 2</td>
+     *         <td>col 3</td>
+     *     </tr>
+     * </table>
+     */
+    HTMLElement.prototype.add = function (...args) {
+        args.forEach(elem => {
+            if (typeof elem == "string") {
+                this.insertAdjacentHTML("beforeend", elem); // insert as raw html (preserves event listeners)
+            } else {
+                this.append(elem); // append element
+            }
+        });
+        return this;
+    }
+
+    /** HTMLElement.isVisible will return true if the element is currently on screen */
+    Object.defineProperty(HTMLElement.prototype, "isVisible", {
+        get: function () {
+            if (this === document.documentElement) { // node is the root node
+                return true;
+            }
+            if (!this.parentNode) { // node has no parent (not attached to page)
+                return false;
+            }
+            let style = window.getComputedStyle ? window.getComputedStyle(this) : this.currentStyle; // get current computed style
+            return !(
+                style.display === "none" || // node is hidden via css
+                style.visibility === "hidden" ||
+                style.opacity == "0"
+            ) &&
+                this.parentNode.isVisible && // make sure parent node is visible
+                (function () {
+                    let bounds = this.getBoundingClientRect();  // get position of element
+                    let html = document.documentElement, body = document.body; // get html and body elements
+                    let viewport = { // get viewport dimensions and position
+                        width: Math.max(body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth),
+                        height: Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight)
+                    };
+                    return bounds.left >= 0 && // check if element is within viewport
+                        bounds.top >= 0 &&
+                        bounds.right <= viewport.width &&
+                        bounds.bottom <= viewport.height;
+                }).bind(this)();
+        }
+    });
+})()
+
+
+
+
+
 
 /**
  * adds a warning message to the specified elements
@@ -669,6 +712,16 @@ export function lockValue(callback, ...args) {
 }
 
 /**
+ * return white or black depending on the contrast of the given color
+ * @param {string} rgb rgb(R, G, B) formatted color
+ * @returns 
+ */
+export function getContrastColor(rgb) {
+    let [r, g, b] = rgb.replaceAll(/[^0-9 ]/g, "").split(" ");
+    return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
+}
+
+/**
  * logs all colors on the page to console, grouped by text color and background color
  * 
  * show each individual element in each group
@@ -696,17 +749,12 @@ export function listAllColorsOnPage() {
         return "#" + rgb.replaceAll(/[^0-9\.]/g, " ").replaceAll("  ", " ").trim().split(" ").map((e, n) => parseInt(e * (n == 3 ? 255 : 1)).toString(16).padStart(2, e)).join("");
     }
 
-    function getColor(rgb) {
-        let [r, g, b] = rgb.replaceAll(/[^0-9 ]/g, "").split(" ");
-        return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#000000' : '#FFFFFF';
-    }
-
     let colorProps = ["backgroundColor", "color"]; // which properties to search for colors in
 
     function displayResults(array) {
         array.forEach(e => {
             console.groupCollapsed(`%c${rgbToHex(e.value)} (${(e.varName)})`, /*STYLE*/`
-                color: ${getColor(e.value)};
+                color: ${getContrastColor(e.value)};
                 background-color: ${e.value};
                 padding: 20px;
                 line-height: 60px;
@@ -890,162 +938,185 @@ let settingsFormatter = {
 if (!window.devtoolsFormatters.includes(settingsFormatter)) { // only add one instance of the formatter
     window.devtoolsFormatters.push(settingsFormatter);
 }
-let Settings = window.Settings;
-if (Settings === undefined || !(Settings.prototype instanceof EventTarget)) {
-    Settings = class extends EventTarget {
-        config = {
-            name: "settings"
-        };
-        sections = [];
-        /**
-         * creates a new Settings object
-         * @param {Object} config config options
-         * @param {Section[]} sections array of sections to add to the settings
-         */
-        constructor(config = {}, sections) {
-            super(); // initialize EventTarget object
-            extend(this.config, config); // apply config to this
-            if (!Array.isArray(sections)) { // turn sections into array if it isn't already
-                sections = [sections];
+
+export class Settings extends EventTarget {
+    config = {
+        name: "settings"
+    };
+    /** @type {Section[]} */
+    sections = [];
+    /**
+     * creates a new Settings object
+     * @param {typeof this.config} config config options
+     * @param {Section[]} sections array of sections to add to the settings
+     */
+    constructor(config = {}, sections) {
+        super(); // initialize EventTarget object
+        extend(this.config, config); // apply config to this
+        if (!Array.isArray(sections)) { // turn sections into array if it isn't already
+            sections = [sections];
+        }
+        this.sections = sections.filter(e => e instanceof Section); // filter all non-Section elements out of sections array
+        sections.forEach(section => {
+            if (section instanceof Section) {
+                section.settings_obj = this; // set parent object of each section
             }
-            this.sections = sections.filter(e => e instanceof Section); // filter all non-Section elements out of sections array
-            sections.forEach(section => {
-                if (section instanceof Section) {
-                    section.settings_obj = this; // set parent object of each section
-                }
-            });
-        }
+        });
+    }
 
-        render() {
-            // devlog("render settings");
-            let div = createElement("div", { // main settings div
-                classList: "settings"
-            }).add(
-                createElement("h2", { innerHTML: this.config.name })
-            );
-            div.add(...this.sections.map(s => s.render())); // render all subsections and add them to the settings div
-            return div;
-        }
+    /**
+     * renders the settings object
+     * @returns {HTMLDivElement} settings element
+     */
+    render() {
+        // devlog("render settings");
+        let div = createElement("div", { // main settings div
+            classList: "settings"
+        }).add(
+            createElement("h2", { innerHTML: this.config.name })
+        );
+        div.add(...this.sections.map(s => s.render())); // render all subsections and add them to the settings div
+        return div;
+    }
 
-        /**
-         * 
-         * @param {String} id
-         * @returns {Section}
-         */
-        getSection(id) { // returns the section object with the given id
-            return this.sections.find(e => e.config.id == id);
-        }
+    /**
+     * returns the section object with the given id
+     * @param {String} id
+     * @returns {Section}
+     */
+    getSection(id) {
+        return this.sections.find(e => e.config.id == id);
+    }
 
-        /**
-         * converts the settings object to a stringified JSON object cabable of being imported through the Settings.fromJson() method
-         * @returns {String}
-         */
-        export() {
-            let data = JSON.parse(JSON.stringify(this, function (key, value) {
-                if (key.includes("_obj")) { // exclude parent objects to avoid recursion
-                    return undefined;
-                }
-                return value;
-            }));
-            data.sections.forEach(sec => {
-                sec.options.forEach(e => delete e.input) // remove input element
-            });
-            return JSON.stringify(data);
-        }
-
-        /**
-         * dispatches an event on the Settings object
-         * @param {Event} event event
-         */
-        dispatchEvent(event) {
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]) // call original dispatchEvent function
-            return !event.defaultPrevented || !event.cancelable;
-        }
-
-        /**
-         * listens for an event\
-         * wrapper function for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        on(type, callback) {
-            this.addEventListener(type, callback);
-        }
-
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper function for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        off(type, callback) {
-            this.removeEventListener(type, callback);
-        }
-
-        /**
-         * converts stringified json data into a settings object\
-         * json data can be generated from the export method
-         * @static
-         * @param {String} jsontext stringified json data
-         * @returns {Settings}
-         */
-        static fromJson(jsontext) {
-            if (jsontext.length == 0) {
-                return null;
+    /**
+     * converts the settings object to a stringified JSON object cabable of being imported through the Settings.fromJson() method
+     * @returns {String}
+     */
+    export() {
+        let data = JSON.parse(JSON.stringify(this, function (key, value) {
+            if (key.includes("_obj")) { // exclude parent objects to avoid recursion
+                return undefined;
             }
+            return value;
+        }));
+        data.sections.forEach(sec => {
+            sec.options.forEach(e => delete e.input) // remove input element
+        });
+        return JSON.stringify(data);
+    }
+
+    /**
+     * dispatches an event on the Settings object
+     * @param {Event} event the event to dispatch
+     * @returns {Boolean}
+     */
+    dispatchEvent(event) {
+        // console.log("dispatching settings event:", event.type, event);
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
+        let cont = originalDispatch.apply(this, [event]); // call original dispatchEvent function
+        // console.log("settings event default prevented:", event.defaultPrevented, event.cancelable, cont);
+        return !event.defaultPrevented && cont;
+    }
+
+    /**
+     * listens for an event\
+     * wrapper function for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    on(type, callback) {
+        // console.log("binding settings listener", type, callback);
+        let originalAddEventListener = EventTarget.prototype.addEventListener.bind(this); // get copy of original addEventListener function
+        originalAddEventListener.apply(this, [type, callback]); // call original addEventListener function
+    }
+
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper function for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    off(type, callback) {
+        // this.removeEventListener(type, callback);
+        let originalRemoveEventListener = EventTarget.prototype.removeEventListener.bind(this); // get copy of original removeEventListener function
+        originalRemoveEventListener.apply(this, [type, callback]); // call original removeEventListener function
+    }
+
+    /**
+     * converts stringified json data into a settings object\
+     * json data can be generated from the export method
+     * @static
+     * @param {String} jsontext stringified json data
+     * @returns {Settings}
+     */
+    static fromJson(jsontext) {
+        if (jsontext.length == 0) {
+            return null;
+        }
+        try {
+            let json = JSON.parse(jsontext);
             try {
-                let json = JSON.parse(jsontext);
-                let validate = Joi.object({ // validate object to make sure it's in the correct format
+                json.sections.forEach(s => s.options.forEach(o => delete o.config.input))
+            } catch (err) { }
+            let validate = Joi.object({ // validate object to make sure it's in the correct format
+                config: Joi.object({
+                    name: Joi.string().required()
+                }).required(),
+                sections: Joi.array().items(Joi.object({
                     config: Joi.object({
-                        name: Joi.string().required()
-                    }).required(),
-                    sections: Joi.array().items(Joi.object({
+                        name: Joi.string().required(),
+                        id: Joi.string().required()
+                    }),
+                    options: Joi.array().items(Joi.object({
                         config: Joi.object({
                             name: Joi.string().required(),
-                            id: Joi.string().required()
-                        }),
-                        options: Joi.array().items(Joi.object({
-                            config: Joi.object({
-                                name: Joi.string().required(),
-                                id: Joi.string().required(),
-                                type: Joi.string().required(),
-                                value: Joi.any(),
-                                values: Joi.array()
-                            }).required()
-                        })).required()
+                            id: Joi.string().required(),
+                            type: Joi.string().required(),
+                            value: Joi.any(),
+                            values: Joi.array()
+                        }).required()
                     })).required()
-                }).validate(json);
-                if (validate.error) { // object isn't in the correct format
-                    console.error("invalid json data");
-                    throw new Error(validate.error);
-                }
-                return new Settings(json.config, json.sections.map(sec => { // parse object into settings, sections, and options
-                    return new Section(sec.config, sec.options.map(opt => {
-                        return new Option(opt.config);
-                    }));
+                })).required()
+            }).validate(json);
+            if (validate.error) { // object isn't in the correct format
+                console.error("invalid json data");
+                throw new Error(validate.error);
+            }
+            return new Settings(json.config, json.sections.map(sec => { // parse object into settings, sections, and options
+                return new Section(sec.config, sec.options.map(opt => {
+                    return new Option(opt.config);
                 }));
-            } catch (err) {
-                console.error(err);
-                return err;
-            }
-        }
-
-        replaceWith(settings) {
-            console.log("replacing", Object.assign({}, this), "with", Object.assign({}, settings));
-            // replaces this settings object with another one by overriding sections array and config.
-            // because this object was exported, it can't be assigned in other modules,
-            // so a custom function had to be made
-            if (!(settings instanceof Settings)) { // only override if provided object is a Setting object
-                console.log("settings object is not an instance of the Settings class", settings);
-                return;
-            }
-            this.config = settings.config; // override config
-            this.sections = settings.sections; // override sections
+            }));
+        } catch (err) {
+            console.error(err);
+            return err;
         }
     }
+
+    /**
+     * replaces this settings object with another one by overriding sections array and config\
+     * meant to be used with the Settings.fromJson() method
+     * @param {Settings} settings settings object to replace this one with
+     */
+    replaceWith(settings) {
+        console.log("replacing", Object.assign({}, this), "with", Object.assign({}, settings));
+        // replaces this settings object with another one by overriding sections array and config.
+        // because this object was exported, it can't be assigned in other modules,
+        // so a custom function had to be made
+        if (!(settings instanceof Settings)) { // only override if provided object is a Setting object
+            console.log("settings object is not an instance of the Settings class", settings);
+            return;
+        }
+        this.config = settings.config; // override config
+        this.sections = settings.sections; // override sections
+        this.sections.forEach(section => {
+            section.settings_obj = this; // set parent object for each section
+            section.options.forEach(option => {
+                option.section_obj = section; // set parent object for each option
+            });
+        });
+    }
 }
-export { Settings };
 
 let sectionFormatter = {
     label: "section formatter",
@@ -1097,259 +1168,259 @@ if (!window.devtoolsFormatters.includes(sectionFormatter)) { // only add one ins
     window.devtoolsFormatters.push(sectionFormatter);
 }
 
-let Section = window.Section;
-if (Section === undefined || !(Section.prototype instanceof EventTarget)) {
-    Section = class extends EventTarget {
-        /**
-         * @type {Settings}
-         */
-        settings_obj = null;
-        config = {
-            name: "section"
-        }
-        options = [];
+export class Section extends EventTarget {
+    /** @type {Settings} */
+    settings_obj = null;
+    /**
+     * @type {{
+     *   name: String,
+     *   id: String
+     * }}
+     */
+    config = {
+        name: "section"
+    }
+    /** @type {Options[]} */
+    options = [];
 
-        /**
-         * makes a new Section object
-         * @param {Object} config config options
-         * @param {Options[]} options array of Options to add to the section
-         */
-        constructor(config, options) {
-            super(); // initialize EventTarget
-            extend(this.config, config); // apply config to this
-            if (!Array.isArray(options)) { // turn options into array if it isn't one already
-                options = [options];
+    /**
+     * makes a new Section object
+     * @param {typeof this.config} config config options
+     * @param {Options[]} options array of Options to add to the section
+     */
+    constructor(config, options) {
+        super(); // initialize EventTarget
+        extend(this.config, config); // apply config to this
+        if (!Array.isArray(options)) { // turn options into array if it isn't one already
+            options = [options];
+        }
+        this.options = options.filter(e => e instanceof Option); // remove all non-Option items from array
+        options.forEach(option => {
+            if (option instanceof Option) {
+                option.section_obj = this; // set parent object for each option
             }
-            this.options = options.filter(e => e instanceof Option); // remove all non-Option items from array
-            options.forEach(option => {
-                if (option instanceof Option) {
-                    option.section_obj = this; // set parent object for each option
-                }
-            });
-        }
+        });
+    }
 
-        /**
-         * 
-         * @param {String} name
-         * @returns {Option}
-         */
-        getOption(name) { // returns the section object with the given id
-            return this.options.find(e => e.config.id == name);
-        }
+    /**
+     * returns the option object with the given id
+     * @param {String} name
+     * @returns {Options}
+     */
+    getOption(name) { // returns the section object with the given id
+        return this.options.find(e => e.config.id == name);
+    }
 
-        /**
-         * renders the section object as HTML
-         * @returns {HTMLElement}
-         */
-        render() {
-            // devlog("render section");
-            let section = createElement("section").add(
-                createElement("h2", { innerHTML: this.config.name }) // section title
-            );
-            section.add(...this.options.map(o => o.render())); // render all options in this section
-            return section;
-        }
+    /**
+     * renders the section object as HTML
+     * @returns {HTMLElement}
+     */
+    render() {
+        // devlog("render section");
+        let section = createElement("section").add(
+            createElement("h2", { innerHTML: this.config.name }) // section title
+        );
+        section.add(...this.options.map(o => o.render())); // render all options in this section
+        return section;
+    }
 
-        /**
-         * dispatches an event on the Section object
-         * @param {String} type event type
-         * @param {Object} config event options/data
-         */
-        dispatchEvent(event) {
-            this.settings_obj.dispatchEvent(event); // bubble event to parent element
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]); // call original dispatchEvent function
-            return !event.defaultPrevented || !event.cancelable;
-        }
+    /**
+     * dispatches an event on the Section object
+     * @param {String} type event type
+     * @param {Object} config event options/data
+     */
+    dispatchEvent(event) {
+        // console.log("dispatching section event", event);
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // get copy of original dispatchEvent function
+        let cont = originalDispatch.apply(this, [event]); // call original dispatchEvent function
+        if (cont) this.settings_obj.dispatchEvent(event); // bubble event to parent element
+        // console.log("section event default prevented:", event.defaultPrevented, event.cancelable, cont);
+        return !event.defaultPrevented && cont;
+    }
 
-        /**
-         * listens for an event\
-         * wrapper for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        on(type, callback) {
-            // console.log("on", this.#listeners);
-            this.addEventListener(type, callback);
-        }
+    /**
+     * listens for an event\
+     * wrapper for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    on(type, callback) {
+        // console.log("on", this.#listeners);
+        let originalAddEventListener = EventTarget.prototype.addEventListener.bind(this); // get copy of original addEventListener function
+        originalAddEventListener.apply(this, [type, callback]); // call original addEventListener function
+    }
 
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        off(type, callback) {
-            // console.log("off", this.#listeners);
-            this.removeEventListener(type, callback);
-        }
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    off(type, callback) {
+        // console.log("off", this.#listeners);
+        let originalRemoveEventListener = EventTarget.prototype.removeEventListener.bind(this); // get copy of original removeEventListener function
+        originalRemoveEventListener.apply(this, [type, callback]); // call original removeEventListener function
     }
 }
-export { Section };
 
-let Option = window.Options;
-if (Option === undefined || !(Option.prototype instanceof EventTarget)) {
-    Option = class extends EventTarget {
-        /**
-         * @type {HTMLElement}
-         */
-        input = null;
+export class Option extends EventTarget {
+    /** @type {HTMLElement} */
+    input = null;
 
-        /**
-         * @type {Section}
-         */
-        section_obj = null;
-        config = {
-            name: "option",
-            type: "toggle",
-            value: false
-        }
+    /** @type {Section} */
+    section_obj = null;
+    /**
+     * @type {{
+     *  name: String,
+     *  value?: String,
+     *  values?: String[],
+     *  id: String,
+     *  type: "dropdown"| "slider"
+     * }}
+     */
+    config = {
+        name: "option",
+        type: "toggle",
+        value: false
+    }
 
-        /**
-         * creates a new Option object
-         * @param {Object} config Option options
-         */
-        constructor(config) {
-            super(); // initialize EventTarget object
-            extend(this.config, config); // apply config to this
-            if (config.value == undefined && config.values) { // if value is not specified, set value to first value in values
-                this.config.value = config.values[0];
-            }
-        }
-
-        get value() {
-            return this.config.value;
-        }
-
-        set value(val) {
-            // console.log("set value to", val);
-            show("#loadingModal"); // show the loading modal
-            let option = this;
-            let previousVal = this.config.value;
-            this.config.value = val;
-            fetch("/Reports/Report/SaveSettings", { // fetch request to server to save user settings
-                method: "POST",
-                body: this.section_obj.settings_obj.export(),
-                headers: {
-                    "X-CSRF-TOKEN": Cookies.get("CSRF-TOKEN") // auth token
-                }
-            }).then(e => {
-                e.text().then(t => {
-                    if (t.includes("error")) { // settings could not save
-                        console.log("error saving settings");
-                        this.config.value = previousVal; // revert option change in config object
-                        if (this.input.checked != undefined) { // revert option change in input element
-                            this.input.checked = previousVal;
-                        } else {
-                            this.input = previousVal;
-                        }
-                    } else {
-                        console.log("successfully saved settings");
-                    }
-                    option.dispatchEvent(new Event("change")); // forward event from html element to option object
-                    hide("#loadingModal"); // hide the loading modal
-                });
-            });
-        }
-
-        /**
-         * renders the option object as HTML
-         * @returns {HTMLLabelElement}
-         */
-        render() {
-            // devlog("render option");
-            let label = createElement("label"); // clicking a label will activate the first <input> inside it, so the 'for' attribute isn't required
-            let span = createElement("span", {
-                innerHTML: this.config.name
-            });
-            let input = this.createInput();
-            label.add(span, input);
-            return label;
-        }
-
-        /**
-         * creates the input method specified by the option config
-         * @returns {HTMLSelectElement|HTMLInputElement}
-         */
-        createInput() {
-            let input; // initialize variable
-            let option = this; // save reference to this
-            if (this.config.type == "toggle") { // standard on/off toggle
-                input = createElement("input", {
-                    type: "checkbox",
-                    classList: "slider", // pure css toggle switch
-                    checked: option.config.value
-                });
-            } else if (this.config.type == "dropdown") {
-                input = createElement("select");
-                let values = [];
-                if (this.config.values || (!["undefined", "null"].includes(typeof this.config.values))) { // if list of values is defined
-                    if (!Array.isArray(this.config.values)) { // if values is not an array, make it one
-                        this.config.values = [this.config.values];
-                    }
-                    values.push(...this.config.values); // add defined values to list
-                }
-                values = Array.from(new Set(values)); // remove duplicates
-                input.add(...values.map(v => createElement("option", {
-                    innerHTML: v
-                })));
-                // if specified value is not in the list of predefined values, add it as a placeholder
-                if (this.config.value && !this.config.values.includes(this.config.value)) {
-                    input.insertAdjacentElement("afterBegin", createElement("option", { // insert option element at beginning of select list
-                        innerHTML: this.config.value,
-                        value: this.config.value,
-                        hidden: true, // visually hide placeholder from dropdown
-                        disabled: true // prevent user from selecting it
-                    }));
-                }
-                input.value = this.config.value || this.config.values[0];
-            }
-            input.addEventListener("input", function () { // when setting is changed, dispatch change event on the options object
-                if (input.checked != undefined) {
-                    option.value = input.checked;
-                } else {
-                    option.value = input.value;
-                }
-            });
-            return input;
-        }
-
-        /**
-         * dispatches an event on the Option object
-         * @param {String} type event type
-         * @param {Object} config event options/data
-         */
-        dispatchEvent(event) {
-            this.section_obj.dispatchEvent(event); // bubble event to parent section
-            let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // save copy of original dispatchEvent function
-            originalDispatch.apply(this, [event]); // call original dispatchEvent function
-            return !event.defaultPrevented || !event.cancelable;
-        }
-
-        /**
-         * listens for an event\
-         * wrapper function for addEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        on(type, callback) {
-            // console.log("option on", this.#listeners);
-            this.addEventListener(type, callback);
-        }
-
-        /**
-         * stops the specified callback from listening for the specified event\
-         * wrapper function for removeEventListener
-         * @param {String} type type of event
-         * @param {Function} callback callback function
-         */
-        off(type, callback) {
-            // console.log("option off", this.#listeners);
-            this.removeEventListener(type, callback);
+    /**
+     * creates a new Option object
+     * @param {typeof this.config} config Option options
+     */
+    constructor(config) {
+        super(); // initialize EventTarget object
+        extend(this.config, config); // apply config to this
+        if (config.value == undefined && config.values) { // if value is not specified, set value to first value in values
+            this.config.value = config.values[0];
         }
     }
+
+    /** @returns {String} */
+    get value() {
+        return this.config.value;
+    }
+
+    /** @param {String} val */
+    set value(val) {
+        // console.log("set value to", val, "cur:", this.config.value);
+        this.config.value = val;
+    }
+
+    /**
+     * renders the option object as HTML
+     * @returns {HTMLLabelElement}
+     */
+    render() {
+        // devlog("render option");
+        let label = createElement("label"); // clicking a label will activate the first <input> inside it, so the 'for' attribute isn't required
+        let span = createElement("span", {
+            innerHTML: this.config.name
+        });
+        let input = this.createInput();
+        label.add(span, input);
+        return label;
+    }
+
+    /**
+     * creates the input method specified by the option config
+     * @returns {HTMLElement}
+     */
+    createInput() {
+        let input; // initialize variable
+        let option = this; // save reference to this
+        if (this.config.type == "toggle") { // standard on/off toggle
+            input = createElement("input", {
+                type: "checkbox",
+                classList: "slider", // pure css toggle switch
+                checked: option.config.value
+            });
+        } else if (this.config.type == "dropdown") {
+            input = createElement("select");
+            let values = [];
+            if (this.config.values || (!["undefined", "null"].includes(typeof this.config.values))) { // if list of values is defined
+                if (!Array.isArray(this.config.values)) { // if values is not an array, make it one
+                    this.config.values = [this.config.values];
+                }
+                values.push(...this.config.values); // add defined values to list
+            }
+            values = Array.from(new Set(values)); // remove duplicates
+            // input.add(...args);
+            values.forEach(v => input.add(createElement("option", {
+                innerHTML: v
+            })));
+            // if specified value is not in the list of predefined values, add it as a placeholder
+            if (this.config.value && !this.config.values.includes(this.config.value)) {
+                input.insertAdjacentElement("afterBegin", createElement("option", { // insert option element at beginning of select list
+                    innerHTML: this.config.value,
+                    value: this.config.value,
+                    hidden: true, // visually hide placeholder from dropdown
+                    disabled: true // prevent user from selecting it
+                }));
+            }
+            input.value = this.config.value || this.config.values[0];
+        }
+        input.addEventListener("change", function (event) { // when setting is changed, dispatch change event on the options object
+            let evt = new Event("change", { cancelable: true });
+            let prop;
+            if (input.checked != undefined) {
+                prop = "checked";
+            } else {
+                prop = "value";
+            }
+            evt.val = input[prop];
+            evt.opt = option;
+            evt.prop = prop;
+            let cont = option.dispatchEvent(evt);
+            if (cont) {
+                option.value = evt.val;
+            } else {
+                // console.log("input canceled");
+                input[prop] = option.value;
+                event.preventDefault();
+            }
+        });
+        option.config.input = input; // save input element to config object
+        return input;
+    }
+
+    /**
+     * dispatches an event on the Option object
+     * @param {Event} event event
+     * @returns {Boolean}
+     */
+    dispatchEvent(event) {
+        // console.log("dispatching option event", event.val);
+        let originalDispatch = EventTarget.prototype.dispatchEvent.bind(this); // save copy of original dispatchEvent function
+        let cont = originalDispatch.apply(this, [event]); // call original dispatchEvent function
+        if (cont) this.section_obj.dispatchEvent(event); // bubble event to parent section
+        return !event.defaultPrevented && cont;
+    }
+
+    /**
+     * listens for an event\
+     * wrapper function for addEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    on(type, callback) {
+        // console.log("option on", this.#listeners);
+        let originalAddEventListener = EventTarget.prototype.addEventListener.bind(this); // get copy of original addEventListener function
+        originalAddEventListener.apply(this, [type, callback]); // call original addEventListener function
+    }
+
+    /**
+     * stops the specified callback from listening for the specified event\
+     * wrapper function for removeEventListener
+     * @param {String} type type of event
+     * @param {Function} callback callback function
+     */
+    off(type, callback) {
+        // console.log("option off", this.#listeners);
+        let originalRemoveEventListener = EventTarget.prototype.removeEventListener.bind(this); // get copy of original removeEventListener function
+        originalRemoveEventListener.apply(this, [type, callback]); // call original removeEventListener function
+    }
 }
-export { Option };
 
 export function consoleButton(obj, func, args = [], label = "button", width = 50, height = width) {
     return { __button: true, obj, func, args, label, width, height };
@@ -1940,258 +2011,6 @@ export function stringify(obj) {
     return internal_stringify(obj);
 }
 
-// JSF*ck
-// library that converts javascript to code that only uses the following characters: []()!+
-
-(function () {
-    const MIN = 32, MAX = 126;
-    const SIMPLE = { false: '![]', true: '!![]', undefined: '[][[]]', NaN: '+[![]]', Infinity: '+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])'/* +"1e1000" */ };
-    const CONSTRUCTORS = { Array: '[]', Number: '(+[])', String: '([]+[])', Boolean: '(![])', Function: '[]["flat"]', RegExp: 'Function("return/"+false+"/")()', Object: '[]["entries"]()' };
-    const MAPPING = {
-        'a': '(false+"")[1]',
-        'b': '([]["entries"]()+"")[2]',
-        'c': '([]["flat"]+"")[3]',
-        'd': '(undefined+"")[2]',
-        'e': '(true+"")[3]',
-        'f': '(false+"")[0]',
-        'g': '(false+[0]+String)[20]',
-        'h': '(+(101))["to"+String["name"]](21)[1]',
-        'i': '([false]+undefined)[10]',
-        'j': '([]["entries"]()+"")[3]',
-        'k': '(+(20))["to"+String["name"]](21)',
-        'l': '(false+"")[2]',
-        'm': '(Number+"")[11]',
-        'n': '(undefined+"")[1]',
-        'o': '(true+[]["flat"])[10]',
-        'p': '(+(211))["to"+String["name"]](31)[1]',
-        'q': '("")["fontcolor"]([0]+false+")[20]',
-        'r': '(true+"")[1]',
-        's': '(false+"")[3]',
-        't': '(true+"")[0]',
-        'u': '(undefined+"")[0]',
-        'v': '(+(31))["to"+String["name"]](32)',
-        'w': '(+(32))["to"+String["name"]](33)',
-        'x': '(+(101))["to"+String["name"]](34)[1]',
-        'y': '(NaN+[Infinity])[10]',
-        'z': '(+(35))["to"+String["name"]](36)',
-        'A': '(NaN+[]["entries"]())[11]',
-        'B': '(+[]+Boolean)[10]',
-        'C': 'Function("return escape")()(("")["italics"]())[2]',
-        'D': 'Function("return escape")()([]["flat"])["slice"]("-1")',
-        'E': '(RegExp+"")[12]',
-        'F': '(+[]+Function)[10]',
-        'G': '(false+Function("return Date")()())[30]',
-        'H': null,
-        'I': '(Infinity+"")[0]',
-        'J': null,
-        'K': null,
-        'L': null,
-        'M': '(true+Function("return Date")()())[30]',
-        'N': '(NaN+"")[0]',
-        'O': '(+[]+Object)[10]',
-        'P': null,
-        'Q': null,
-        'R': '(+[]+RegExp)[10]',
-        'S': '(+[]+String)[10]',
-        'T': '(NaN+Function("return Date")()())[30]',
-        'U': '(NaN+Object()["to"+String["name"]]["call"]())[11]',
-        'V': null,
-        'W': null,
-        'X': null,
-        'Y': null,
-        'Z': null,
-        ' ': '(NaN+[]["flat"])[11]',
-        '!': null,
-        '"': '("")["fontcolor"]()[12]',
-        '#': null,
-        '$': null,
-        '%': 'Function("return escape")()([]["flat"])[21]',
-        '&': '("")["fontcolor"](")[13]',
-        '\'': null,
-        '(': '([]["flat"]+"")[13]',
-        ')': '([0]+false+[]["flat"])[20]',
-        '*': null,
-        '+': '(+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]])+[])[2]',
-        ',': '[[]]["concat"]([[]])+""',
-        '-': '(+(.+[0000001])+"")[2]',
-        '.': '(+(+!+[]+[+!+[]]+(!![]+[])[!+[]+!+[]+!+[]]+[!+[]+!+[]]+[+[]])+[])[+!+[]]',
-        '/': '(false+[0])["italics"]()[10]',
-        ':': '(RegExp()+"")[3]',
-        ';': '("")["fontcolor"](NaN+")[21]',
-        '<': '("")["italics"]()[0]',
-        '=': '("")["fontcolor"]()[11]',
-        '>': '("")["italics"]()[2]',
-        '?': '(RegExp()+"")[2]',
-        '@': null,
-        '[': '([]["entries"]()+"")[0]',
-        '\\': '(RegExp("/")+"")[1]',
-        ']': '([]["entries"]()+"")[22]',
-        '^': null,
-        '_': null,
-        '`': null,
-        '{': '(true+[]["flat"])[20]',
-        '|': null,
-        '}': '([]["flat"]+"")["slice"]("-1")',
-        '~': null
-    };
-    const GLOBAL = 'Function("return this")()';
-    function fillMissingDigits() {
-        let output;
-        for (let number = 0; number < 10; number++) {
-            output = "+[]";
-            if (number > 0) output = "+!" + output;
-            for (let i = 1; i < number; i++) output = "+!+[]" + output;
-            if (number > 1) output = output.substring(1);
-            MAPPING[number] = "[" + output + "]";
-        }
-    }
-    function replaceMap() {
-        let character = "", value, i, key;
-        let replace = (pattern, replacement) => value = value.replace(new RegExp(pattern, "gi"), replacement);
-        let digitReplacer = (_, x) => MAPPING[x];
-        function numberReplacer(_, y) {
-            let values = y.split("");
-            let head = +(values.shift());
-            let output = "+[]";
-            if (head > 0) output = "+!" + output;
-            for (i = 1; i < head; i++) output = "+!+[]" + output;
-            if (head > 1) output = output.substring(1);
-            return [output].concat(values).join("+").replace(/(\d)/g, digitReplacer);
-        }
-
-        for (i = MIN; i <= MAX; i++) {
-            character = String.fromCharCode(i);
-            value = MAPPING[character];
-            if (!value) continue;
-            for (key in CONSTRUCTORS) replace("\\b" + key, CONSTRUCTORS[key] + '["constructor"]');
-            for (key in SIMPLE) replace(key, SIMPLE[key]);
-            replace('(\\d\\d+)', numberReplacer);
-            replace('\\((\\d)\\)', digitReplacer);
-            replace('\\[(\\d)\\]', digitReplacer);
-            replace("GLOBAL", GLOBAL);
-            replace('\\+""', "+[]");
-            replace('""', "[]+[]");
-            MAPPING[character] = value;
-        }
-    }
-    function replaceStrings() {
-        let regEx = /[^\[\]\(\)\!\+]{1}/g, all, value, missing, count = MAX - MIN;
-        function findMissing() {
-            let all, value, done = false;
-            missing = {};
-            for (all in MAPPING) {
-                value = MAPPING[all];
-                if (value && value.match(regEx)) {
-                    missing[all] = value;
-                    done = true;
-                }
-            }
-            return done;
-        }
-        let mappingReplacer = (a, b) => b.split("").join("+");
-        let valueReplacer = c => missing[c] ? c : MAPPING[c];
-        for (all in MAPPING) if (MAPPING[all]) MAPPING[all] = MAPPING[all].replace(/\"([^\"]+)\"/gi, mappingReplacer);
-        while (findMissing()) {
-            for (all in missing) {
-                value = MAPPING[all];
-                value = value.replace(regEx, valueReplacer);
-                MAPPING[all] = value;
-                missing[all] = value;
-            }
-            if (count-- === 0) console.error("Could not compile the following chars:", missing);
-        }
-    }
-    function escapeSequence(c) {
-        let cc = c.charCodeAt(0);
-        if (cc < 256) return '\\' + cc.toString(8);
-        else {
-            let cc16 = cc.toString(16);
-            return '\\u' + ('0000' + cc16).substring(cc16.length);
-        }
-    }
-    let escapeSequenceForReplace = c => escapeSequence(c).replace('\\', 't');
-    function encode(input, wrapWithEval, runInParentScope, unmappped = '', output = [], r = "") {
-        if (!input) return "";
-        for (let k in MAPPING) if (MAPPING[k]) unmappped += k;
-        unmappped = new RegExp('[^' + unmappped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']', 'g');
-        let unmappedCharactersCount = (input.match(unmappped) || []).length;
-        if (unmappedCharactersCount > 1) input = input.replace(/[^0123456789.adefilnrsuN]/g, escapeSequenceForReplace);
-        else if (unmappedCharactersCount > 0) input = input.replace(/["\\]/g, escapeSequence).replace(unmappped, escapeSequence);
-        for (let i in SIMPLE) r += i + "|";
-        r += ".";
-        input.replace(new RegExp(r, 'g'), function (c) {
-            let replacement = SIMPLE[c];
-            if (replacement) output.push("(" + replacement + "+[])");
-            else {
-                replacement = MAPPING[c];
-                if (replacement) output.push(replacement);
-                else throw new Error('Found unmapped character: ' + c);
-            }
-        });
-        output = output.join("+");
-        if (/^\d$/.test(input)) output += "+[]";
-        if (unmappedCharactersCount > 1) output = `(${output})[${encode("split")}](${encode("t")})[${encode("join")}](${encode("\\")})`;
-        if (unmappedCharactersCount > 0) output = `[][${encode("flat")}][${encode("constructor")}](${encode("return\"")}+${output}+${encode("\"")})()`;
-        if (wrapWithEval) {
-            if (runInParentScope) output = `[][${encode("flat")}][${encode("constructor")}](${encode("return eval")})()(${output})`;
-            else output = `[][${encode("flat")}][${encode("constructor")}](${output})()`;
-        }
-        return output;
-    }
-    fillMissingDigits();
-    replaceMap();
-    replaceStrings();
-    window.JSFuck = { encode };
-})();
-
-/**
- * diffs the two strings
- * @param {String|String[]} seq1 version 1 of file
- * @param {String|String[]} seq2 version 2 of file
- * @returns {Object[]}
- */
-function meyerDiff(seq1, seq2) {
-    var N = seq1.length, M = seq2.length, MAX = N + M, furthestReaching = [], D, k, x, y, step, src = [], target = [], stepMap = [], dist = MAX, a;
-    for (; dist--;) {
-        stepMap[dist] = [];
-    }
-    furthestReaching[MAX + 1] = 0;
-    for (D = 0; D <= MAX && dist === -1; D++) {
-        for (k = -D, x, y, step; k <= D && dist === -1; k += 2) {
-            if (k === -D || (k !== D && furthestReaching[k - 1 + MAX] < furthestReaching[k + 1 + MAX])) {
-                x = furthestReaching[k + 1 + MAX];
-                step = 3;
-            } else {
-                x = furthestReaching[k - 1 + MAX] + 1;
-                step = 2;
-            }
-            y = x - k;
-            stepMap[x][y] = step;
-            while (x < N && y < M && seq1[x] === seq2[y]) {
-                x++;
-                y++;
-                stepMap[x][y] = 0;
-            }
-            furthestReaching[k + MAX] = x;
-            if (x >= N && y >= M) {
-                dist = D;
-            }
-        }
-    }
-    for (; N || M;) {
-        a = stepMap[N][M];
-        src.unshift(a > 2 ? -1 : seq1[N - 1]);
-        target.unshift(a == 2 ? -1 : seq2[M - 1]);
-        a < 3 && N--; // this functions like a ternary operator with no false case
-        a != 2 && M--; // if a==2, logic short-circuits and does not continue to second half
-        /* ternary equivalent
-        a < 3 ? N-- : 0;
-        a != 2 ? M-- : 0;
-        */
-    }
-    return [src, target]
-}
-
 /**
  * logs and returns an object
  * @param {any} arg
@@ -2248,10 +2067,15 @@ let WIP = (function () {
     console.log(tobe == decoded);
 });
 
+/**
+ * generates a 2d array
+ * @param {Number} num the minimum number of items
+ * @returns {Array<Array<any>>}
+ */
 export function rectangle(num) {
     let height = Math.ceil(Math.sqrt(num));
     let width = height;
-    while (height * width - width > num) {
+    while (height * width - width >= num) {
         height--;
     }
     let arr = new Array(height).fill(0).map(e => new Array(width));
@@ -2287,7 +2111,8 @@ export function isAsync(func) {
  * Adds polyfills for missing browser features.
  */
 const polyfills = (function () {
-    if (!Element.prototype.computedStyleMap && window.getComputedStyle != undefined) {
+    if (globalThis.jstools_defined) return;
+    if (!Element.prototype.computedStyleMap && globalThis.getComputedStyle != undefined) {
         Element.prototype.computedStyleMap = function () {
             return window.getComputedStyle(this);
         }
@@ -2436,6 +2261,19 @@ export const CUSTOM_ELEMENTS = (function () {
 })();
 
 export class jst_CSSRule {
+    static validStyles = (function getProperties() {
+        try {
+            let div = document.createElement("div");
+            document.body.append(div);
+            let styles = Object.keys(getComputedStyle(div)).filter(s => isNaN(parseInt(s)));
+            styles = styles.flatMap(e => [e, e.replace(/[A-Z]/g, m => "-" + m.toLowerCase())]);
+            styles = Array.from(new Set(styles)).sort();
+            div.remove();
+            return styles;
+        } catch (err) {
+            return [];
+        }
+    })();
     static checkValidSelector(selector) {
         selector = selector.trim();
         if (typeof selector != "string") return false;
@@ -2450,23 +2288,20 @@ export class jst_CSSRule {
     }
 
     /**
-     * @param {string} selector
-     * @param {Object} styles
+     * @param {String} selector
+     * @param {CSSStyleDeclaration} styles
      */
     constructor(selector, styles) {
-        let validStyles = Object.keys(CSS2Properties.prototype);
         let givenstyles = Object.entries(styles);
-        let valid = givenstyles.every(e => validStyles.includes(e[0]));
+        let valid = givenstyles.every(e => jst_CSSRule.validStyles.includes(e[0]));
         if (!valid) {
-            console.error("Invalid style properties:", givenstyles.filter(e => !validStyles.includes(e[0])).map(e => e[0]).join(", "));
+            console.error("Invalid style properties:", givenstyles.filter(e => !jst_CSSRule.validStyles.includes(e[0])).map(e => e[0]).join(", "));
             return null;
         }
         Object.entries(styles).forEach(e => {
             let newName = e[0].replaceAll(/[A-Z]/g, e => `-${e.toLowerCase()}`);
             if (newName != e[0]) {
-                if (!validStyles.includes(newName)) {
-                    return;
-                }
+                if (!jst_CSSRule.validStyles.includes(newName)) return;
                 styles[newName] = e[1];
                 delete styles[e[0]];
             }
@@ -2491,6 +2326,10 @@ export class jst_CSSRule {
 }
 
 export class jst_CSSStyleSheet {
+    /**
+     * creates a new stylesheet
+     * @param {jst_CSSRule[]} rules array of rules
+     */
     constructor(rules = []) {
         this.rules = rules.filter(e => e instanceof jst_CSSRule);
     }
@@ -2665,6 +2504,7 @@ export class Color {
 }
 
 export const BULK_OPERATIONS = (function () {
+    if (globalThis.jstools_defined) return;
     class Numbers {
         constructor(...values) {
             this.values = values;
@@ -2734,3 +2574,121 @@ export const BULK_OPERATIONS = (function () {
         }
     };
 })();
+
+if (!Array.isArray(window.devtoolsFormatters)) {
+    window.devtoolsFormatters = [];
+}
+let collapsed_formatter = {
+    label: "collapsed formatter",
+    hasBody: function (obj) {
+        if (typeof obj.__collapsed != "boolean") {
+            return false;
+        }
+        return !!obj.__collapsed;
+    },
+    header: function (obj) {
+        if (typeof obj.__collapsed != "boolean") {
+            return null;
+        }
+        let label = "";
+        if (obj.__label) {
+            label = ": " + obj.__label;
+        }
+        return ["div", { style: "color: red;" }, "Collapsed object" + label];
+    },
+    body: function (obj) {
+        if (obj.__collapsed) {
+            return ["div", ["object", { object: obj.data }]];
+        }
+        return ["div", "No data"];
+    }
+};
+if (!window.devtoolsFormatters.includes(collapsed_formatter)) {
+    window.devtoolsFormatters.push(collapsed_formatter);
+}
+(function () { // custom formatters
+    if (typeof $ != "undefined" && !$?.jstree?.core?.prototype || window.____________jstree_formatted) {
+        return;
+    }
+    window.____________jstree_formatted = true;
+    if (!Array.isArray(window.devtoolsFormatters)) {
+        window.devtoolsFormatters = [];
+    }
+    function isJstree(obj) {
+        try {
+            if (Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(obj)))))) == $.jstree.core.prototype) {
+                return true;
+            }
+        } catch (err) { }
+        return false;
+    }
+    class node {
+        constructor(data) {
+            let children = data.children;
+            if (children) {
+                children = children.map(e => new node(e));
+            }
+            this.children = children;
+            this.text = data.text;
+        }
+        render() {
+            if (this.children && this.children.length > 0) {
+                let top = ["div"];
+                this.children.forEach(e => top.push(["div", {
+                    style: "padding-left:20px;"
+                }, ["object", { object: e }]]));
+                return top;
+            }
+            return ["div"];
+        }
+    }
+    window.devtoolsFormatters.push({ // jstree formatter
+        header: function (obj) {
+            if (isJstree(obj)) {
+                return ["div", "jstree"];
+            }
+            return null;
+        },
+        hasBody: function (obj) {
+            return isJstree(obj);
+        },
+        body: function (obj) {
+            if (isJstree(obj)) {
+                let top = ["div"];
+                function get_nodes(tree) {
+                    function recurse(n) {
+                        let node = tree.get_node(n);
+                        node.children = node.children?.map(e => recurse(e));
+                        return node;
+                    }
+                    return recurse("#");
+                }
+                let nodes = get_nodes(obj);
+                let n = new node(nodes);
+                top.push(n.render());
+                return top;
+            }
+            return null;
+        }
+    });
+    window.devtoolsFormatters.push({ // node formatter
+        header: function (obj) {
+            if (obj instanceof node) {
+                return ['div', obj.text];
+            }
+            return null;
+        },
+        hasBody: function (obj) {
+            return obj instanceof node && obj.children?.length > 0;
+        },
+        body: function (obj) {
+            if (obj instanceof node) {
+                let top = ["div"];
+                return obj.render();
+            }
+            return null;
+        }
+    });
+})();
+
+globalThis.jstools_defined = true;
