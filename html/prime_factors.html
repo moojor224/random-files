@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>prime factors</title>
+</head>
+
+<body>
+    <input type="number" name="" id="input">
+    <pre id="output"></pre>
+    <script>
+        function isPrime(num) {
+            for (let i = 2; i <= Math.sqrt(num); i++) {
+                if (num % i === 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        document.getElementById("input").addEventListener("input", function () {
+            let input = document.getElementById("input").value;
+            let factors = [];
+            for (let i = 2; i <= input; i++) {
+                while (input % i === 0) {
+                    factors.push(i);
+                    input /= i;
+                }
+            }
+            document.getElementById("output").innerText = factors.join(" ");
+        });
+    </script>
+</body>
+
+</html>
