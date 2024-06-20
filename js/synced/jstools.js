@@ -2363,10 +2363,10 @@ export class jst_CSSStyleSheet {
 
     addRules(...rules) {
         rules.forEach(rule => {
-        if (!(rule instanceof jst_CSSRule)) {
-            return;
-        }
-        this.rules.push(rule);
+            if (!(rule instanceof jst_CSSRule)) {
+                return;
+            }
+            this.rules.push(rule);
         });
     }
 
@@ -2382,7 +2382,7 @@ export class jst_CSSStyleSheet {
         }
         let compiled = this.rules.map(e => e.compile(minify));
         return compiled.join(join);
-        }
+    }
 
     /** @type {HTMLStyleElement} */
     styleElement = null;
