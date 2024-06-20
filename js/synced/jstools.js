@@ -2266,17 +2266,18 @@ export const CUSTOM_ELEMENTS = (function () {
 
 export class jst_CSSRule {
     static validStyles = (function getProperties() {
-        let result = ["overflow", "border"];
+        let result = ["overflow", "border", "border-width"];
         try {
             let div = document.createElement("div");
             document.body.append(div);
-            let styles = Object.keys(getComputedStyle(div)).filter(s => isNaN(parseInt(s)));
-            styles = styles.flatMap(e => [e, e.replace(/[A-Z]/g, m => "-" + m.toLowerCase())]);
-            styles = Array.from(new Set(styles)).sort();
+            let computed = getComputedStyle(div);
+            let styles = Object.keys(computed).map(s => computed[s]);
+            styles = Array.from(new Set([styles, result].flat().flatMap(e => [e, e.replace(/-[a-z]/g, m => m.toUpperCase()[1])])));
             div.remove();
-            result = [styles, result].flat().sort();
+            result = styles.sort();
         } catch (err) {
-            return [];
+            console.error(err);
+            return ["err"];
         }
         return result;
     })();
