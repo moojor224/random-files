@@ -2384,7 +2384,22 @@ export class jst_CSSStyleSheet {
         let compiled = this.rules.map(e => e.compile(minify));
         return compiled.join(join);
         }
-        return this.rules.map(e => e.compile()).join("\n");
+
+    /** @type {HTMLStyleElement} */
+    styleElement = null;
+    /** whether the stylesheet has been injected */
+    injected = false;
+    /** 
+     * injects the stylesheet into the document
+     * @param {Boolean} update whether to update the stylesheet if a rule is changed
+     */
+    inject(update = false) {
+        if (this.injected) return;
+        this.injected = true;
+        let compiled = this.compile(true);
+        let style = createElement("style", { innerHTML: compiled });
+        this.styleElement = style;
+        document.head.append(style);
     }
 }
 
