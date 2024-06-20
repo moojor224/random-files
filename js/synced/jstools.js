@@ -2321,8 +2321,7 @@ export class jst_CSSRule {
         let givenstyles = Object.entries(styles);
         let valid = givenstyles.every(e => jst_CSSRule.validStyles.includes(e[0]));
         if (!valid) {
-            console.error("Invalid style properties:", givenstyles.filter(e => !jst_CSSRule.validStyles.includes(e[0])).map(e => e[0]).join(", "));
-            return null;
+            throw new Error("Invalid style properties: " + givenstyles.filter(e => !jst_CSSRule.validStyles.includes(e[0])).map(e => e[0]).join(", "));
         }
         Object.entries(styles).forEach(e => {
             let newName = e[0].replaceAll(/[A-Z]/g, e => `-${e.toLowerCase()}`);
