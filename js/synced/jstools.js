@@ -2266,6 +2266,7 @@ export const CUSTOM_ELEMENTS = (function () {
 
 export class jst_CSSRule {
     static validStyles = (function getProperties() {
+        let result = ["overflow", "border"];
         try {
             let div = document.createElement("div");
             document.body.append(div);
@@ -2273,10 +2274,11 @@ export class jst_CSSRule {
             styles = styles.flatMap(e => [e, e.replace(/[A-Z]/g, m => "-" + m.toLowerCase())]);
             styles = Array.from(new Set(styles)).sort();
             div.remove();
-            return styles;
+            result = [styles, result].flat().sort();
         } catch (err) {
             return [];
         }
+        return result;
     })();
     static checkValidSelector(selector) {
         selector = selector.trim();
