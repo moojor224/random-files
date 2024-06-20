@@ -2311,6 +2311,7 @@ export class jst_CSSRule {
                     this.stylesheet.styleElement.innerHTML = this.stylesheet.compile(true);
                 }
             }
+            return true;
         }
     });
     /**
@@ -2367,6 +2368,9 @@ export class jst_CSSStyleSheet {
                 return;
             }
             this.rules.push(rule);
+            if (this.injected) {
+                rule.stylesheet = this;
+            }
         });
     }
 
@@ -2380,7 +2384,12 @@ export class jst_CSSStyleSheet {
         if (minify) {
             join = "";
         }
-        let compiled = this.rules.map(e => e.compile(minify));
+        let compiled = this.rules.map(e => {
+            if (this.injected) {
+                e.stylesheet = this;
+            }
+            return e.compile(minify)
+        });
         return compiled.join(join);
     }
 
