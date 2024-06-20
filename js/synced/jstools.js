@@ -2266,7 +2266,7 @@ export const CUSTOM_ELEMENTS = (function () {
 
 export class jst_CSSRule {
     static validStyles = (function getProperties() {
-        let result = ["overflow", "border", "border-width"];
+        let result = ["overflow", "border", "border-width", "padding", "border-right"];
         try {
             let div = document.createElement("div");
             document.body.append(div);
