@@ -1000,7 +1000,7 @@ export class Settings extends EventTarget {
      * imports saved settings
      * @param {String} data stringified json data
      */
-    import(data){
+    import(data) {
         let json = JSON.parse(data);
         this.sections.forEach(section => {
             section.options.forEach(option => {
