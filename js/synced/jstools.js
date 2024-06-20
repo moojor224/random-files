@@ -2352,6 +2352,8 @@ export class jst_CSSRule {
 }
 
 export class jst_CSSStyleSheet {
+    /** @type {jst_CSSRule} */
+    rules = [];
     /**
      * creates a new stylesheet
      * @param {jst_CSSRule[]} rules array of rules
@@ -2360,11 +2362,13 @@ export class jst_CSSStyleSheet {
         this.rules = rules.filter(e => e instanceof jst_CSSRule);
     }
 
-    addRule(rule) {
+    addRules(...rules) {
+        rules.forEach(rule => {
         if (!(rule instanceof jst_CSSRule)) {
             return;
         }
         this.rules.push(rule);
+        });
     }
 
     compile(minify) {
