@@ -2371,9 +2371,18 @@ export class jst_CSSStyleSheet {
         });
     }
 
+    /**
+     * compiles the stylesheet into css text
+     * @param {Boolean} minify whether to minify the result or not
+     * @returns {String}
+     */
     compile(minify) {
+        let join = "\n";
         if (minify) {
-            return this.rules.map(e => e.compile(true)).join("");
+            join = "";
+        }
+        let compiled = this.rules.map(e => e.compile(minify));
+        return compiled.join(join);
         }
         return this.rules.map(e => e.compile()).join("\n");
     }
