@@ -53,7 +53,7 @@ let mainContainerRule = new CSSRule(".custom-console-container", {
     height: "200px",
     overflow: "auto",
     minHeight: "60px",
-    minwidth: "100px",
+    minWidth: "100px",
 });
 let headerRule = new CSSRule(".custom-console-header", {
     display: "grid",
@@ -71,33 +71,33 @@ let logsRule = new CSSRule(".custom-console-logs", {
     height: "100%",
     boxSizing: "border-box",
 });
+let messageRule = new CSSRule(".custom-console-message", {
+    width: "100%",
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    borderWidth: "0 0 1px 0",
+    boxSizing: "border-box",
+});
+let messageChildrenRule = new CSSRule(".custom-console-message>*", {
+    padding: "5px",
+});
+let indentRule = new CSSRule(".custom-console-group-indent", {
+    width: "20px",
+    height: "100%",
+    borderRight: "1px solid rgb(117, 191, 255)",
+});
 
 styleSheet.addRules(
     mainContainerRule,
     headerRule,
     logsRule,
+    messageRule,
+    messageChildrenRule,
+    indentRule
 );
 styleSheet.inject();
 
-let styles = /*css*/`
-.custom-console-message {
-    width: 100%;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    border-width: 0 0 1px 0;
-    box-sizing: border-box;
-}
-.custom-console-message>* {
-    padding: 5px
-}
-.custom-console-group-indent {
-    width: 20px;
-    height: 100%;
-    border-right: 1px solid rgb(117, 191, 255);
-}
-`;
-document.head.add(createElement("style", { innerHTML: styles }));
 function timestamp() {
     let date = new Date();
     return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${(date.getMilliseconds() + "").padStart(3, "0")}`
