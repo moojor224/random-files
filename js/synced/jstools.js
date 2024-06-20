@@ -2293,10 +2293,29 @@ export class jst_CSSRule {
             return false;
         }
     }
+    /** @type {jst_CSSStyleSheet} */
+    stylesheet = null;
 
+    /** @type {CSSStyleDeclaration} */
+    _style = {};
+    style = new Proxy(this._style, {
+        get(target, prop) {
+            return target[prop];
+        },
+        set: (target, prop, value) => {
+            let newName = prop.replaceAll(/[A-Z]/g, e => `-${e.toLowerCase()}`);
+            if (!jst_CSSRule.validStyles.includes(newName)) return;
+            target[newName] = value;
+            if (this.stylesheet instanceof jst_CSSStyleSheet) {
+                if (this.stylesheet.injected) {
+                    this.stylesheet.styleElement.innerHTML = this.stylesheet.compile(true);
+                }
+            }
+        }
+    });
     /**
      * @param {String} selector
-     * @param {CSSStyleDeclaration} styles
+     * @param {typeof this._style} styles
      */
     constructor(selector, styles) {
         let givenstyles = Object.entries(styles);
@@ -2313,7 +2332,7 @@ export class jst_CSSRule {
                 delete styles[e[0]];
             }
         });
-        this.properties = styles;
+        extend(this._style, styles);
         this.selector = selector;
     }
 
@@ -2327,7 +2346,7 @@ export class jst_CSSRule {
             props = makeTemplate`${0}:${1}`;
             whole = makeTemplate`${"selector"}{${"properties"}}`;
         }
-        let properties = Object.entries(this.properties).map(e => props(...e)).join(join);
+        let properties = Object.entries(this._style).map(e => props(...e)).join(join);
         return whole({ selector: this.selector, properties: properties });
     }
 }
