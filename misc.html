@@ -530,7 +530,20 @@
 Ζ:&Zeta;
 -->
 
-
+    <script type="module">
+        import "./js/custom_console/index.js";
+    </script>
+    <button id="openColorPicker">color picker (chrome only)</button>
+    <script>
+        document.getElementById("openColorPicker").onclick = function () {
+            new EyeDropper().open().then((e) => {
+                console.log(e.sRGBHex);
+                this.innerHTML = e.sRGBHex;
+                this.style.backgroundColor = e.sRGBHex;
+                navigator.clipboard.writeText(e.sRGBHex);
+            });
+        }
+    </script>
 </body>
 
 </html>
