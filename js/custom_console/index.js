@@ -102,11 +102,28 @@ function timestamp() {
     let date = new Date();
     return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${(date.getMilliseconds() + "").padStart(3, "0")}`
 }
+function jsonmltoHTML(jsonml) {
+    if (Array.isArray(jsonml)) {
+
+    } else if (typeof jsonml == "string") {
+        document.createTextNode(jsonml)
+    } else if (typeof jsonml == "number") {
+        return createElement("span", {
+            innerHMTL: jsonml, lang,
+            style: {
+                color: "",
+            }
+        })
+    }
+    return document.createTextNode(jsonml);
+
+}
 function parseLog(arg) {
     return "" + arg;
 }
 export class CustomConsole {
     config = {}
+    groups = [];
     constructor(parent, config = {}) {
         if (!styleSheet.injected)
             extend(this.config, config);
@@ -117,6 +134,9 @@ export class CustomConsole {
         ));
         this.x = 10;
         this.y = 10;
+    }
+    renderAsGroup(parent) {
+        this.el = parent;
     }
     move(x = this.x, y = this.y) {
         this.el.style.left = x + "px";
@@ -138,12 +158,56 @@ export class CustomConsole {
         ));
     }
     log(...args) {
-        this._message({
+        let target = this;
+        while (target.groups.length > 0) {
+            target = target.groups[target.groups.length - 1];
+        }
+        target._message({
             backgroundColor: "#232327",
             color: "rgb(215, 215, 219)",
             icon: "",
             borderColor: "#38383d",
         }, ...args);
+    }
+    _group(args, collapsed) {
+        let target = this;
+        while (target.groups.length > 0) {
+            target = target.groups[target.groups.length - 1];
+        }
+        let logger = new CustomConsole(createElement("div"));
+        let groupDetails = createElement("details").add(createElement("summary", {
+            style: {
+                fontWeight: 700,
+            }
+        }).add(...args.map(parseLog)));
+        if (!collapsed) {
+            groupDetails.setAttribute("open", "");
+        }
+        let groupTitle = createElement("div", {
+            classList: "custom-console-message",
+            style: {
+                backgroundColor: "#232327",
+                color: "rgb(215, 215, 219)",
+                borderColor: "#38383d",
+                borderStyle: "solid",
+            }
+        }).add(
+            createElement("div", { classList: "custom-console-timestamp", innerHTML: timestamp() }),
+            createElement("div", { classList: `custom-console-icon ${"icon"}` }),
+            createElement("div", { classList: "custom-console-message-contents" }).add(groupDetails),
+        );
+        logger.renderAsGroup(groupDetails);
+        target.groups.push(logger);
+        target.el.add(groupTitle);
+    }
+    group(...args) {
+        this._group(args, false);
+    }
+    groupCollapsed(...args) {
+        this._group(args, true);
+    }
+    groupEnd() {
+        this.groups.pop();
     }
 }
 
@@ -178,4 +242,15 @@ function checkCustomFormatters(obj) {
 let custom_console = new CustomConsole(document.body);
 custom_console.log("Hello, world!");
 custom_console.log("Hello, world!");
+custom_console.log("Hello, world!");
+custom_console.group("Hello, world!");
+custom_console.log("Hello, world!");
+custom_console.log("Hello, world!");
+custom_console.groupCollapsed("Hello, world!");
+custom_console.log("Hello, world!");
+custom_console.log("Hello, world!");
+custom_console.groupEnd();
+custom_console.log("Hello, world!");
+custom_console.log("Hello, world!");
+custom_console.groupEnd();
 custom_console.log("Hello, world!");
