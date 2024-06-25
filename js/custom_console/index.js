@@ -1,4 +1,4 @@
-import { createElement, extend, jst_CSSRule as CSSRule, jst_CSSStyleSheet as CSSStyleSheet } from "../synced/jstools.js";
+import { createElement, extend, jst_CSSRule as CSSRule, jst_CSSStyleSheet as CSSStyleSheet, clamp } from "../synced/jstools.js";
 
 const escapeMap = {
     "c": "", // custom css
@@ -128,21 +128,46 @@ export class CustomConsole {
         if (!styleSheet.injected)
             extend(this.config, config);
         this.el = createElement("div", { classList: "custom-console-logs" });
-        parent.add(createElement("div", { classList: "custom-console-container" }).add(
-            createElement("div", { classList: "custom-console-header" }),
-            this.el
-        ));
+        let consoleEl = createElement("div", { classList: "custom-console-container" });
+        function valorzero(val) {
+            if (val < 0) {
+                return 0;
+            }
+            return val;
+        }
+        /** @type {HTMLDivElement} */
+        let header = createElement("div", {
+            classList: "custom-console-header",
+            onmousedown: function (event) {
+                let target = event.target;
+                if (target == header) {
+                    let rect = consoleEl.getBoundingClientRect();
+                    let offsetX = event.clientX - rect.left;
+                    let offsetY = event.clientY - rect.top;
+                    let maxRight = document.documentElement.getBoundingClientRect().width - rect.width - 10;
+                    let maxBottom = window.innerHeight - rect.height - 10;
+                    let mousemove = function (event) {
+                        consoleEl.style.left = clamp(event.clientX - offsetX, 10, valorzero(maxRight + 10) - 10) + "px";
+                        consoleEl.style.top = clamp(event.clientY - offsetY, 10, valorzero(maxBottom + 10) - 10) + "px";
+                    }
+                    let mouseup = function () {
+                        document.removeEventListener("mousemove", mousemove);
+                        document.removeEventListener("mouseup", mouseup);
+                    }
+                    document.addEventListener("mousemove", mousemove);
+                    document.addEventListener("mouseup", mouseup);
+                }
+            }
+        });
+        parent.add(consoleEl.add(header, this.el));
         this.x = 10;
         this.y = 10;
     }
     renderAsGroup(parent) {
         this.el = parent;
     }
-    move(x = this.x, y = this.y) {
-        this.el.style.left = x + "px";
-        this.el.style.top = y + "px";
-    }
-    _message({ backgroundColor, color, borderColor, icon }, ...args) {
+    _message({ backgroundColor, color, borderColor, icon, level = 0 }, ...args) {
+        let bars = new Array(level > 0 ? 1 : 0).fill(0).map(() => createElement("div", { classList: "custom-console-group-indent" }));
         this.el.add(createElement("div", {
             classList: "custom-console-message",
             style: {
@@ -152,21 +177,25 @@ export class CustomConsole {
                 borderStyle: "solid",
             }
         }).add(
-            createElement("div", { classList: "custom-console-timestamp", innerHTML: timestamp() }),
+            // createElement("div", { classList: "custom-console-timestamp", innerHTML: timestamp() }),
+            ...bars,
             createElement("div", { classList: `custom-console-icon ${icon}` }),
             createElement("div", { classList: "custom-console-message-contents" }).add(...args.map(parseLog)),
         ));
     }
     log(...args) {
+        let level = 0;
         let target = this;
         while (target.groups.length > 0) {
             target = target.groups[target.groups.length - 1];
+            level++;
         }
         target._message({
             backgroundColor: "#232327",
             color: "rgb(215, 215, 219)",
             icon: "",
             borderColor: "#38383d",
+            level,
         }, ...args);
     }
     _group(args, collapsed) {
@@ -192,7 +221,7 @@ export class CustomConsole {
                 borderStyle: "solid",
             }
         }).add(
-            createElement("div", { classList: "custom-console-timestamp", innerHTML: timestamp() }),
+            // createElement("div", { classList: "custom-console-timestamp", innerHTML: timestamp() }),
             createElement("div", { classList: `custom-console-icon ${"icon"}` }),
             createElement("div", { classList: "custom-console-message-contents" }).add(groupDetails),
         );
