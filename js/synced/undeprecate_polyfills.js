@@ -5,7 +5,7 @@
     function addProperties(obj, props) {
         for (let i in props) {
             if (typeof props[i] === "object") {
-                obj[i] = {};
+                obj[i] = { ...obj[i] };
                 addProperties(obj[i], props[i]);
             } else {
                 obj[i] = props[i];
@@ -14,62 +14,32 @@
     }
 
     addProperties(String.prototype, {
-        /**
-         * returns the outerHTML of an HTML anchor element with the innerHTML set to the string
-         * @param {string} id id of the <a> element
-         * @returns {HTMLAnchorElement}
-         */
         anchor: function (id = "") {
-            let a = document.createElement("a");
-            a.innerHTML = this;
-            a.id = id;
-            return a.outerHTML;
+            return `<a id="${id.replaceAll('"', '\\"')}">${this}</a>`;
         },
         big: function () {
-            let big = document.createElement("span");
-            big.style.fontSize = "1.2em";
-            big.innerHTML = this;
-            return big.outerHTML;
+            return `<span style="font-size:1.2em">${this}</span>`;
         },
         bold: function () {
-            let bold = document.createElement("b");
-            bold.innerHTML = this;
-            return bold.outerHTML;
+            return `<b>${this}</b>`;
         },
         fixed: function () {
-            let tt = document.createElement("span");
-            tt.style.fontFace = "monospace";
-            tt.innerHTML = this;
-            return tt.outerHTML;
+            return `<span style="font-face:monospace">${this}</span>`;
         },
         fontcolor: function (color = "") {
-            let font = document.createElement("span");
-            font.style.color = color;
-            font.innerHTML = this;
-            return font.outerHTML;
+            return `<span style="color:${color}">${this}</span>`;
         },
         fontsize: function (size = 1) {
-            let font = document.createElement("span");
-            font.style.fontSize = size + "em";
-            font.innerHTML = this;
-            return font.outerHTML;
+            return `<span style="font-size:${size}em">${this}</span>`;
         },
         italics: function () {
-            let i = document.createElement("i");
-            i.innerHTML = this;
-            return i.outerHTML;
+            return `<i>${this}</i>`;
         },
         link: function (url = "") {
-            let a = document.createElement("a");
-            a.innerHTML = this;
-            a.href = url;
-            return a.outerHTML;
+            return `<a href="${url}">${this}</a>`;
         },
         small: function () {
-            let small = document.createElement("span");
-            small.style.fontSize = "0.7em";
-            small.innerHTML = this;
-            return small.outerHTML;
+            return `<span style="font-size:0.7em">${this}</span>`;
         },
         substr: function (start, length = this.length) {
             return this.substring(start, start + length);
