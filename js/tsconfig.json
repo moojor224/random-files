@@ -9,7 +9,6 @@
         "noEmit": true,
         "rootDir": "../",
         "types": [
-            "jstools",
             // "chartjs"
         ],
         "baseUrl": "../"
