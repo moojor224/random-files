@@ -805,10 +805,7 @@ export function listAllColorsOnPage() {
  * @returns {Number} number clamped to range
  */
 export function clamp(val, min, max) {
-    if (min > max) { // make sure min is less than max
-        [min, max] = [max, min];
-    }
-    return (val < min ? min : val > max ? max : val);
+    return Math.max(Math.min(val, Math.max(min, max)), Math.min(min, max));
 }
 
 /**
