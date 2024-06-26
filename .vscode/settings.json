@@ -4,4 +4,7 @@
     "scriptmonkey.activation condition.userscript header": true,
     "scriptmonkey.metaData.default.author": "moojor224",
     "scriptmonkey.metaData.default.namespace": "https://github.com/moojor224",
+    "indentRainbow.includedLanguages": [
+        "python"
+    ]
 }
