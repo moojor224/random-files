@@ -285,7 +285,7 @@ class _formatter:
     def __call__(self, string):
         print(f"{self._prefix()}{string}" if string != "" else string, end="")
         if self._reset:
-            Styles.reset()
+            PrintStyles.reset()
         print("")
 
     def __add__(self, other):
@@ -294,7 +294,7 @@ class _formatter:
         return newFormatter
 
     def __sub__(self, other):
-        myChain = list() + self._chain
+        myChain = list(self._chain)
         for i in other._chain:
             if i in myChain:
                 myChain.remove(i)
@@ -303,7 +303,7 @@ class _formatter:
         return newFormatter
 
 
-class Styles(_formatter, Enum):
+class PrintStyles(_formatter, Enum):
     """
     normal usage:
     >>> fancy_printer = Styles.BOLD + Styles.RED + Styles.ON_WHITE
@@ -422,7 +422,7 @@ class Styles(_formatter, Enum):
 
     @staticmethod
     def reset():
-        print(Styles.RESET._prefix(), end="")
+        print(PrintStyles.RESET._prefix(), end="")
 
     def __init__(self, value):
         self._value = value
