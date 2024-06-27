@@ -63,7 +63,7 @@ try {
             }
         }
         (function checkChangelog() {
-            let key = "0_changelog";
+            let key = "1_changelog";
             changelog = changelog.replaceAll("\r", "").trim().split("\n\n").map(e => {
                 let split = e.split("\n");
                 let [hash, date, ...message] = split;
