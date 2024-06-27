@@ -2303,6 +2303,9 @@ export class jst_CSSRule {
             let newName = prop.replaceAll(/[A-Z]/g, e => `-${e.toLowerCase()}`);
             if (!jst_CSSRule.validStyles.includes(newName)) return;
             target[newName] = value;
+            this.attachedElements.forEach(([el]) => {
+                el.style[newName] = value;
+            });
             if (this.stylesheet instanceof jst_CSSStyleSheet) {
                 if (this.stylesheet.injected) {
                     this.stylesheet.styleElement.innerHTML = this.stylesheet.compile(true);
@@ -2345,6 +2348,39 @@ export class jst_CSSRule {
         }
         let properties = Object.entries(this._style).map(e => props(...e)).join(join);
         return whole({ selector: this.selector, properties: properties });
+    }
+
+    /** @type {HTMLElement[]} */
+    attachedElements = [];
+    /**
+     * attaches the rule to an element
+     * @param {HTMLElement} el the elenet to attach the rule to
+     */
+    attachTo(...el) {
+        let rule = this; // save reference to this rule
+        function attach(el) {
+            if (!(el instanceof HTMLElement)) return; // only allow html elements
+            let style = ""; // the original style
+            if (el.hasAttribute("style")) { // if the element has a style attribute
+                style = el.getAttribute("style"); // save the style
+            }
+            rule.attachedElements.push([el, style]); // add the element to the list of attached elements
+            extend(el.style, rule._style); // extend the element's style with the rule's style
+        }
+        el.forEach(e => attach(e)); // loop through given elements
+    }
+
+    /**
+     * detaches the rule from an element and optionally reverts the element to its original style
+     * @param {HTMLElement} el the element to detach the rule from
+     * @param {Boolean} revert whether to revert the element to its original style
+     */
+    detachFrom(el, revert = true) {
+        if (!(el instanceof HTMLElement)) return; // only allow html elements
+        let index = this.attachedElements.find(e => e[0] == el); // find the index of the element
+        if (index < 0) return; // if the element is not attached, return
+        let el = this.attachedElements.splice(index, 1)[0]; // remove the element from the list
+        if (revert) el[0].style = el[1]; // if revert is true, revert the element to its original style
     }
 }
 
