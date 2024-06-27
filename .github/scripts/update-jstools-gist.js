@@ -1,3 +1,5 @@
+const { exec } = require("child_process");
+
 // node .\.github\scripts\update-jstools-gist.js {{ jstools_gist_key }}
 try {
     (async function () {
@@ -19,7 +21,13 @@ try {
         const octokit = new Octokit({ auth: key });
         const API_VER = "2022-11-28";
 
-        let jst_src = fs.readFileSync(path.resolve(__dirname, "../../js/synced/jstools.js"), "utf8");
+        let jst_path = path.resolve(__dirname, "../../js/synced/jstools.js");
+        let changelog = await new Promise(function (resolve) {
+            exec(`git log --pretty=format:%H%n%aD%n%s%n -- js/synced/jstools.js > jstools_log.txt`, (err, stdout, stderr) => {
+                resolve(fs.readFileSync("jstools_log.txt", "utf8"));
+            });
+        });
+        let jst_src = fs.readFileSync(jst_path, "utf8");
         let exported_vars = jst_src.match(/export\s+((const|let)\s+([a-zA-Z0-9_]+)\s*=|(function|class)\s+([a-zA-Z0-9_]+)\s*)/g);
         exported_vars = exported_vars.map(x => x.match(/export\s+((const|let|class|function)\s+([a-zA-Z0-9_]+)\s*=?)/)[3]);
         // console.log(exported_vars.map(e => `${e}`).join(",\n"));
@@ -44,7 +52,7 @@ try {
         });
         let data = {};
         for (let key in jstools) {
-            let stringified = jstools.stringify(jstools[key])
+            let stringified = jstools.stringify(jstools[key]);
             if (typeof jstools[key] == "object") {
                 stringified = `let ${key} = ${stringified}`;
             }
@@ -54,6 +62,19 @@ try {
                 };
             }
         }
+        (function checkChangelog() {
+            let key = "0_changelog";
+            changelog = changelog.replaceAll("\r", "").trim().split("\n\n").map(e => {
+                let split = e.split("\n");
+                let [hash, date, ...message] = split;
+                date = `[${date} - ${hash.substr(0, 7)}](https://github.com/moojor224/random-files/commit/${hash})`;
+                return `### ${date}\n${message.join("\n")}`;
+            }).join("\n\n");
+            console.log(changelog);
+            if (gist_files.files[key + ".md"]?.content != changelog) {
+                data[key + ".md"] = { content: changelog };
+            }
+        })();
         if (Object.keys(data).length > 0) {
             console.log("updating files:", Object.keys(data));
             // console.log("updating files:", data);
