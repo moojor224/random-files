@@ -23,7 +23,7 @@ try {
 
         let jst_path = path.resolve(__dirname, "../../js/synced/jstools.js");
         let changelog = await new Promise(function (resolve) {
-            exec(`git log --pretty=format:%H%n%aD%n%s%n -- js/synced/jstools.js > jstools_log.txt`, (err, stdout, stderr) => {
+            exec(`git log --pretty=format:%H%n%aD%n%s%n -- ${jst_path} > jstools_log.txt`, (err, stdout, stderr) => {
                 resolve(fs.readFileSync("jstools_log.txt", "utf8"));
             });
         });
@@ -72,7 +72,7 @@ try {
             }).join("\n\n");
             console.log(changelog);
             if (gist_files.files[key + ".md"]?.content != changelog) {
-                data[key + ".md"] = { content: changelog };
+                data[key + ".md"] = { content: "# Changelog\n\n" + changelog };
             }
         })();
         if (Object.keys(data).length > 0) {
