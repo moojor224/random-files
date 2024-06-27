@@ -1,7 +1,9 @@
 """
 python implementation of jstools.js
 """
+
 from enum import Enum
+import re
 
 
 def roundf(val: float, base: float) -> float:
@@ -290,7 +292,7 @@ class _formatter:
         newFormatter = _formatter()
         newFormatter._chain = self._chain + other._chain
         return newFormatter
-    
+
     def __sub__(self, other):
         myChain = list() + self._chain
         for i in other._chain:
@@ -334,6 +336,7 @@ class Styles(_formatter, Enum):
     >>> yet_another_fancy_printer("This is after subtracting")
 
     """
+
     # text colors
     BLACK = 30
     RED = 31
@@ -428,6 +431,110 @@ class Styles(_formatter, Enum):
         pass
 
 
+# class Proxy: # this doesn't work yet
+#     _obj = None
+#     _data = {}
+
+#     def __init__(self, obj, methods: dict):
+#         def default_set(target, key, value):
+#             setattr(target, key, value)
+
+#         def default_get(target, key):
+#             return getattr(target, key)
+
+#         if not isinstance(methods, dict):
+#             raise Exception("methods must be a dict")
+#         keys = methods.keys()
+#         if not keys.__contains__("set") and not keys.__contains__("get"):
+#             raise Exception("methods must contain a setter or getter method")
+#         print("set self._obj")
+#         self._obj = obj
+
+#         setattr(self._data, "_get", default_get)
+#         if keys.__contains__("get") and callable(methods["get"]):
+#             setattr(self._data, "_get", methods["get"])
+#         setattr(self._data, "_set", default_set)
+#         if keys.__contains__("set") and callable(methods["set"]):
+#             setattr(self._data, "_set", methods["set"])
+
+#     def __getattr__(self, name):
+#         print("get attr")
+#         return self._data._get(self._obj, name)
+#         # return self._get(self._obj, name)
+
+#     def __setattr__(self, name, value):
+#         print("set attr")
+#         if callable(self._set):
+#             return self._set(self._obj, name, value)
+#         setattr(self._data, name, value)
+#         # return self._set(self._obj, name, value)
+
+#         # setattr(self, "__getattr__", __getattr__)
+#         # setattr(self, "__setattr__", __setattr__)
+
+
+from css_rules import rules as _rules
+
+
+# class pyt_CSSRule: # this class isn't really useful in python
+#     validStyles = _rules()
+
+#     @staticmethod
+#     def checkValidSelector(self, selector):
+#         return True  # not implemented
+
+#     def __init__(self, selector: str, styles: dict):
+#         self.stylesheet = None
+#         self._style = {}
+#         self.selector = selector
+
+#         def getter(target, prop):
+#             return target[prop]
+
+#         def setter(target, prop: str, value):
+#             newName = re.compile(r"[A-Z]").sub(lambda x: "-" + x.group(0).lower(), prop)
+#             if not pyt_CSSRule.validStyles.__contains__(newName):
+#                 return
+#             # if isinstance(self.stylesheet, pyt_CSSStyleSheet):
+#             #     if self.stylesheet.injected:
+#             #         self.stylesheet.styleElement.innerHTML = self.stylesheet.compile(True)
+#             return True
+
+#         # self.style = Proxy(self._style, {"set": setter, "get": getter})
+#         givenstyles = list(zip(styles.keys(), styles.values()))
+#         for i in givenstyles:
+#             if not i[0] in pyt_CSSRule.validStyles:
+#                 raise Exception(f'Invalid style: "{i[0]}"')
+#             else:
+#                 newname = re.compile(r"[A-Z]").sub(
+#                     lambda x: "-" + x.group(0).lower(), i[0]
+#                 )
+#                 if newname in pyt_CSSRule.validStyles:
+#                     self._style[newname] = i[1]
+#         pass
+
+#     def compile(self, minify=True):
+#         def min_props(*props):
+#             return ";".join([f"{i[0]}:{i[1]}" for i in props])
+
+#         def max_props(*props):
+#             return "\n    ".join([f"{i[0]}: {i[1]};" for i in props])
+
+#         def min_whole(selector, props):
+#             return f"{selector}{{{props}}}"
+
+#         def max_whole(selector, props):
+#             return f"{selector} {{\n    {props}\n}}"
+
+#         props = max_props
+#         whole = max_whole
+#         if minify:
+#             props = min_props
+#             whole = min_whole
+#         return whole(self.selector, props(*self._style.items()))
+
+
+
 # flattenChildren
 # lockValue
 # extend
@@ -438,6 +545,5 @@ class Styles(_formatter, Enum):
 # makeTemplate
 # copyObject
 # rectangle
-# pyt_CSSRule
 # pyt_CSSStyleSheet
 # BULK_OPERATIONS
