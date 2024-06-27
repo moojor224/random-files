@@ -66,6 +66,17 @@ const { emmet } = await tryImport("./emmet.js");
     if (typeof Element === "undefined") {
         globalThis.Element = proxy();
     }
+    if (typeof getComputedStyle === "undefined") {
+        globalThis.getComputedStyle = () => ({});
+    }
+    if (typeof document === "undefined") {
+        globalThis.document = {
+            body: { append: () => 0 },
+            createElement: function () {
+                return { remove: () => 0 }
+            }
+        };
+    }
 })();
 
 /**
@@ -2379,8 +2390,8 @@ export class jst_CSSRule {
         if (!(el instanceof HTMLElement)) return; // only allow html elements
         let index = this.attachedElements.find(e => e[0] == el); // find the index of the element
         if (index < 0) return; // if the element is not attached, return
-        let el = this.attachedElements.splice(index, 1)[0]; // remove the element from the list
-        if (revert) el[0].style = el[1]; // if revert is true, revert the element to its original style
+        let detachedEl = this.attachedElements.splice(index, 1)[0]; // remove the element from the list
+        if (revert) detachedEl[0].style = detachedEl[1]; // if revert is true, revert the element to its original style
     }
 }
 

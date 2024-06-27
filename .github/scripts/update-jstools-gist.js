@@ -22,10 +22,17 @@ try {
         let jst_src = fs.readFileSync(path.resolve(__dirname, "../../js/synced/jstools.js"), "utf8");
         let exported_vars = jst_src.match(/export\s+((const|let)\s+([a-zA-Z0-9_]+)\s*=|(function|class)\s+([a-zA-Z0-9_]+)\s*)/g);
         exported_vars = exported_vars.map(x => x.match(/export\s+((const|let|class|function)\s+([a-zA-Z0-9_]+)\s*=?)/)[3]);
+        // console.log(exported_vars.map(e => `${e}`).join(",\n"));
         jst_src = jst_src.replaceAll(/\nexport\s?/g, "");
         jst_src = jst_src.replaceAll(/\nconst \{ [a-zA-Z0-9_]+ \} = await tryImport\("[a-zA-Z0-9_\.\/]+\.js"\);/g, "");
-        jst_src = `export const jst = (async function(){${jst_src}\nreturn { ${exported_vars.map(e => `${e}`).join(", ")} }\n})();`.toString("base64");
-        let jst_imported = await import("data:text/javascript;base64," + Buffer.from(jst_src).toString('base64'));
+        jst_src = `export const jst = (async function(){${jst_src}\nreturn { ${exported_vars.map(e => `${e}`).join(",\n")} }\n})();`.toString("base64");
+        let jst_imported;
+        try {
+            jst_imported = await import("data:text/javascript;base64," + Buffer.from(jst_src).toString('base64'));
+        } catch (err) {
+            console.log(jst_src, err);
+            return;
+        }
         await jst_imported.jst;
         jst_imported = await jst_imported.jst;
         const jstools = { ...jst_imported };
