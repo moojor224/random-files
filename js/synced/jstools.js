@@ -2296,7 +2296,7 @@ export class jst_CSSRule {
     /** @type {CSSStyleDeclaration} */
     _style = {};
     style = new Proxy(this._style, {
-        get(target, prop) {
+        get: (target, prop) => {
             return target[prop];
         },
         set: (target, prop, value) => {
