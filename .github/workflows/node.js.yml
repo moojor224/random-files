@@ -22,4 +22,4 @@ jobs:
         with:
           node-version: 22.x
           cache: "npm"
-      - run: git pull && npm i && node ./.github/scripts/update-jstools-gist.js ${{ secrets.JSTOOLS_GIST_KEY }}
+      - run: git pull --unshallow && npm i && node ./.github/scripts/update-jstools-gist.js ${{ secrets.JSTOOLS_GIST_KEY }}
