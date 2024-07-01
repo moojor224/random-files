@@ -63,26 +63,29 @@ try {
             }
         }
         (function checkChangelog() {
-            let key = "1_changelog";
-            changelog = changelog.replaceAll("\r", "").trim().split("\n\n").map(e => {
+            let key = "0_jstools functions.md";
+            changelog = `this gist contains all of the functions exported by jstools.js\n\n<details><summary><h2 style="display:inline-block;margin:0">Changelog</h2></summary>${changelog.replaceAll("\r", "").trim().split("\n\n").map(e => {
                 let split = e.split("\n");
                 let [hash, date, ...message] = split;
-                date = `[${date} - ${hash.substr(0, 7)}](https://github.com/moojor224/random-files/commit/${hash})`;
-                return `### ${date}\n${message.join("\n")}`;
-            }).join("\n\n");
-            console.log(changelog);
-            if (gist_files.files[key + ".md"]?.content != changelog) {
-                data[key + ".md"] = { content: "# Changelog\n\n" + changelog };
+                // date = `[${date} - ${hash.substr(0, 7)}](https://github.com/moojor224/random-files/commit/${hash})`;
+                date = `<a href="https://github.com/moojor224/random-files/commit/${hash}">${date} - ${hash.substr(0, 7)}</a>`
+                return `<h3 style="margin:0">${date}</h3><div>${message.join("")}</div>`;
+            }).join("<br>")}</details>`;
+            // console.log("changelog:", changelog);
+            // fs.writeFileSync("changelog.html", changelog);
+            if (gist_files.files[key]?.content != changelog) {
+                data[key] = { content: changelog };
             }
         })();
         if (Object.keys(data).length > 0) {
-            console.log("updating files:", Object.keys(data));
+            // console.log("updating files:", Object.keys(data));
             // console.log("updating files:", data);
+            // debugger
             await octokit.request("PATCH /gists/{gist_id}", {
                 gist_id: "c1d8199c6c90a17cdbfec1b18efa3ee4",
                 headers: { "X-GitHub-Api-Version": API_VER },
                 files: {
-                    "0_jstools functions.md": { content: `this gist contains all of the functions exported by jstools.js` },
+                    "0_jstools functions.md": { content: changelog },
                     ...data
                 }
             });
