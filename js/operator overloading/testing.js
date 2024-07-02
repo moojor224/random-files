@@ -1,5 +1,4 @@
-/** @typedef {(BasicAny | int)[]} int */
-/** @typedef  {interface extends Array<NestedArray | string | number | boolean |  string[] | number[] | boolean[]>{}} NestedArray */
+/** @typedef {(BasicAny | NestedBasicAnyArray)[]} NestedBasicAnyArray */
 /** @typedef {string | number | boolean} BasicAny */
 /**
  * @template T
@@ -9,7 +8,7 @@
  * creates a readonly enum from the provided values\
  * type declarations make it so that your IDE will show the original values on hover
  * @template E
- * @type {<E extends Record<string, BasicAny | int>>(values: Narrow<E>) => E}
+ * @type {<E extends Record<string, BasicAny | NestedBasicAnyArray>>(values: Narrow<E>) => E}
  */
 export function createENUM(values) {
     return Object.freeze(Object.fromEntries(Object.entries(values).map(([key, value]) => [key, Symbol(value)])));
