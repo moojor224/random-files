@@ -303,6 +303,14 @@ class _formatter:
         return newFormatter
 
 
+def rectangle(size, fill=None):
+    height = round((size ** (0.5)) + 0.5)
+    width = height
+    while height * width - width >= size:
+        height -= 1
+    arr = [[fill for e in range(width)] for i in range(height)]
+    return arr
+
 class PrintStyles(_formatter, Enum):
     """
     normal usage:
@@ -534,7 +542,6 @@ from css_rules import rules as _rules
 #         return whole(self.selector, props(*self._style.items()))
 
 
-
 # flattenChildren
 # lockValue
 # extend
@@ -544,6 +551,5 @@ from css_rules import rules as _rules
 # Option
 # makeTemplate
 # copyObject
-# rectangle
 # pyt_CSSStyleSheet
 # BULK_OPERATIONS
