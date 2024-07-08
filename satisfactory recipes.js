@@ -32,13 +32,7 @@ class Resource {
             if (this.ingredients.length == 0) {
                 return 1;
             }
-            return ((arr) => {
-                var max = 0;
-                arr.forEach(e => {
-                    if (e > max) { max = e; }
-                });
-                return max + 1;
-            })(this.ingredients.map(e => (e[1].tier || 0)));
+            return Math.max(...this.ingredients.map(e => (e[1].tier || 0))) + 1;
         })();
     }
 }
