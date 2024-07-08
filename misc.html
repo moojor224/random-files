@@ -326,7 +326,7 @@
         });
         navigator.serviceWorker.register("/js/service-worker.js");
 
-        import { CUSTOM_ELEMENTS } from "./js/synced/jstools.js";
+        import { CUSTOM_ELEMENTS } from "./js/synced/jstools/index.js";
         CUSTOM_ELEMENTS.all();
 
     </script>
@@ -335,7 +335,7 @@
         // let game = new Grid(7, 10)
     </script>
     <script type="module"> // convert html element to xml string without properties
-        import "/js/synced/jstools.js";
+        import "/js/synced/jstools/index.js";
         function thisThing(element) {
             function traverse(el, indent, arr) {
                 arr.push(`${indent}<${el.tagName}>`);

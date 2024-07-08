@@ -21,7 +21,7 @@ try {
         const octokit = new Octokit({ auth: key });
         const API_VER = "2022-11-28";
 
-        let jst_path = path.resolve(__dirname, "../../js/synced/jstools.js");
+        let jst_path = path.resolve(__dirname, "../../js/synced/jstools/index.js");
         let changelog = await new Promise(function (resolve) {
             exec(`git log --pretty=format:%H%n%aD%n%s%n -- ${jst_path} > jstools_log.txt`, (err, stdout, stderr) => {
                 resolve(fs.readFileSync("jstools_log.txt", "utf8"));

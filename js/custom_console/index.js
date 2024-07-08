@@ -1,4 +1,4 @@
-import { createElement, extend, jst_CSSRule as CSSRule, jst_CSSStyleSheet as CSSStyleSheet, clamp } from "../synced/jstools.js";
+import { createElement, extend, jst_CSSRule as CSSRule, jst_CSSStyleSheet as CSSStyleSheet, clamp } from "../synced/jstools/index.js";
 
 const escapeMap = {
     "c": "", // custom css

@@ -1,4 +1,4 @@
-import * as everything from "./jstools.js";
+import * as everything from "./jstools/index.js";
 
 let url = new URL(import.meta.url);
 let params = new URLSearchParams(url.search);

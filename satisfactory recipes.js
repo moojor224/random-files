@@ -1,4 +1,4 @@
-import { createElement } from "./js/synced/jstools.js";
+import { createElement } from "./js/synced/jstools/index.js";
 
 class Node {
     text = "";
