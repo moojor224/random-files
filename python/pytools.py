@@ -314,35 +314,37 @@ def rectangle(size, fill=None):
 class PrintStyles(_formatter, Enum):
     """
     normal usage:
-    >>> fancy_printer = Styles.BOLD + Styles.RED + Styles.ON_WHITE
-    >>> fancy_printer("Hello, World!")
+    >>> printer = PrintStyles.BOLD + PrintStyles.RED + PrintStyles.ON_WHITE
+    >>> printer("Hello, World!")
 
     styles can be used inline for one-time use:
-    >>> (Styles.ITALIC + Styles.GREEN)("Inline styling example")
-    >>> Styles.BOLD("Another inline styling example")
+    >>> (PrintStyles.ITALIC + PrintStyles.GREEN)("Inline styling example")
+    >>> PrintStyles.BOLD("Another inline styling example")
 
     you can also disable the styles resetting if you want to
-    >>> other_fancy_printer = Styles.ITALIC + Styles.BOLD + Styles.RED
-    >>> other_fancy_printer._reset = False
-    >>> other_fancy_printer("disabled reset")
+    >>> printer = PrintStyles.ITALIC + PrintStyles.BOLD + PrintStyles.RED
+    >>> printer._reset = False
+    >>> printer("disabled reset")
     >>> print("styles are still applied")
     >>> print("no changes here")
     >>> Formatter.reset()
     >>> print("back to normal")
 
-    >>> warning = Styles.BOLD + Styles.YELLOW + Styles.ITALIC
+    >>> warning = PrintStyles.BOLD + PrintStyles.YELLOW + PrintStyles.ITALIC
     >>> warning("This is an example warning!")
 
-    >>> error = Styles.BOLD + Styles.ON_RED
+    >>> error = PrintStyles.BOLD + PrintStyles.ON_RED
     >>> error("This is an example error!")
 
     it is also possible to subtract styles from an already-compiiled style
-    >>> yet_another_fancy_printer = Styles.MAGENTA + Styles.BOLD + Styles.ON_RED
-    >>> yet_another_fancy_printer("This is before subtracting")
-    >>> yet_another_fancy_printer -= Styles.BOLD
-    >>> yet_another_fancy_printer -= Styles.ON_RED
-    >>> yet_another_fancy_printer("This is after subtracting")
+    >>> printer = PrintStyles.MAGENTA + PrintStyles.BOLD + PrintStyles.ON_RED
+    >>> printer("This is before subtracting")
+    >>> printer = printer - PrintStyles.BOLD
+    >>> printer = printer - PrintStyles.ON_RED
+    >>> printer("This is after subtracting")
 
+    note: PrintStyles can be imported as an alias for shorter code
+    >>> from pytools import PrintStyles as S
     """
 
     # text colors
