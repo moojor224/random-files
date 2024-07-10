@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        label.toggle {
+            --scale: 0.65;
+            --duration: 0.25s;
+            --padding: 10px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 0px;
+        }
+
+        label.toggle span {
+            font-size: 30px;
+        }
+
+        label.toggle input[type="checkbox"] {
+            position: absolute;
+            visibility: hidden;
+            height: 0px;
+            width: 0px;
+            padding: 0px;
+            margin: 0px;
+        }
+
+        label.toggle input[type="checkbox"]:checked+div>div {
+            background-color: blue;
+        }
+
+        label.toggle input[type="checkbox"]:checked+div>div::before {
+            left: calc(30px * var(--scale));
+        }
+
+        label.toggle .toggle-wrapper {
+            width: calc(60px * var(--scale));
+            height: calc(34px * var(--scale));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        label.toggle .toggle-wrapper div {
+            /* scale: var(--scale); */
+            display: inline-block;
+            background: #ccc;
+            border-radius: calc(16px * var(--scale));
+            width: calc(58px * var(--scale));
+            height: calc(32px * var(--scale));
+            position: relative;
+            vertical-align: middle;
+            transition: background-color var(--duration);
+        }
+
+        label.toggle .toggle-wrapper div::before {
+            display: block;
+            background: linear-gradient(to bottom, #fff 0%, #eee 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+            width: calc(24px * var(--scale));
+            height: calc(24px * var(--scale));
+            position: absolute;
+            top: calc(4px * var(--scale));
+            left: calc(4px * var(--scale));
+            transition: left var(--duration);
+            content: "";
+        }
+
+        label.toggle span {
+            padding-right: var(--padding);
+            padding-left: var(--padding);
+        }
+
+        label.toggle input~span {
+            padding-left: var(--padding);
+        }
+    </style>
+</head>
+
+<body>
+<label class="toggle">
+    <input type="checkbox" name="" id="">
+    <div class="toggle-wrapper">
+        <div></div>
+    </div>
+    <span>Toggle</span>
+</label>
+</body>
+
+</html>
