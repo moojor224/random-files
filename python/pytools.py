@@ -282,11 +282,12 @@ class _formatter:
     def _prefix(self):
         return f"\033[{';'.join(str(p) for p in self._chain)}m"
 
-    def __call__(self, string):
-        print(f"{self._prefix()}{string}" if string != "" else string, end="")
+    def __call__(self, *args, end="\n", sep=" ", file=None):
+        print(f"{self._prefix()}", end="", file=file)
+        print(*args, end="", sep=sep, file=file)
         if self._reset:
-            PrintStyles.reset()
-        print("")
+            print(PrintStyles.RESET._prefix(), end="", file=file)
+        print(end, end="", file=file)
 
     def __add__(self, other):
         newFormatter = _formatter()
@@ -310,6 +311,7 @@ def rectangle(size, fill=None):
         height -= 1
     arr = [[fill for e in range(width)] for i in range(height)]
     return arr
+
 
 class PrintStyles(_formatter, Enum):
     """
