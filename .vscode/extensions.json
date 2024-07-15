@@ -18,5 +18,7 @@
         "rioj7.vscode-remove-comments",
         "yurish.size",
         "franneck94.workspace-formatter",
+        "rioj7.commandonallfiles",
+        "oderwat.indent-rainbow",
     ]
 }

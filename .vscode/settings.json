@@ -6,5 +6,19 @@
     "scriptmonkey.metaData.default.namespace": "https://github.com/moojor224",
     "indentRainbow.includedLanguages": [
         "python"
-    ]
+    ],
+    "commandOnAllFiles.includeFileExtensions": [
+        ".js"
+    ],
+    "commandOnAllFiles.commands": {
+        "organize imports": {
+            "command": "editor.action.organizeImports",
+            "description": "Organize imports",
+            "includeFiles": [
+                {
+                    "regex": ".*\\.js$"
+                }
+            ]
+        }
+    }
 }
