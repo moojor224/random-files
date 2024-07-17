@@ -242,8 +242,6 @@ let svgToDataUri = (function () {
     };
 })();
 
-globalThis.logFormatted = logFormatted; // make function globally available
-
 let WIP = (function () {
     var byteLength = 16;
 
