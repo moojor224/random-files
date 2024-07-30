@@ -19,3 +19,100 @@ with open("out.txt", mode="w") as f:
     print("message", file=f)
     warning("warning", file=f)
     error("error", file=f)
+
+
+from math import sin, pi
+import time
+from asynctasklist import ParallelTask, Task, TaskList
+
+millis_in_second = 1e3
+micros_in_second = 1e6
+nano_in_second = 1e9
+
+
+def decide_time_unit():  # find smallest unit of time
+
+    def set_func(f):
+        global time_func
+        time_func = f
+        return True
+
+    if (
+        (hasattr(time, "ticks_ns") and set_func(time.ticks_ns))
+        or (hasattr(time, "monotonic_ns") and set_func(time.monotonic_ns))
+        or (hasattr(time, "time_ns") and set_func(time.time_ns))
+    ):
+        return nano_in_second
+    if (
+        (hasattr(time, "ticks_us") and set_func(time.ticks_us))
+        or (hasattr(time, "monotonic_us") and set_func(time.monotonic_us))
+        or (hasattr(time, "time_us") and set_func(time.time_us))
+    ):
+        return micros_in_second
+    if (
+        (hasattr(time, "ticks_ms") and set_func(time.ticks_ms))
+        or (hasattr(time, "monotonic_ms") and set_func(time.monotonic_ms))
+        or (hasattr(time, "time_ms") and set_func(time.time_ms))
+    ):
+        return micros_in_second
+    raise Exception("No time unit found")
+
+
+time_func = None
+time_unit = decide_time_unit()
+
+
+def note(letter: str, octave: int, acc: str):
+    notes = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
+    note = notes[letter.upper()]
+    if acc == "#":
+        note += 1
+    if acc == "b":
+        note -= 1
+    hz = int(440 * pow(2, ((octave * 12 + note - 57) / 12)))
+
+    def func(x):
+        return abs(sin(x * hz / (time_unit / pi / 2)))
+
+    return func
+
+
+def chord(*notes: int):
+    def func(x):
+        y = 0
+        for n in notes:
+            y += sin(x * n / (time_unit / pi / 2))
+            pass
+        return y / len(notes)
+
+    return func
+
+
+while True:
+    break
+    pass
+notes = {}
+
+for l in ("C", "D", "E", "F", "G", "A", "B", "c", "d", "e", "f", "g", "a", "b"):
+    for a in ("", "#", "b"):
+        for o in range(10):
+            notes[l + a + str(o)] = note(l, o, a)(1)
+
+note_regex = "(\d+)([A-G])(#|b)?([0-9]|10)"
+chord_regex = f"{note_regex}(\\+{note_regex})*"
+song_regex = f"^{chord_regex}(,{chord_regex})*$"
+print(note_regex)
+print(chord_regex)
+print(song_regex)
+
+
+def play(song: str):
+    if not re.match(song_regex, song):
+        raise ValueError("Invalid song")
+    for c in song.split(","):
+        func = chord(*c.split("+"))
+        pass
+    pass
+
+
+play("1C4")

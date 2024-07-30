@@ -1,0 +1,3 @@
+message
+[33;3mwarning[0m
+[31;1merror[0m
