@@ -30,9 +30,9 @@ function wave(...notes) {
     for (let i = 0; i < canvas.width; i += 1) {
         let y = 0;
         for (let note of notes) {
-            y += Math.sin(i * note / (micros_in_second / Math.PI / 2));
+            y += Math.sin(i * note / (micros_in_second / Math.PI / 2)) / notes.length;
         }
-        ctx.lineTo(i, canvas.height / 2 - (y * 100 / notes.length));
+        ctx.lineTo(i, canvas.height / 2 - (y * 100));
     }
     ctx.stroke();
 }
