@@ -23,21 +23,36 @@ function note(letter, octave, acc) {
 }
 // ctx.fillRect(360, 0, 2, canvas.height);
 function wave(...notes) {
+    console.log(notes);
     ctx.strokeStyle = "black";
     ctx.beginPath();
     ctx.lineWidth = 1;
     ctx.moveTo(0, canvas.height / 2);
+    let last_y = 0;
+    let intersects = 1;
+    let mid = canvas.height / 2;
     for (let i = 0; i < canvas.width; i += 1) {
+        // return a function that mimics this code block and pass it the current timer value (cur - start)
+        // make sure to remove intersects counter and draw functions
+        // sec > ms > us > ns > ps > fs > as > zs > ys
+        // _ > milli > micro > nano > pico > femto > atto > zepto > yocto
+        // ^ just for fun
         let y = 0;
         for (let note of notes) {
             y += Math.sin(i * note / (micros_in_second / Math.PI / 2)) / notes.length;
         }
-        ctx.lineTo(i, canvas.height / 2 - (y * 100));
+        y = mid - (y * 100);
+        if (y > mid && last_y < mid || y < mid && last_y > mid) {
+            intersects++;
+        }
+        ctx.lineTo(i, y);
+        last_y = y;
     }
     ctx.stroke();
+    console.log("total number of intersects", intersects);
 }
 
-wave(note("A", 3), note("A", 4));
+wave(note("A", 4));
 // wave(10, 30);
 // wave(10);
 // wave(30);
