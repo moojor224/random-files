@@ -35,12 +35,10 @@ def decide_time_unit():  # find smallest unit of time
     def set_func(f):
         global time_func
         time_func = f
-        print(f)
         return True
 
     if (
         (hasattr(time, "ticks_ns") and set_func(time.ticks_ns))
-        or (hasattr(time, "time_ns") and set_func(time.time_ns))
         or (hasattr(time, "time_ns") and set_func(time.time_ns))
         or (hasattr(time, "monotonic_ns") and set_func(time.monotonic_ns))
     ):
@@ -62,6 +60,7 @@ def decide_time_unit():  # find smallest unit of time
 
 time_func = None
 time_unit = decide_time_unit()
+# time_func = lambda: (time.time() * 100)
 
 
 def note(letter: str, octave: int, acc: str):
@@ -132,9 +131,34 @@ def play(song: str):
         raise ValueError("Invalid song")
     tl = TaskList()
     for c in song.split(","):
-        func = chord(*c.split("+"))
+        func = chord(*[makeNote(n) for n in c.split("+")])
+        start = 0
+
+        def init():
+            nonlocal start
+            # print("note start")
+            start = time_func()
+
+        def task():
+            cur = time_func()
+            x = cur - start
+            y = clamp(map(int(func(x)), 0, 100, 0, 65535), 0, 65535)
+            # spkr.value(y)
+            # print(y)
+            if x > time_unit:
+                # print("note end")
+                return True
+            return False
+
+        tl.add(Task(init=init, task=task))
         pass
+    return tl
+
+
+song = play("1A3+1A4,1C3+1C4")
+song.execute()
+# exit()
+print("song start")
+while not song.execute():
     pass
-
-
-play("1C4")
+print("song end")
