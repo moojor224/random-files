@@ -8,7 +8,6 @@
         "noEmit": true,
         "rootDir": "../../../",
         "types": [
-            "jstools",
             "chartjs",
             "chromajs",
             "dayjs",
