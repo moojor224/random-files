@@ -10,9 +10,9 @@ import { extend } from "./synced/jstools/index.js";
  * @prop {AutoRunWhen} when conditions to check
  */
 /**
- * allows "multiplexing" a function based on conditions
- * @param {function} callback code/script to run if conditions are met
- * @param {AutoRunOptions} options conditions for callback to run
+ * intended for "multiplexing" a greasemonkey script based on certain conditions
+ * @param {function} callback script to run
+ * @param {AutoRunOptions} options conditions for script to run
  */
 function autoRun(callback, options) {
     /* @type {AutoRunOptions} */
