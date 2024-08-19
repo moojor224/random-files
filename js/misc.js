@@ -4,13 +4,13 @@ class SomeClass {
     }
 
     [Symbol.iterator]() {
-        var index = -1;
+        var index = 0;
         var data = this._data;
 
         return {
             next: () => ({
-                value: data[++index],
-                done: !(index in data)
+                done: !(index in data),
+                value: data[index++]
             })
         };
     };
