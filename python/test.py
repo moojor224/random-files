@@ -110,7 +110,7 @@ for l in ("C", "D", "E", "F", "G", "A", "B", "c", "d", "e", "f", "g", "a", "b"):
         for o in range(10):
             notes[l + a + str(o)] = note(l, o, a)
 
-note_regex = "(\d+)([A-G])(#|b)?([0-9]|10)"
+note_regex = "(\\d+)([A-G])(#|b)?([0-9]|10)"
 chord_regex = f"{note_regex}(\\+{note_regex})*"
 song_regex = f"^{chord_regex}(,{chord_regex})*$"
 print(note_regex)
