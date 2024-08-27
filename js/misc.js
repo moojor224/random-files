@@ -123,3 +123,34 @@ width, min-width, max-width
 height, min-height, max-height
 
 */
+
+
+// add extra type definitions to monaco instance
+monaco.languages.typescript.javascriptDefaults.addExtraLib(content, url); // choose one, leave the other blank
+monaco.languages.typescript.javascriptDefaults.addExtraLib(`
+/**
+ * picks out all properties from an object that start with a specified string
+ * @template Keys
+ * @template {string} Needle
+ * @typedef {(Keys extends \`\${Needle}\${infer _X}\` ? Keys : never)} FilterStartingWith
+ * @usage FilterStartingWith<keyof Type, "needle">
+ */
+/**
+ * picks out all function property names from an object
+ * @template T
+ * @typedef {{ [K in keyof T]: T[K] extends Function ? K : never }[keyof T]} FunctionPropertyNames
+ * @usage FunctionPropertyNames<Type>
+ */
+/**
+ * picks out all configurable properties from an object\
+ * this is used to get all non-function prperties from an element class, including on\<event> listeners
+ * @template T
+ * @typedef {Pick<T, keyof Omit<T, FunctionPropertyNames<T>>> & Pick<T, FilterStartingWith<keyof T, "on">>} ElementProps
+ */
+/**
+ * @param Tag this is the tag
+ * @param options this is the options
+ */
+    declare function createElement<Tag extends keyof HTMLElementTagNameMap>(tagName: Tag, options?: ElementProps<HTMLElementTagNameMap[Tag]>) => HTMLElementTagNameMap[Tag];
+`, "");
+monaco.languages.typescript.javascriptDefaults.addExtraLib("", "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/react/index.d.ts");
