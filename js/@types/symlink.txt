@@ -1,2 +1,5 @@
-mklink /J @types C:\Development\*******\Scripts\Reports\@types // makes folder link
-mklink /H jstools.js C:\Development\*******\jstools.js // makes file link
+mklink /J <DEST_PATH> <SOURCE_PATH>; rem       makes folder link
+mklink /H <DEST_PATH> <SOURCE_PATH>; rem       makes file link
+
+first file path is the location where the link will go
+second file path is what the link will  point to
