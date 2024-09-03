@@ -1,5 +1,5 @@
 mklink /J <DEST_PATH> <SOURCE_PATH>; rem       makes folder link
 mklink /H <DEST_PATH> <SOURCE_PATH>; rem       makes file link
 
-first file path is the location where the link will go
-second file path is what the link will  point to
+first file path is the location where the link file will be created
+second file path is what the link will point to
