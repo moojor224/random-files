@@ -315,7 +315,7 @@
     </script>
 
     <script type="module">
-        import "./js/custom_console/index.js";
+        // import "./js/custom_console/index.js";
     </script>
     <button id="openColorPicker">color picker (chrome only)</button>
     <script>
@@ -328,6 +328,103 @@
             });
         }
     </script>
+    <div>
+        <table id="sort">
+            <thead>
+                <tr>
+                    <th>name</th>
+                    <th>age</th>
+                    <th>address </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Doe</td>
+                    <td>25</td>
+                    <td>123 Main St</td>
+                </tr>
+                <tr>
+                    <td>Jane Smith</td>
+                    <td>30</td>
+                    <td>456 Elm St</td>
+                </tr>
+                <tr>
+                    <td>Mike Johnson</td>
+                    <td>35</td>
+                    <td>789 Oak St</td>
+                </tr>
+                <tr>
+                    <td>Sarah Williams</td>
+                    <td>28</td>
+                    <td>321 Pine St</td>
+                </tr>
+                <tr>
+                    <td>David Brown</td>
+                    <td>32</td>
+                    <td>654 Cedar St</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script type="module">
+        import { makeTableSortable } from "./js/synced/jstools/index.js";
+        makeTableSortable(document.getElementById("sort"));
+    </script>
+    <!-- <div class="dnd-outer dnd-border">
+        <pre class="dnd-content"><strong><center></center></strong></pre>
+        <div class="dnd-label dnd-border">
+            <div class="dnd-content"> </div>
+        </div>
+    </div>
+    <style>
+        div.dnd-border {
+            border: 4px solid black;
+            outline-offset: -8px;
+            outline: 2px solid black;
+        }
+
+        div.dnd-outer {
+            border-radius: 16px;
+            display: block;
+            width: 150px;
+            height: 150px;
+            position: relative;
+        }
+
+        pre.dnd-content {
+            width: calc(100% - 8px);
+            height: calc(100% - 8px);
+            margin: 4px;
+            border-radius: 8px;
+            padding: 4px;
+            box-sizing: border-box;
+            white-space: pre;
+        }
+
+        div.dnd-label {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        div.dnd-label>div {
+            min-width: 80px;
+            min-height: 40px;
+        }
+
+        center {
+            display: block;
+            text-align: center;
+            unicode-bidi: isolate;
+        }
+
+        pre {
+            font-family: inherit;
+        }
+    </style> -->
 </body>
 
 </html>
