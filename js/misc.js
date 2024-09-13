@@ -154,3 +154,13 @@ monaco.languages.typescript.javascriptDefaults.addExtraLib(`
     declare function createElement<Tag extends keyof HTMLElementTagNameMap>(tagName: Tag, options?: ElementProps<HTMLElementTagNameMap[Tag]>) => HTMLElementTagNameMap[Tag];
 `, "");
 monaco.languages.typescript.javascriptDefaults.addExtraLib("", "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/react/index.d.ts");
+
+
+
+
+
+
+
+(new MutationObserver(function (mutations, observer) {
+    console.log(mutations, observer)
+})).observe(document.body, { subtree: true, childList: true });
