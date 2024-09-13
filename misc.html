@@ -366,6 +366,20 @@
             </tbody>
         </table>
     </div>
+    <style>
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sortable.sort-asc::after {
+            content: "▲";
+        }
+
+        .sortable.sort-desc::after {
+            content: "▼";
+        }
+    </style>
     <script type="module">
         import { makeTableSortable } from "./js/synced/jstools/index.js";
         makeTableSortable(document.getElementById("sort"));
