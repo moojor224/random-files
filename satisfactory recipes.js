@@ -22,7 +22,19 @@ class Node {
         return a;
     }
 }
+/**
+ * @typedef ResourceData
+ * @prop {string} name
+ * @prop {[number, Resource][]} ingredients
+ * @prop {number} amount
+ * @prop {[string, number]} rate
+ */
+
 class Resource {
+    /**
+     * 
+     * @param {ResourceData} data 
+     */
     constructor(data) {
         this.ingredients = data.ingredients || [];
         this.rate = data.rate || [];
@@ -114,17 +126,19 @@ let copperIngot = new Resource({
     name: "Copper Ingot",
     ingredients: [[1, copperOre]],
     amount: 1,
-    rate: ["", 1],
+    rate: ["smelter", 30],
 });
 let cateriumIngot = new Resource({
     name: "Caterium Ingot",
     ingredients: [[3, cateriumOre]],
     amount: 1,
+    rate: ["smelter", 15],
 });
 let concrete = new Resource({
     name: "Concrete",
     ingredients: [[3, limestone]],
     amount: 1,
+    rate: ["constructor", 15],
 });
 let ironRod = new Resource({
     name: "Iron Rod",
@@ -158,14 +172,14 @@ let reinforcedIronPlate = new Resource({
 });
 let modularFrame = new Resource({
     name: "Modular Frames",
-    ingredients: [[12, ironRod], [3, reinforcedIronPlate]],
+    ingredients: [[3, reinforcedIronPlate], [12, ironRod]],
     amount: 2,
     rate: ["assembler", 2],
 });
 let steelIngot = new Resource({
     name: "Steel Ingot",
-    ingredients: [[1, ironOre], [1, coal]],
-    amount: 1,
+    ingredients: [[3, ironOre], [3, coal]],
+    amount: 3,
     rate: ["foundry", 45],
 });
 let steelBeam = new Resource({
@@ -174,9 +188,15 @@ let steelBeam = new Resource({
     amount: 1,
     rate: ["constructor", 15]
 });
+let steelPipe = new Resource({
+    name: "Steel Pipe",
+    ingredients: [[3, steelIngot]],
+    amount: 2,
+    rate: ["constructor", 20],
+});
 let versatileFramework = new Resource({
     name: "Versatile Framework",
-    ingredients: [[12, steelBeam], [1, modularFrame]],
+    ingredients: [[1, modularFrame], [12, steelBeam]],
     amount: 2,
     rate: ["assembler", 5],
 });
@@ -184,17 +204,21 @@ let smartPlating = new Resource({
     name: "Smart Plating",
     ingredients: [[1, reinforcedIronPlate], [1, rotor]],
     amount: 1,
+    rate: ["assembler", 2],
 });
+
+
+
+
+
+
+
+
+
 let rebarGun = new Resource({
     name: "Rebar Gun",
     ingredients: [[6, reinforcedIronPlate], [16, ironRod], [100, screw]],
     amount: 1,
-});
-let steelPipe = new Resource({
-    name: "Steel Pipe",
-    ingredients: [[3, steelIngot]],
-    amount: 2,
-    rate: ["constructor", 20],
 });
 let encasedIndustrialBeam = new Resource({
     name: "Encased Industrial Beam",
@@ -237,5 +261,5 @@ let automatedWiring = new Resource({
     amount: 1,
     rate: ["assembler", 2.5]
 });
-document.body.append(makeTree(heavyModularFrame, 1));
-document.body.append(makeTree(versatileFramework, 1));
+document.body.append(makeTree(rotor, 10, false));
+// document.body.append(makeTree(versatileFramework, 1));
