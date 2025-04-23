@@ -73,7 +73,7 @@ g = gap;
 sl = min(scoop_length, row_height / 2); // scoop length
 
 total_width = w * c + wall * (c + 1); // overall width of the container
-total_height = h * c + wall * (c + 1); // overall height of the container
+total_height = h * r + wall * (r + 1); // overall height of the container
 
 
 difference() {
