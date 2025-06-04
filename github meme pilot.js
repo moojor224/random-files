@@ -1,4 +1,5 @@
 // various autocompletions by github copilot
+// caret denotes the location that copilot completed from
 /*
 on march 3, 1969, the first successful test flight of the Concorde supersonic jet was completed
                   ^
@@ -10,4 +11,16 @@ on march 3, 1969 the united states navy established an elite school for the top 
                                                      ^                                                                                                                                 ^
 according to all known laws of aviation, there is no way a bee should be able to fly. its wings are too small to get its fat little body off the ground. the bee, of course, flies anyway because bees don't care what humans think is impossible.
                 ^
+*/
+/*
+never gonna give you up, never gonna let you down, never gonna run around and desert you
+    ^ lol
+never gonna make you cry, never gonna say goodbye, never gonna tell a lie and hurt you
+never gonna give you up, never gonna let you down, never gonna run around and desert you
+never gonna make you cry, never gonna say goodbye, never gonna tell a lie and hurt you
+never gonna give you up, never gonna let you down, never gonna run around and desert you
+never gonna make you cry, never gonna say goodbye, never gonna tell a lie and hurt you
+never gonna give you up, never gonna let you down, never gonna run around and desert you
+never gonna make you cry, never gonna say goodbye, never gonna tell a lie and hurt you
+... etc
 */

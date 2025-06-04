@@ -1,4 +1,5 @@
 {
+    // these extensions aren't required for this repo, just a list for me to keep track of the ones I like to use
     "recommendations": [
         "zardoy.ts-essential-plugins",
         "andywang.vscode-scriptmonkey",
