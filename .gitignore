@@ -3,3 +3,5 @@ node_modules/*
 
 __pycache__
 /jstools_log.txt
+
+/.idea
